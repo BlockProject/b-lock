@@ -1,0 +1,28 @@
+{
+  "name": "CryptPass",
+  "version": "1.0",
+  "description": "Password manager",
+  "manifest_version": 2,
+  "author": "TheFomoTrain",
+  "background": {
+    "scripts": ["background.js"],
+    "persistent": true
+  },
+  "options_page": "options.html",
+  "page_action": {
+      "default_popup": "popup.html",
+      "default_icon": {
+        "16": "images/get_started16.png",
+        "32": "images/get_started32.png",
+        "48": "images/get_started48.png",
+        "128": "images/get_started128.png"
+      }
+    },
+    "icons": {
+      "16": "images/get_started16.png",
+      "32": "images/get_started32.png",
+      "48": "images/get_started48.png",
+      "128": "images/get_started128.png"
+    },
+  "permissions": ["activeTab", "declarativeContent", "storage"]
+}
