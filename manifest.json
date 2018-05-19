@@ -5,7 +5,7 @@
   "manifest_version": 2,
   "author": "TheFomoTrain",
   "background": {
-    "scripts": ["background.js"],
+    "scripts": ["js/background.js"],
     "persistent": true
   },
   "options_page": "options.html",

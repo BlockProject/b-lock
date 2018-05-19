@@ -1,16 +1,38 @@
 <!DOCTYPE html>
   <html>
     <head>
-      <style>
-        button {
-          height: 30px;
-          width: 30px;
-          outline: none;
-        }
-      </style>
+      <link rel="less" type="text/css" href="css/less/styles.less" />
+      <link rel="stylesheet" type="text/css" href="css/styles.css">
+      <script src="thirdparty/jquery-3.3.1.min.js"></script>
+      <script src="thirdparty/nebulas.js"></script>
+      <script src="js/popup.js"></script>
     </head>
     <body>
-      <button id="changeColor"></button>
-      <script src="popup.js"></script>
+      <div id="accountInfo">
+        <label>Public address:</div>
+        <div id="address"></div>
+        <div id="unlockDiv">
+          <label>Password:</label>
+          <input id="password" type="password"></input>
+          <button id="unlockAccount">Unlock</button>
+        </div>
+        <label>Account balance:</div>
+        <div id="accountBalance"></div>
+        <label>Account nonce:</div>
+        <div id="accountNonce"></div>
+      </div>
+
+      <div id="newAccount" class="hidden">
+        <div>You have no Nebulas account</div>
+        <label>Password:</label>
+        <input id="newPassword" type="password"></input>
+        <button id="createAccountBtn">Create new account</button>
+        </br>
+
+        <label>Private key:</label>
+        <div id="private"></div>
+        <label>Public key:</label>
+        <div id="public"></div>
+      </div>
     </body>
   </html>
