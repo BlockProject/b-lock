@@ -8,10 +8,16 @@
     "page": "background.html",
     "persistent": true
   },
-
+  "content_scripts": [
+    {
+      "matches": ["http://*/*", "https://*/*"],
+      "js": ["thirdparty/jquery-3.3.1.min.js", "js/content.js"]
+    }
+  ],
   "options_page": "options.html",
-  "page_action": {
+  "browser_action": {
       "default_popup": "popup.html",
+      "default_title": "CryptPass",
       "default_icon": {
         "16": "images/get_started16.png",
         "32": "images/get_started32.png",

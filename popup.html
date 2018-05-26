@@ -10,21 +10,21 @@
     <body>
       <h1>HELLO</h1>
       <div id="accountInfo">
-        <label>Public address:</div>
+        <label>Public address:</label>
         <div id="address"></div>
-        <div id="unlockDiv" class="section">
+        <div id="unlockDiv" class="hidden">
           <label>Password:</label>
           <input id="password" type="password"></input>
           <button id="unlockAccount">Unlock</button>
           <p id="wrongPass">Wrong pass !</p>
         </div>
-        <label>Account balance:</div>
+        <label>Account balance:</label>
         <div id="accountBalance"></div>
-        <label>Account nonce:</div>
+        <label>Account nonce:</label>
         <div id="accountNonce"></div>
       </div>
 
-      <div id="newAccount" class="section">
+      <div id="newAccount" class="hidden">
         <h2>Create new account</h2>
         <div>You have no Nebulas account</div>
         <label>Password:</label>
@@ -36,6 +36,25 @@
         <div id="private"></div>
         <label>Public key:</label>
         <div id="public"></div>
+      </div>
+
+      <div id="save-credentials" class="hidden">
+        <h2>Save Password</h2>
+        <div>
+          <label>Domain:</label>
+          <input id="save-credentials-domain"></input>
+        </div>
+        <div>
+          <label>Login:</label>
+          <input id="save-credentials-login"></input>
+        </div>
+        <div>
+          <label>Password:</label>
+          <input id="save-credentials-password" type="password"></input>
+        </div>
+        <div>
+          <button id="save-credentials-submit">Save</button>
+        </div>
       </div>
     </body>
   </html>

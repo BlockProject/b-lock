@@ -9,6 +9,10 @@ $(document).ready(() => {
     chrome.runtime.sendMessage({
       type: "createAccount",
       password: $("#newPassword").val(),
+    }, function (response) {
+      console.log('13');
+      info = response;
+      refresh();
     });
   });
 
@@ -16,48 +20,106 @@ $(document).ready(() => {
     chrome.runtime.sendMessage({
       type: "unlockAccount",
       password: $("#password").val()
+    }, function (response) {
+      console.log('24');
+      console.log(response);
+      info = response;
+      refresh();
     });
-    account = new Account();
-    try {
-      account.fromKey(keystore, $("#password").val());
-      console.log(account);
-      refreshAccountInfo();
-      $("#unlockDiv").hide();
-    } catch (err) {
-      alert("wrong password!");
-    }
+    // account = new Account();
+    // try {
+    //   account.fromKey(keystore, $("#password").val());
+    //   console.log(account);
+    //   refreshAccountInfo();
+    //   $("#unlockDiv").hide();
+    // } catch (err) {
+    //   alert("wrong password!");
+    // }
   });
 
-  chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    if (request.type == "info") {
+  // chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  //   if (request.type == "info") {
+  //     info = request.info;
+  //     console.log('Got info: ', info);
+  //     refresh();
+  //   }
+  // });
+  //
+  chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+    if (request.type == 'moreInfo') {
       info = request.info;
-      console.log('Got info: ', info);
       refresh();
     }
   });
 
+  // chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+  //     if (request.type == 'saveCredentials') {
+  //       showSavePasswordDom(request.credentials);
+  //     }
+  // });
+
+  const showSavePasswordDom = (obj) => {
+    console.log('showing this div, ', obj);
+    $('#save-credentials-domain').val(obj.domain);
+    $('#save-credentials-login').val(obj.login);
+    $('#save-credentials-password').val(obj.password);
+    $('#save-credentials').removeClass('hidden');
+  };
+
   const refresh = () => {
-    $(".section").hide();
+    // $(".section").hide();
+    $('#save-credentials').addClass('hidden');
+    $('#newAccount').addClass('hidden');
+    $('#unlockDiv').addClass('hidden');
+
+    console.log('got this info : ', info);
+
+    if (info.showSavePasswordDom) {
+      showSavePasswordDom(info.tempCredentials);
+    }
+
     if (info == undefined) return;
     if (info.account.keystore == undefined) { // user haven't created account
-      $("#newAccount").show();
+      $("#newAccount").removeClass('hidden');
     } else if (!info.unlockAccount.unlocked) { // user created account, haven't logged in
       console.log('info.account.address = ', info.account.address);
+      // $('#newAccount').addClass('hidden');
       $("#address").html(info.account.address);
-      $("#unlockDiv").show();
+      $("#unlockDiv").removeClass('hidden');
       if (info.unlockAccount.wrongPass) {
         $("#wrongPass").show();
       } else {
         $("#wrongPass").hide();
       }
     } else { // user already logged in
+      // $('#newAccount').addClass('hidden');
+      // $('#unlockDiv').addClass('hidden');
       $("#address").html(info.account.address);
       $("#accountBalance").html(info.account.balance);
       $("#accountNonce").html(info.account.nonce);
     }
   }
-  refresh();
+  // refresh();
 
-  chrome.runtime.sendMessage({type: "requestInfo"});
+  chrome.runtime.sendMessage({type: "requestInfo"}, function (response) {
+    console.log('70');
+    console.log(response);
+    info = response;
+    refresh();
+  });
 
+  $('#save-credentials-submit').click(function (e) {
+    // take those values and save to blockchain
+    const obj = {
+      domain: $('#save-credentials-domain').val(),
+      login: $('#save-credentials-login').val(),
+      password: $('#save-credentials-password').val()
+    };
+
+    // tell the background to clear the tempCredentials
+    chrome.runtime.sendMessage({type: "clearTemp", credentials: obj}, function (response) {
+      info = response;
+      refresh();
+    });
+  });
 })
