@@ -5,9 +5,10 @@
   "manifest_version": 2,
   "author": "TheFomoTrain",
   "background": {
-    "scripts": ["js/background.js"],
+    "page": "background.html",
     "persistent": true
   },
+
   "options_page": "options.html",
   "page_action": {
       "default_popup": "popup.html",
@@ -24,5 +25,8 @@
       "48": "images/get_started48.png",
       "128": "images/get_started128.png"
     },
-  "permissions": ["activeTab", "declarativeContent", "storage"]
+  "permissions": ["activeTab", "declarativeContent", "storage"],
+  "web_accessible_resources": [
+    "js/nebulas.js"
+  ]
 }

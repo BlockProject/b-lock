@@ -8,13 +8,15 @@
       <script src="js/popup.js"></script>
     </head>
     <body>
+      <h1>HELLO</h1>
       <div id="accountInfo">
         <label>Public address:</div>
         <div id="address"></div>
-        <div id="unlockDiv">
+        <div id="unlockDiv" class="section">
           <label>Password:</label>
           <input id="password" type="password"></input>
           <button id="unlockAccount">Unlock</button>
+          <p id="wrongPass">Wrong pass !</p>
         </div>
         <label>Account balance:</div>
         <div id="accountBalance"></div>
@@ -22,7 +24,8 @@
         <div id="accountNonce"></div>
       </div>
 
-      <div id="newAccount" class="hidden">
+      <div id="newAccount" class="section">
+        <h2>Create new account</h2>
         <div>You have no Nebulas account</div>
         <label>Password:</label>
         <input id="newPassword" type="password"></input>

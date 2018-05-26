@@ -1,57 +1,22 @@
 $(document).ready(() => {
-  let neb;
-  let Account;
-  // const Key = require("nebulas").Key;
-  let account;
-  let keystore;
+  let info;
 
 
-  function setUpNeb() {
-    var HttpRequest = require("nebulas").HttpRequest;
-    var Neb = require("nebulas").Neb;
-    Account = require("nebulas").Account;
-    var Transaction = require("nebulas").Transaction;
-    var Unit = require("nebulas").Unit;
-    neb = new Neb();
-    neb.setRequest(new HttpRequest("https://mainnet.nebulas.io"));
 
-    chrome.storage.sync.get('keystore', function(data) {
-      keystore = data.keystore;
-      console.log(keystore);
-      if (keystore == undefined) {
-        $("#newAccount").show();
-      }
-    });
-  }
 
-  setUpNeb();
-
-  function createExampleAccount() {
-    account = Account.NewAccount();
-    $('#private').html(account.getPrivateKeyString());
-    $('#public').html(account.getPublicKeyString());
-    chrome.storage.sync.set({keystore: account.toKeyString($("#newPassword").val())}, function() {
-      console.log("\tJust set new keystore");
-    });
-    refreshAccountInfo();
-  }
-
-  function refreshAccountInfo() {
-    neb.api.getAccountState(account.getAddressString()).then(function (state) {
-      state = state.result || state;
-      $('#address').html(account.getAddressString());
-      $('#accountBalance').html(state.balance);
-      $('#accountNonce').html(state.nonce);
-    }).catch(function (err) {
-        console.log("err:",err);
-    });
-  }
 
   $("#createAccountBtn").click(function () {
-    createExampleAccount();
+    chrome.runtime.sendMessage({
+      type: "createAccount",
+      password: $("#newPassword").val(),
+    });
   });
 
   $("#unlockAccount").click(function() {
+    chrome.runtime.sendMessage({
+      type: "unlockAccount",
+      password: $("#password").val()
+    });
     account = new Account();
     try {
       account.fromKey(keystore, $("#password").val());
@@ -63,5 +28,36 @@ $(document).ready(() => {
     }
   });
 
-  chrome.runtime.sendMessage({type: "someTopic", options: {key: "value"}});
+  chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.type == "info") {
+      info = request.info;
+      console.log('Got info: ', info);
+      refresh();
+    }
+  });
+
+  const refresh = () => {
+    $(".section").hide();
+    if (info == undefined) return;
+    if (info.account.keystore == undefined) { // user haven't created account
+      $("#newAccount").show();
+    } else if (!info.unlockAccount.unlocked) { // user created account, haven't logged in
+      console.log('info.account.address = ', info.account.address);
+      $("#address").html(info.account.address);
+      $("#unlockDiv").show();
+      if (info.unlockAccount.wrongPass) {
+        $("#wrongPass").show();
+      } else {
+        $("#wrongPass").hide();
+      }
+    } else { // user already logged in
+      $("#address").html(info.account.address);
+      $("#accountBalance").html(info.account.balance);
+      $("#accountNonce").html(info.account.nonce);
+    }
+  }
+  refresh();
+
+  chrome.runtime.sendMessage({type: "requestInfo"});
+
 })
