@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
+// 'use strict';
 
 // import { HttpRequest, Neb, Transaction, Unit, Account } from 'nebulas.js';
 const HttpRequest = require('nebulas').HttpRequest;
@@ -10,13 +10,21 @@ const Neb = require('nebulas').Neb;
 const Transaction = require('nebulas').Transaction;
 const Unit = require('nebulas').Unit;
 const Account = require('nebulas').Account;
-
-let neb;
+let neb = new Neb();
 let account = undefined;
+const DEFAULT_GAS_LIMIT = 2000000;
+const DEFAULT_GAS_PRICE = 1000000;
+const contractAddress = {
+  testnet: 'n1v7Kfdbw73jQmvaqvCp1MK8KucFN114Azx'
+}
+const networkId = {
+  testnet: 1001
+}
 
 // const Key = require("nebulas").Key;
 let keystore;
 let info = {
+  network: 'testnet',
   account: {
     address: undefined,
     privKey: undefined,
@@ -47,8 +55,7 @@ let info = {
 // });
 
 function setUpNeb() {
-  neb = new Neb();
-  neb.setRequest(new HttpRequest("https://mainnet.nebulas.io"));
+  neb.setRequest(new HttpRequest(`https://${info.network}.nebulas.io`));
 
   chrome.storage.sync.get('keystore', function(data) {
     info.account.keystore = data.keystore;
@@ -56,31 +63,51 @@ function setUpNeb() {
 }
 setUpNeb();
 
-// function refreshAccountInfo(callback) {
-//   console.log('about to send info:', info);
-//   // chrome.runtime.sendMessage({type: "info", info});
-//
-//   if (account == undefined) {
-//     if (callback) {
-//       callback(info);
-//     }
-//     return;
-//   }
-//   neb.api.getAccountState(account.getAddressString()).then(function (state) {
-//     state = state.result || state;
-//     info.account.address = account.getAddressString();
-//     info.account.balance = state.balance;
-//     info.account.nonce = state.nonce;
-//     console.log('just updated account state, info: ', info);
-//     // chrome.runtime.sendMessage({type: "info", info});
-//     if (callback) {
-//       callback(info);
-//     }
-//   }).catch(function (err) {
-//       console.log("err:",err);
-//   });
-// }
-// setInterval(refreshAccountInfo, 2000);
+function fetchSavedPasswords() {
+  neb.api.getAccountState(account.getAddressString()).then(function (state) {
+    neb.api.call({
+      chainID: networkId[info.network],
+      from: info.account.address,
+      to: contractAddress[info.network],
+      value: 0,
+      nonce: parseInt(state.nonce) + 1,
+      gasPrice: DEFAULT_GAS_PRICE,
+      gasLimit: DEFAULT_GAS_LIMIT,
+      contract: {
+         function: "getPasswords",
+         args: ""
+      }
+    }).then(function(tx) {
+        console.log('Result from fetching passwords: ', tx);
+        info.savedCredentials = JSON.parse(tx.result);
+        console.log('savedCredentials = ', info.savedCredentials);
+        chrome.runtime.sendMessage({type: "moreInfo", info});
+    });
+  });
+}
+
+function setPassword(url, login, encryptedPass) {
+  if (!info.unlockAccount.unlocked) return;
+  neb.api.getAccountState(account.getAddressString()).then(function (state) {
+    let tx = new Transaction({
+      chainID: networkId[info.network],
+      from: account,
+      to: contractAddress[info.network],
+      value: 0,
+      nonce: parseInt(state.nonce) + 1,
+      gasPrice: DEFAULT_GAS_PRICE,
+      gasLimit: DEFAULT_GAS_LIMIT,
+      contract: {
+        function: "setPassword",
+        args: `[\"${url}\",\"${login}\",\"${encryptedPass}\"]`
+      }});
+    tx.signTransaction();
+    neb.api.sendRawTransaction(tx.toProtoString()).then(function (resp) {
+      console.log(`Just set password for ${url} on contract, response is:`, resp);
+      setTimeout(fetchSavedPasswords, 5000);
+    });
+  });
+}
 
 console.log("Yo");
 
@@ -111,13 +138,13 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   if (request.type == 'fetchIfSaved') {
     let autofill = false;
-    let credentials = {};
-    for (const savedCredential of info.savedCredentials) {
-      if (savedCredential.domain == request.domain) {
-        autofill = true;
-        credentials = savedCredential;
-        break;
-      }
+    let credentials = info.savedCredentials[request.domain];
+    if (credentials) {
+      credentials = {
+        domain: request.domain,
+        login: credentials[0],
+        password: credentials[1]
+      };
     }
     sendResponse({autofill: autofill, credentials: credentials});
   }
@@ -142,6 +169,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
           console.log("err:",err);
       });
     }
+    fetchSavedPasswords();
     // if (info.showSavePasswordDom) {
     //   chrome.browserAction.setBadgeText({text: ''});
     //   chrome.runtime.sendMessage({type: "saveCredentials", credentials: info.tempCredentials});
@@ -164,18 +192,13 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   if (request.type == 'clearTemp') {
     info.showSavePasswordDom = false;
     info.tempCredentials = {};
-    info.savedCredentials.push(request.credentials);
+    // info.savedCredentials.push(request.credentials);
+    setPassword(request.credentials.domain, request.credentials.login, request.credentials.password);
     chrome.browserAction.setBadgeText({text: ''});
   }
 })
 
-// // template for listening for messages from other scripts
-// chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-//     if (request.type == "someTopic")  sendResponse();
-// });
-
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-    // if (request.type != "createAccount") return sendResponse();
     if (request.type == 'createAccount') {
       account = Account.NewAccount();
       info.account.privKey = account.getPrivateKeyString();
@@ -196,9 +219,6 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
         chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
           chrome.tabs.sendMessage(tabs[0].id, {type: "activateNow"});
         });
-        // if (callback) {
-        //   callback(info);
-        // }
         // sendResponse(info);
       }).catch(function (err) {
           console.log("err:",err);
@@ -231,9 +251,9 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
         chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
           chrome.tabs.sendMessage(tabs[0].id, {type: "activateNow"});
         });
-        // if (callback) {
-        //   callback(info);
-        // }
+        fetchSavedPasswords();
+        // setPassword('google.com', 'vu', 'testPass');
+
       }).catch(function (err) {
           console.log("err:",err);
       });

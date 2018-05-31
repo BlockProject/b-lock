@@ -32,6 +32,7 @@
       "128": "images/get_started128.png"
     },
   "permissions": ["activeTab", "declarativeContent", "storage"],
+  "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'",
   "web_accessible_resources": [
     "js/nebulas.js"
   ]

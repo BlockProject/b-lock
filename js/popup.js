@@ -1,10 +1,6 @@
 $(document).ready(() => {
   let info;
 
-
-
-
-
   $("#createAccountBtn").click(function () {
     chrome.runtime.sendMessage({
       type: "createAccount",
@@ -26,25 +22,8 @@ $(document).ready(() => {
       info = response;
       refresh();
     });
-    // account = new Account();
-    // try {
-    //   account.fromKey(keystore, $("#password").val());
-    //   console.log(account);
-    //   refreshAccountInfo();
-    //   $("#unlockDiv").hide();
-    // } catch (err) {
-    //   alert("wrong password!");
-    // }
   });
 
-  // chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  //   if (request.type == "info") {
-  //     info = request.info;
-  //     console.log('Got info: ', info);
-  //     refresh();
-  //   }
-  // });
-  //
   chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     if (request.type == 'moreInfo') {
       info = request.info;
@@ -69,6 +48,7 @@ $(document).ready(() => {
   const refresh = () => {
     // $(".section").hide();
     $('#save-credentials').addClass('hidden');
+    $('#saved-credentials').addClass('hidden');
     $('#newAccount').addClass('hidden');
     $('#unlockDiv').addClass('hidden');
 
@@ -97,16 +77,25 @@ $(document).ready(() => {
       $("#address").html(info.account.address);
       $("#accountBalance").html(info.account.balance);
       $("#accountNonce").html(info.account.nonce);
+      $("#saved-credentials").show();
+      $("#plain-password-list").html(JSON.stringify(info.savedCredentials));
     }
   }
   // refresh();
 
-  chrome.runtime.sendMessage({type: "requestInfo"}, function (response) {
-    console.log('70');
-    console.log(response);
-    info = response;
-    refresh();
-  });
+  const requestRefreshFromBackground = function() {
+    chrome.runtime.sendMessage({type: "requestInfo"}, function (response) {
+      console.log('70');
+      console.log(response);
+      info = response;
+      refresh();
+    });
+  }
+  requestRefreshFromBackground();
+
+  $("#refresh").click(function() {
+    requestRefreshFromBackground();
+  })
 
   $('#save-credentials-submit').click(function (e) {
     // take those values and save to blockchain
