@@ -47,6 +47,7 @@ $(document).ready(function () {
     type: "fetchIfSaved",
     domain: location.hostname
   }, function (response) {
+    console.log('response from fetchIfSaved:', response);
     if (response.autofill) {
       // find form with username and password field
       // autofill with response.credentials

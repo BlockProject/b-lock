@@ -15,7 +15,10 @@ CryptPass.prototype = {
         if (!currentPasswordArray) {
           currentPasswordArray = {};
         }
-        currentPasswordArray[url] = [login, encryptedPassword];
+        if (!currentPasswordArray[url]) {
+          currentPasswordArray[url] = {};
+        }
+        currentPasswordArray[url][login] = encryptedPassword;
         this.userPasswords.set(user, currentPasswordArray);
     },
 

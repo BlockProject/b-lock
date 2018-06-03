@@ -15,7 +15,7 @@ let account = undefined;
 const DEFAULT_GAS_LIMIT = 2000000;
 const DEFAULT_GAS_PRICE = 1000000;
 const contractAddress = {
-  testnet: 'n1v7Kfdbw73jQmvaqvCp1MK8KucFN114Azx'
+  testnet: 'n1gaLh8xF6exshxMCDxFWLWcBv4ZfBCbH5n'
 }
 const networkId = {
   testnet: 1001
@@ -138,13 +138,16 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   if (request.type == 'fetchIfSaved') {
     let autofill = false;
-    let credentials = info.savedCredentials[request.domain];
-    if (credentials) {
-      credentials = {
-        domain: request.domain,
-        login: credentials[0],
-        password: credentials[1]
-      };
+    let allCredentials = info.savedCredentials[request.domain];
+    let credentials = [];
+    if (allCredentials) {
+      for (login in allCredentials) {
+        credentials.push({
+          domain: request.domain,
+          login,
+          password: allCredentials[login]
+        });
+      }
     }
     sendResponse({autofill: autofill, credentials: credentials});
   }
