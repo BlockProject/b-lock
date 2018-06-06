@@ -18,11 +18,7 @@ $(document).ready(function () {
 
   const attachListener = ($form) => {
     $form.submit(function (e) {
-      // console.log(e);
-      // e.preventDefault();
       const credentials = readCredentials(e.target);
-      // console.log(credentials.login);
-      // console.log(credentials.password);
       chrome.runtime.sendMessage({
         type: 'onTryLogin',
         info: {
@@ -52,7 +48,7 @@ $(document).ready(function () {
       // find form with username and password field
       // autofill with response.credentials
     }
-  })
+  });
 
   // check if logged in to CryptPass
   chrome.runtime.sendMessage({
@@ -65,7 +61,7 @@ $(document).ready(function () {
 
   chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     if (request.type = "activateNow") {
-      console.log('saying aomething listen');
+      console.log('saying something listen');
       initialSearch();
     }
   });

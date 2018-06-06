@@ -105,6 +105,8 @@ $(document).ready(() => {
       password: $('#save-credentials-password').val()
     };
 
+    // chrome.runtime.sendMessage({type: "saveCredentials", credentials: obj});
+
     // tell the background to clear the tempCredentials
     chrome.runtime.sendMessage({type: "clearTemp", credentials: obj}, function (response) {
       info = response;

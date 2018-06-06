@@ -1,10 +1,3 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
-// 'use strict';
-
-// import { HttpRequest, Neb, Transaction, Unit, Account } from 'nebulas.js';
 const HttpRequest = require('nebulas').HttpRequest;
 const Neb = require('nebulas').Neb;
 const Transaction = require('nebulas').Transaction;
@@ -21,13 +14,13 @@ const networkId = {
   testnet: 1001
 }
 
-// const Key = require("nebulas").Key;
 let keystore;
 let info = {
   network: 'testnet',
   account: {
     address: undefined,
     privKey: undefined,
+    privKeyArray: undefined,
     pubKey: undefined,
     nonce: undefined,
     keystore: undefined,
@@ -39,20 +32,9 @@ let info = {
   },
   showSavePasswordDom: false,
   tempCredentials: {},
-  savedCredentials: []
+  savedCredentials: [],
+  aesCtr: null
 };
-
-// chrome.runtime.onInstalled.addListener(function() {
-//   chrome.declarativeContent.onPageChanged.removeRules(undefined, function() {
-//     chrome.declarativeContent.onPageChanged.addRules([{
-//       conditions: [new chrome.declarativeContent.PageStateMatcher({
-//         // pageUrl: {hostEquals: 'developer.chrome.com'},
-//       })
-//       ],
-//           actions: [new chrome.declarativeContent.ShowPageAction()]
-//     }]);
-//   });
-// });
 
 function setUpNeb() {
   neb.setRequest(new HttpRequest(`https://${info.network}.nebulas.io`));
@@ -107,6 +89,29 @@ function setPassword(url, login, encryptedPass) {
       setTimeout(fetchSavedPasswords, 5000);
     });
   });
+}
+
+const testEncryptDecrypt = (raw) => {
+  console.log('raw : ', raw);
+  var inBytes = aesjs.utils.utf8.toBytes(raw);
+  console.log('bytes : ', inBytes);
+  var encryptedBytes = info.aesCtr.encrypt(inBytes);
+  console.log('encrypted bytes : ', encryptedBytes);
+  var encryptedHex = aesjs.utils.hex.fromBytes(encryptedBytes);
+  console.log('encrypted hex : ', encryptedHex);
+  var encryptedBytesFromHex = aesjs.utils.hex.toBytes(encryptedHex);
+  encryptedBytesFromHex = new Uint8Array(encryptedBytesFromHex);
+  console.log('encrypted bytes : ', encryptedBytesFromHex);
+  var decryptedBytes = info.aesCtr.decrypt(encryptedBytesFromHex);
+  console.log('decrypted bytes : ', decryptedBytes);
+  var decryptedRaw = aesjs.utils.utf8.fromBytes(decryptedBytes);
+  console.log('decrypted raw : ', decryptedRaw);
+};
+
+function initAES() {
+  info.aesCtr = new aesjs.ModeOfOperation.ctr(info.account.privKeyArray, new aesjs.Counter(5));
+
+  testEncryptDecrypt('hello');
 }
 
 console.log("Yo");
@@ -171,13 +176,19 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
       }).catch(function (err) {
           console.log("err:",err);
       });
+      fetchSavedPasswords();
     }
-    fetchSavedPasswords();
     // if (info.showSavePasswordDom) {
     //   chrome.browserAction.setBadgeText({text: ''});
     //   chrome.runtime.sendMessage({type: "saveCredentials", credentials: info.tempCredentials});
     // }
     // sendResponse(info);
+  }
+});
+
+chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+  if (request.type == 'saveCredentials') {
+    // AES encrypt request.credentials.password
   }
 });
 
@@ -191,12 +202,17 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   }
 });
 
+const encrypt = (raw) => {
+  let cipher;
+  return cipher;
+};
+
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   if (request.type == 'clearTemp') {
     info.showSavePasswordDom = false;
     info.tempCredentials = {};
     // info.savedCredentials.push(request.credentials);
-    setPassword(request.credentials.domain, request.credentials.login, request.credentials.password);
+    setPassword(request.credentials.domain, request.credentials.login, encrypt(request.credentials.password));
     chrome.browserAction.setBadgeText({text: ''});
   }
 })
@@ -206,6 +222,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
       account = Account.NewAccount();
       info.account.privKey = account.getPrivateKeyString();
       info.account.pubKey = account.getPublicKeyString();
+      info.account.privKeyArray = account.getPrivateKey();
       info.account.keystore = account.toKeyString(request.password);
       info.unlockAccount.unlocked = true;
       chrome.storage.sync.set({ keystore: info.account.keystore }, function() {
@@ -222,6 +239,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
         chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
           chrome.tabs.sendMessage(tabs[0].id, {type: "activateNow"});
         });
+        initAES();
         // sendResponse(info);
       }).catch(function (err) {
           console.log("err:",err);
@@ -238,6 +256,9 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
       try {
         account.fromKey(info.account.keystore, request.password);
         info.unlockAccount.unlocked = true;
+        info.account.privKey = account.getPrivateKeyString();
+        info.account.pubKey = account.getPublicKeyString();
+        info.account.privKeyArray = account.getPrivateKey();
         console.log(account);
       } catch (err) {
         info.unlockAccount.wrongPass = true;
@@ -254,6 +275,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
         chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
           chrome.tabs.sendMessage(tabs[0].id, {type: "activateNow"});
         });
+        initAES();
         fetchSavedPasswords();
         // setPassword('google.com', 'vu', 'testPass');
 
