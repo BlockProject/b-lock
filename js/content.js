@@ -39,6 +39,16 @@ $(document).ready(function () {
     }
   };
 
+  const fillForm = ($form, credentials) => {
+    const allInputs = $($form).find('input');
+    if (allInputs.length > 1) {
+      const passwordInput = $($form).find('input:password');
+      const loginInput = $($form).find('input:text');
+      passwordInput[0].value = credentials[0].password;
+      loginInput[0].value = credentials[0].login;
+    }
+  };
+
   chrome.runtime.sendMessage({
     type: "fetchIfSaved",
     domain: location.hostname
@@ -47,6 +57,10 @@ $(document).ready(function () {
     if (response.autofill) {
       // find form with username and password field
       // autofill with response.credentials
+      const passwordFields = $('input:password');
+      for (const passwordField of passwordFields) {
+        fillForm($(passwordField).closest('form'), response.credentials);
+      }
     }
   });
 

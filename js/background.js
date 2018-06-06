@@ -32,8 +32,7 @@ let info = {
   },
   showSavePasswordDom: false,
   tempCredentials: {},
-  savedCredentials: [],
-  aesCtr: null
+  savedCredentials: []
 };
 
 function setUpNeb() {
@@ -95,22 +94,24 @@ const testEncryptDecrypt = (raw) => {
   console.log('raw : ', raw);
   var inBytes = aesjs.utils.utf8.toBytes(raw);
   console.log('bytes : ', inBytes);
-  var encryptedBytes = info.aesCtr.encrypt(inBytes);
+  var encryptedBytes = getAESInstance().encrypt(inBytes);
   console.log('encrypted bytes : ', encryptedBytes);
   var encryptedHex = aesjs.utils.hex.fromBytes(encryptedBytes);
   console.log('encrypted hex : ', encryptedHex);
   var encryptedBytesFromHex = aesjs.utils.hex.toBytes(encryptedHex);
   encryptedBytesFromHex = new Uint8Array(encryptedBytesFromHex);
   console.log('encrypted bytes : ', encryptedBytesFromHex);
-  var decryptedBytes = info.aesCtr.decrypt(encryptedBytesFromHex);
+  var decryptedBytes = getAESInstance().decrypt(encryptedBytesFromHex);
   console.log('decrypted bytes : ', decryptedBytes);
   var decryptedRaw = aesjs.utils.utf8.fromBytes(decryptedBytes);
   console.log('decrypted raw : ', decryptedRaw);
 };
 
-function initAES() {
-  info.aesCtr = new aesjs.ModeOfOperation.ctr(info.account.privKeyArray, new aesjs.Counter(5));
+function getAESInstance() {
+  return new aesjs.ModeOfOperation.ctr(info.account.privKeyArray);
+}
 
+function initAES() {
   testEncryptDecrypt('hello');
 }
 
@@ -119,13 +120,16 @@ console.log("Yo");
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   if (request.type == 'onTryLogin') {
     console.log(request.info);
-    info.tempCredentials.domain = request.info.domain;
-    info.tempCredentials.login = request.info.login;
-    info.tempCredentials.password = request.info.password;
-    info.showSavePasswordDom = true;
-    chrome.browserAction.setBadgeText({
-      text: '1'
-    });
+    if ((info.savedCredentials[request.info.domain] === undefined) ||
+        (info.savedCredentials[request.info.domain][request.info.login] === undefined)) {
+      info.tempCredentials.domain = request.info.domain;
+      info.tempCredentials.login = request.info.login;
+      info.tempCredentials.password = request.info.password;
+      info.showSavePasswordDom = true;
+      chrome.browserAction.setBadgeText({
+        text: '1'
+      });
+    }
   }
 });
 
@@ -150,10 +154,11 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         credentials.push({
           domain: request.domain,
           login,
-          password: allCredentials[login]
+          password: decrypt(allCredentials[login])
         });
       }
     }
+    if (credentials.length > 0) autofill = true;
     sendResponse({autofill: autofill, credentials: credentials});
   }
 })
@@ -203,9 +208,25 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 });
 
 const encrypt = (raw) => {
-  let cipher;
-  return cipher;
+  console.log('raw : ', raw);
+  var inBytes = aesjs.utils.utf8.toBytes(raw);
+  console.log('bytes : ', inBytes);
+  var encryptedBytes = getAESInstance().encrypt(inBytes);
+  console.log('encrypted bytes : ', encryptedBytes);
+  var encryptedHex = aesjs.utils.hex.fromBytes(encryptedBytes);
+  return encryptedHex;
 };
+
+const decrypt = (encryptedHex) => {
+  var encryptedBytes = aesjs.utils.hex.toBytes(encryptedHex);
+  encryptedBytes = new Uint8Array(encryptedBytes);
+  console.log('encrypted bytes : ', encryptedBytes);
+  var decryptedBytes = getAESInstance().decrypt(encryptedBytes);
+  console.log('decrypted bytes : ', decryptedBytes);
+  var decryptedRaw = aesjs.utils.utf8.fromBytes(decryptedBytes);
+  console.log('decrypted raw : ', decryptedRaw);
+  return decryptedRaw;
+}
 
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   if (request.type == 'clearTemp') {
