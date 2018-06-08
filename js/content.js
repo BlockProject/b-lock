@@ -24,8 +24,10 @@ $(document).ready(function () {
         info: {
           login: credentials.login,
           password: credentials.password,
-          domain: location.hostname
+          domain: location.hostname,
         }
+      }, function () {
+        showSavePasswordDialog();
       });
       return true;
     });
@@ -39,6 +41,30 @@ $(document).ready(function () {
     }
   };
 
+  const showSavePasswordDialog = () => {
+    $('body').append(`<div id='b-lock-save-popup'><iframe src="${chrome.runtime.getURL('html/save-popup.html')}"></iframe></div>`);
+    $('#b-lock-save-popup').attr('style',
+      'position: fixed !important;\
+      z-index: 2147483647 !important;\
+      display: block !important;\
+      width: 100% !important;\
+      height: 100% !important;\
+      top: 10px !important;\
+      right: 10px !important;\
+      max-height: 182px !important;\
+      max-width: 368px !important;'
+    );
+
+    $('#b-lock-save-popup iframe').attr('style',
+      'border: none !important;\
+      position: relative !important;\
+      height: 100% !important;\
+      width: 100% !important;\
+      visibility: visible !important;'
+    )
+    console.log('addpended iframe');
+  }
+
   const fillForm = ($form, credentials) => {
     const allInputs = $($form).find('input');
     if (allInputs.length > 1) {
@@ -50,33 +76,26 @@ $(document).ready(function () {
   };
 
   chrome.runtime.sendMessage({
-    type: "fetchIfSaved",
+    type: 'requestInfoForContent',
     domain: location.hostname
-  }, function (response) {
-    console.log('response from fetchIfSaved:', response);
-    if (response.autofill) {
-      // find form with username and password field
-      // autofill with response.credentials
-      const passwordFields = $('input:password');
-      for (const passwordField of passwordFields) {
-        fillForm($(passwordField).closest('form'), response.credentials);
-      }
-    }
-  });
-
-  // check if logged in to CryptPass
-  chrome.runtime.sendMessage({
-    type: 'shouldActivate'
-  }, function (response) {
-    if (response.activate) {
-      initialSearch();
-    }
   });
 
   chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-    if (request.type = "activateNow") {
-      console.log('saying something listen');
+    if (request.type == "infoForContent") {
+      console.log('got infoForContent:', request);
+      if (!request.unlocked) return;
+      console.log('doing initialSearch');
       initialSearch();
+      if (request.showSavePasswordDialog) showSavePasswordDialog();
+
+      if (request.autofill) {
+        // find form with username and password field
+        // autofill with response.credentials
+        const passwordFields = $('input:password');
+        for (const passwordField of passwordFields) {
+          fillForm($(passwordField).closest('form'), request.credentials);
+        }
+      }
     }
   });
 });

@@ -40,6 +40,7 @@ function setUpNeb() {
 
   chrome.storage.sync.get('keystore', function(data) {
     info.account.keystore = data.keystore;
+    openLoginTab();
   });
 }
 setUpNeb();
@@ -115,19 +116,29 @@ function initAES() {
   testEncryptDecrypt('hello');
 }
 
+function openLoginTab() {
+  if (info.account.keystore) {
+    chrome.tabs.create({url : "html/login.html"});
+  }
+}
+
 console.log("Yo");
 
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   if (request.type == 'onTryLogin') {
-    console.log(request.info);
+    console.log('User submited credentials: ', request.info);
     if ((info.savedCredentials[request.info.domain] === undefined) ||
         (info.savedCredentials[request.info.domain][request.info.login] === undefined)) {
-      info.tempCredentials.domain = request.info.domain;
-      info.tempCredentials.login = request.info.login;
-      info.tempCredentials.password = request.info.password;
-      info.showSavePasswordDom = true;
-      chrome.browserAction.setBadgeText({
-        text: '1'
+      chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
+        info.tempCredentials.domain = request.info.domain;
+        info.tempCredentials.login = request.info.login;
+        info.tempCredentials.password = request.info.password;
+        info.tempCredentials.tabId = tabs[0].id;
+        console.log('Just set tabId of temp credentials to be ', tabs[0].id);
+        info.showSavePasswordDom = true;
+        chrome.browserAction.setBadgeText({
+          text: '1'
+        });
       });
     }
   }
@@ -147,17 +158,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   if (request.type == 'fetchIfSaved') {
     let autofill = false;
-    let allCredentials = info.savedCredentials[request.domain];
-    let credentials = [];
-    if (allCredentials) {
-      for (login in allCredentials) {
-        credentials.push({
-          domain: request.domain,
-          login,
-          password: decrypt(allCredentials[login])
-        });
-      }
-    }
+
     if (credentials.length > 0) autofill = true;
     sendResponse({autofill: autofill, credentials: credentials});
   }
@@ -192,18 +193,40 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 });
 
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-  if (request.type == 'saveCredentials') {
-    // AES encrypt request.credentials.password
+  if (request.type == 'clearTempCredentials') {
+    info.showSavePasswordDom = false;
+    info.tempCredentials = {};
   }
 });
 
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-  if (request.type == 'shouldActivate') {
-    if (info.unlockAccount.unlocked) {
-      sendResponse({activate: true});
-    } else {
-      sendResponse({activate: false});
-    }
+  if (request.type == 'requestInfoForContent') {
+    let response = { unlocked: info.unlockAccount.unlocked };
+    chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
+      console.log('current tab = ', tabs[0].id, ' while tab id of credentials = ', info.tempCredentials.tabId);
+
+      const allCredentials = info.savedCredentials[request.domain];
+      let credentials = [];
+      if (allCredentials) {
+        for (login in allCredentials) {
+          credentials.push({
+            domain: request.domain,
+            login,
+            password: decrypt(allCredentials[login])
+          });
+        }
+      }
+
+      console.log('Broadcasting infoForContent');
+      chrome.tabs.sendMessage(tabs[0].id, {
+        type: 'infoForContent',
+        unlocked: info.unlockAccount.unlocked,
+        showSavePasswordDialog: tabs[0].id === info.tempCredentials.tabId,
+        autofill: credentials.length > 0,
+        credentials
+      });
+    });
+    sendResponse();
   }
 });
 
