@@ -30,10 +30,15 @@ let info = {
     unlocked: false,
     wrongPass: false,
   },
-  showSavePasswordDom: false,
   tempCredentials: {},
-  savedCredentials: []
+  tempTxhash: undefined,
+  savedCredentials: [],
+  pastTransactions: []
 };
+
+// chrome.storage.sync.set({ pastTransactions: [] }, function() {
+//   console.log("\tJust saved pastTransactions to storage");
+// });
 
 function setUpNeb() {
   neb.setRequest(new HttpRequest(`https://${info.network}.nebulas.io`));
@@ -44,6 +49,12 @@ function setUpNeb() {
   });
 }
 setUpNeb();
+
+const listenForMessage = (type, callback) => {
+  chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+    if (request.type === type) callback(request, sender, sendResponse);
+  });
+}
 
 function fetchSavedPasswords() {
   neb.api.getAccountState(account.getAddressString()).then(function (state) {
@@ -63,8 +74,14 @@ function fetchSavedPasswords() {
         console.log('Result from fetching passwords: ', tx);
         info.savedCredentials = JSON.parse(tx.result);
         console.log('savedCredentials = ', info.savedCredentials);
-        chrome.runtime.sendMessage({type: "moreInfo", info});
+        // chrome.runtime.sendMessage({type: "infoForPopup", info});
     });
+  });
+}
+
+function savePastTransactionsToStorage() {
+  chrome.storage.sync.set({ pastTransactions: info.pastTransactions }, function() {
+    console.log("\tJust saved pastTransactions to storage");
   });
 }
 
@@ -86,7 +103,42 @@ function setPassword(url, login, encryptedPass) {
     tx.signTransaction();
     neb.api.sendRawTransaction(tx.toProtoString()).then(function (resp) {
       console.log(`Just set password for ${url} on contract, response is:`, resp);
-      setTimeout(fetchSavedPasswords, 5000);
+      info.pastTransactions.push({
+        type: "password",
+        status: 2,
+        url,
+        login,
+        txhash: resp.txhash,
+      });
+      savePastTransactionsToStorage();
+      setTimeout(fetchSavedPasswords, 1000);
+    });
+  });
+}
+
+function sendNas(destination, amount) {
+  if (!info.unlockAccount.unlocked) return;
+  neb.api.getAccountState(account.getAddressString()).then(function (state) {
+    let tx = new Transaction({
+      chainID: networkId[info.network],
+      from: account,
+      to: destination,
+      value: parseInt(amount * 1e18),
+      nonce: parseInt(state.nonce) + 1,
+      gasPrice: DEFAULT_GAS_PRICE,
+      gasLimit: DEFAULT_GAS_LIMIT,
+    });
+    tx.signTransaction();
+    neb.api.sendRawTransaction(tx.toProtoString()).then(function (resp) {
+      console.log(`Just sent ${amount} NAS to ${destination} response is:`, resp);
+      info.pastTransactions.push({
+        type: "send",
+        amount,
+        destination,
+        status: 2,
+        txhash: resp.txhash,
+      });
+      savePastTransactionsToStorage();
     });
   });
 }
@@ -124,110 +176,90 @@ function openLoginTab() {
 
 console.log("Yo");
 
-chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-  if (request.type == 'onTryLogin') {
-    console.log('User submited credentials: ', request.info);
-    if ((info.savedCredentials[request.info.domain] === undefined) ||
-        (info.savedCredentials[request.info.domain][request.info.login] === undefined)) {
-      chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
-        info.tempCredentials.domain = request.info.domain;
-        info.tempCredentials.login = request.info.login;
-        info.tempCredentials.password = request.info.password;
-        info.tempCredentials.tabId = tabs[0].id;
-        console.log('Just set tabId of temp credentials to be ', tabs[0].id);
-        info.showSavePasswordDom = true;
-        chrome.browserAction.setBadgeText({
-          text: '1'
-        });
-      });
-    }
-  }
-});
 
-chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-  if (request.type == 'fetchCredentials') {
-    console.log('called by popup');
-    sendResponse({
-      domain: info.tempCredentials.domain,
-      login: info.tempCredentials.login,
-      password: info.tempCredentials.password
-    });
-  }
-});
 
-chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-  if (request.type == 'fetchIfSaved') {
-    let autofill = false;
-
-    if (credentials.length > 0) autofill = true;
-    sendResponse({autofill: autofill, credentials: credentials});
-  }
-})
-
-chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-  if (request.type == 'requestInfo') {
-    sendResponse(info);
-    if (info.unlockAccount.unlocked) {
-      neb.api.getAccountState(account.getAddressString()).then(function (state) {
-        state = state.result || state;
-        info.account.address = account.getAddressString();
-        info.account.balance = state.balance;
-        info.account.nonce = state.nonce;
-        console.log('just updated account state, info: ', info);
-        chrome.runtime.sendMessage({type: "moreInfo", info});
-        // if (callback) {
-        //   callback(info);
-        // }
-        // sendResponse(info);
-      }).catch(function (err) {
-          console.log("err:",err);
-      });
-      fetchSavedPasswords();
-    }
-    // if (info.showSavePasswordDom) {
-    //   chrome.browserAction.setBadgeText({text: ''});
-    //   chrome.runtime.sendMessage({type: "saveCredentials", credentials: info.tempCredentials});
-    // }
-    // sendResponse(info);
-  }
-});
-
-chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-  if (request.type == 'clearTempCredentials') {
-    info.showSavePasswordDom = false;
-    info.tempCredentials = {};
-  }
-});
-
-chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-  if (request.type == 'requestInfoForContent') {
-    let response = { unlocked: info.unlockAccount.unlocked };
+listenForMessage('onTryLogin', (request, sender, sendResponse) => {
+  console.log('User submited credentials: ', request.info);
+  if ((info.savedCredentials[request.info.domain] === undefined) ||
+      (info.savedCredentials[request.info.domain][request.info.login] === undefined)) {
     chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
-      console.log('current tab = ', tabs[0].id, ' while tab id of credentials = ', info.tempCredentials.tabId);
-
-      const allCredentials = info.savedCredentials[request.domain];
-      let credentials = [];
-      if (allCredentials) {
-        for (login in allCredentials) {
-          credentials.push({
-            domain: request.domain,
-            login,
-            password: decrypt(allCredentials[login])
-          });
-        }
-      }
-
-      console.log('Broadcasting infoForContent');
-      chrome.tabs.sendMessage(tabs[0].id, {
-        type: 'infoForContent',
-        unlocked: info.unlockAccount.unlocked,
-        showSavePasswordDialog: tabs[0].id === info.tempCredentials.tabId,
-        autofill: credentials.length > 0,
-        credentials
-      });
+      info.tempCredentials.domain = request.info.domain;
+      info.tempCredentials.login = request.info.login;
+      info.tempCredentials.password = request.info.password;
+      info.tempCredentials.tabId = tabs[0].id;
+      console.log('Just set tabId of temp credentials to be ', tabs[0].id);
     });
-    sendResponse();
   }
+});
+
+listenForMessage('sendNas', (request, sender, sendResponse) => {
+  sendNas(request.destination, request.amount);
+});
+
+const refreshInfo = () => {
+  if (info.unlockAccount.unlocked) {
+    neb.api.getAccountState(account.getAddressString()).then(function (state) {
+      state = state.result || state;
+      info.account.address = account.getAddressString();
+      info.account.balance = state.balance;
+      info.account.nonce = state.nonce;
+      console.log('just updated account state, info: ', info);
+      chrome.runtime.sendMessage({type: "infoForPopup", info});
+      // if (callback) {
+      //   callback(info);
+      // }
+      // sendResponse(info);
+    }).catch(function (err) {
+      console.log("err:",err);
+    });
+    fetchSavedPasswords();
+  }
+
+  for (const transaction of info.pastTransactions) {
+    if (transaction.status !== 2) continue;
+    neb.api.getTransactionReceipt({ hash: transaction.txhash }).then((receipt) => {
+      transaction.status = receipt.status;
+    });
+    savePastTransactionsToStorage();
+  }
+}
+
+listenForMessage('requestInfo', (request, sender, sendResponse) => {
+  sendResponse(info);
+  refreshInfo();
+});
+
+listenForMessage('clearTempCredentials', (request, sender, sendResponse) => {
+    info.tempCredentials = {};
+});
+
+listenForMessage('requestInfoForContent', (request, sender, sendResponse) => {
+  let response = { unlocked: info.unlockAccount.unlocked };
+  chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
+    console.log('current tab = ', tabs[0].id, ' while tab id of credentials = ', info.tempCredentials.tabId);
+
+    const allCredentials = info.savedCredentials[request.domain];
+    let credentials = [];
+    if (allCredentials) {
+      for (login in allCredentials) {
+        credentials.push({
+          domain: request.domain,
+          login,
+          password: decrypt(allCredentials[login])
+        });
+      }
+    }
+
+    console.log('Broadcasting infoForContent');
+    chrome.tabs.sendMessage(tabs[0].id, {
+      type: 'infoForContent',
+      unlocked: info.unlockAccount.unlocked,
+      showSavePasswordDialog: tabs[0].id === info.tempCredentials.tabId,
+      autofill: credentials.length > 0,
+      credentials
+    });
+  });
+  sendResponse();
 });
 
 const encrypt = (raw) => {
@@ -251,82 +283,42 @@ const decrypt = (encryptedHex) => {
   return decryptedRaw;
 }
 
-chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-  if (request.type == 'clearTemp') {
-    info.showSavePasswordDom = false;
-    info.tempCredentials = {};
-    // info.savedCredentials.push(request.credentials);
-    setPassword(request.credentials.domain, request.credentials.login, encrypt(request.credentials.password));
-    chrome.browserAction.setBadgeText({text: ''});
-  }
-})
-
-chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-    if (request.type == 'createAccount') {
-      account = Account.NewAccount();
-      info.account.privKey = account.getPrivateKeyString();
-      info.account.pubKey = account.getPublicKeyString();
-      info.account.privKeyArray = account.getPrivateKey();
-      info.account.keystore = account.toKeyString(request.password);
-      info.unlockAccount.unlocked = true;
-      chrome.storage.sync.set({ keystore: info.account.keystore }, function() {
-        console.log("\tJust set new keystore");
-      });
-      sendResponse(info);
-      neb.api.getAccountState(account.getAddressString()).then(function (state) {
-        state = state.result || state;
-        info.account.address = account.getAddressString();
-        info.account.balance = state.balance;
-        info.account.nonce = state.nonce;
-        console.log('just updated account state, info: ', info);
-        chrome.runtime.sendMessage({type: "moreInfo", info});
-        chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-          chrome.tabs.sendMessage(tabs[0].id, {type: "activateNow"});
-        });
-        initAES();
-        // sendResponse(info);
-      }).catch(function (err) {
-          console.log("err:",err);
-      });
-      // refreshAccountInfo(sendResponse);
-      // sendResponse(info);
-    }
+listenForMessage('saveNewCrendentials', (request, sender, sendResponse) => {
+  info.tempCredentials = {};
+  setPassword(request.credentials.domain, request.credentials.login, encrypt(request.credentials.password));
 });
 
-chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-    // if (request.type != "unlockAccount") return sendResponse();
-    if (request.type == 'unlockAccount') {
-      account = new Account();
-      try {
-        account.fromKey(info.account.keystore, request.password);
-        info.unlockAccount.unlocked = true;
-        info.account.privKey = account.getPrivateKeyString();
-        info.account.pubKey = account.getPublicKeyString();
-        info.account.privKeyArray = account.getPrivateKey();
-        console.log(account);
-      } catch (err) {
-        info.unlockAccount.wrongPass = true;
-      }
-      sendResponse(info);
-      neb.api.getAccountState(account.getAddressString()).then(function (state) {
-        state = state.result || state;
-        info.account.address = account.getAddressString();
-        info.account.balance = state.balance;
-        info.account.nonce = state.nonce;
-        console.log('just updated account state, info: ', info);
-        // sendResponse(info);
-        chrome.runtime.sendMessage({type: "moreInfo", info});
-        chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-          chrome.tabs.sendMessage(tabs[0].id, {type: "activateNow"});
-        });
-        initAES();
-        fetchSavedPasswords();
-        // setPassword('google.com', 'vu', 'testPass');
+listenForMessage('createAccount', (request, sender, sendResponse) => {
+  account = Account.NewAccount();
+  info.account.privKey = account.getPrivateKeyString();
+  info.account.pubKey = account.getPublicKeyString();
+  info.account.privKeyArray = account.getPrivateKey();
+  info.account.keystore = account.toKeyString(request.password);
+  info.unlockAccount.unlocked = true;
+  chrome.storage.sync.set({ keystore: info.account.keystore }, function() {
+    console.log("\tJust set new keystore");
+  });
+  sendResponse(info);
+  initAES();
+});
 
-      }).catch(function (err) {
-          console.log("err:",err);
-      });
-      // refreshAccountInfo(sendResponse);
-      // sendResponse(info);
-    }
+listenForMessage('unlockAccount', (request, sender, sendResponse) => {
+  account = new Account();
+  try {
+    account.fromKey(info.account.keystore, request.password);
+    info.unlockAccount.unlocked = true;
+    info.account.privKey = account.getPrivateKeyString();
+    info.account.pubKey = account.getPublicKeyString();
+    info.account.privKeyArray = account.getPrivateKey();
+    console.log('Account as just unlocked: ',account);
+    chrome.storage.sync.get('pastTransactions', function(data) {
+      info.pastTransactions = data.pastTransactions ? data.pastTransactions : [];
+    });
+  } catch (err) {
+    info.unlockAccount.wrongPass = true;
+  }
+  refreshInfo();
+  sendResponse(info);
+  initAES();
+  fetchSavedPasswords();
 });

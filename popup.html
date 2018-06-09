@@ -9,22 +9,63 @@
       <script src="js/popup.js"></script>
     </head>
     <body>
-      <h1>HELLO</h1>
-      <button id="refresh">Refresh</button>
-      <div id="accountInfo">
-        <label>Public address:</label>
-        <div id="address"></div>
-        <div id="unlockDiv" class="hidden">
-          <label>Password:</label>
-          <input id="password" type="password"></input>
-          <button id="unlockAccount">Unlock</button>
-          <p id="wrongPass">Wrong pass !</p>
+
+      <div id="logged-in-view">
+        <ul id="matching-entries">
+        </ul>
+        <button id="see-all-entries">See all saved entries</button>
+        <div id="transaction-history">
+          <h3>Transaction history</h3>
+          <ul>
+          </ul>
         </div>
-        <label>Account balance:</label>
-        <div id="accountBalance"></div>
-        <label>Account nonce:</label>
-        <div id="accountNonce"></div>
-      </div>
+        <div id="new-transaction">
+          <div id="new-nas-sending-tx">
+            <h3>Send NAS:
+            <div><label>Destination:</label><input id="nas-destination" type="text"></input></div>
+            <div><label>Amount:</label><input id="nas-amount" type="number"></input></div>
+            <div><button id="submit-nas-tx">Send</button></div>
+
+          </div>
+          <div id="save-credentials" class="hidden">
+            <h2>Save new password</h2>
+            <div>
+              <label>Url:</label>
+              <input id="save-credentials-domain"></input>
+            </div>
+            <div>
+              <label>Username:</label>
+              <input id="save-credentials-login"></input>
+            </div>
+            <div>
+              <label>Password:</label>
+              <input id="save-credentials-password" type="password"></input>
+            </div>
+            <div>
+              <button id="save-credentials-submit">Save</button>
+            </div>
+          </div>
+
+          <!-- <div id="pendingTx" class="hidden">Sent pending Tx... <a>Link</a></div> -->
+        </div>
+
+
+        <!-- <button id="refresh">Refresh</button> -->
+        <div id="accountInfo">
+          <label>Public address:</label>
+          <div id="address"></div>
+          <div id="unlockDiv" class="hidden">
+            <label>Password:</label>
+            <input id="password" type="password"></input>
+            <button id="unlockAccount">Unlock</button>
+            <p id="wrongPass">Wrong pass !</p>
+          </div>
+          <label>Account balance:</label>
+          <div id="accountBalance"></div>
+          <label>Account nonce:</label>
+          <div id="accountNonce"></div>
+        </div>
+      <div>
 
       <div id="newAccount" class="hidden">
         <h2>Create new account</h2>
@@ -40,26 +81,10 @@
         <div id="public"></div>
       </div>
 
-      <div id="save-credentials" class="hidden">
-        <h2>Save Password</h2>
-        <div>
-          <label>Domain:</label>
-          <input id="save-credentials-domain"></input>
-        </div>
-        <div>
-          <label>Login:</label>
-          <input id="save-credentials-login"></input>
-        </div>
-        <div>
-          <label>Password:</label>
-          <input id="save-credentials-password" type="password"></input>
-        </div>
-        <div>
-          <button id="save-credentials-submit">Save</button>
-        </div>
+      <div id="unlockDiv" class="hidden">
       </div>
 
-      <div id="saved-credentials" class="hidden">
+      <div id="saved-credentials">
         <h2>Saved passwords</h2>
         <p id="plain-password-list"></p>
       </div>
