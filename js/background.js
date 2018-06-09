@@ -219,8 +219,8 @@ const refreshInfo = () => {
     if (transaction.status !== 2) continue;
     neb.api.getTransactionReceipt({ hash: transaction.txhash }).then((receipt) => {
       transaction.status = receipt.status;
+      savePastTransactionsToStorage();
     });
-    savePastTransactionsToStorage();
   }
 }
 
