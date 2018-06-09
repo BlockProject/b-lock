@@ -33,7 +33,9 @@ let info = {
   tempCredentials: {},
   tempTxhash: undefined,
   savedCredentials: [],
-  pastTransactions: []
+  pastTransactions: [],
+  savedCredentials: [],
+  backgroundImgURL: chrome.extension.getURL('images/get_started16.png')
 };
 
 // chrome.storage.sync.set({ pastTransactions: [] }, function() {
@@ -233,6 +235,27 @@ listenForMessage('clearTempCredentials', (request, sender, sendResponse) => {
     info.tempCredentials = {};
 });
 
+chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+  if (request.type == 'hideIframe') {
+    chrome.tabs.query({active: true, currentWindow: true}, function (tabs) {
+      chrome.tabs.sendMessage(tabs[0].id, {
+        type: 'clearIframe',
+      });
+    });
+  }
+});
+
+chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+  if (request.type == 'switchCredentials') {
+    chrome.tabs.query({active: true, currentWindow: true}, function (tabs) {
+      chrome.tabs.sendMessage(tabs[0].id, {
+        type: 'chooseCredentials',
+        credentials: request.credentials,
+      });
+    });
+  }
+});
+
 listenForMessage('requestInfoForContent', (request, sender, sendResponse) => {
   let response = { unlocked: info.unlockAccount.unlocked };
   chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
@@ -249,14 +272,14 @@ listenForMessage('requestInfoForContent', (request, sender, sendResponse) => {
         });
       }
     }
-
     console.log('Broadcasting infoForContent');
     chrome.tabs.sendMessage(tabs[0].id, {
       type: 'infoForContent',
       unlocked: info.unlockAccount.unlocked,
       showSavePasswordDialog: tabs[0].id === info.tempCredentials.tabId,
       autofill: credentials.length > 0,
-      credentials
+      credentials,
+      imgURL: info.backgroundImgURL,
     });
   });
   sendResponse();
