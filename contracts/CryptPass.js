@@ -8,18 +8,15 @@ CryptPass.prototype = {
     init: function () {
     },
 
-    setPassword: function (url, login, encryptedPassword) {
+    setPassword: function (key, encryptedPassword) {
         var user = Blockchain.transaction.from;
         var index = this.size;
-        var currentPasswordArray = this.userPasswords.get(user);
-        if (!currentPasswordArray) {
-          currentPasswordArray = {};
+        var currentPasswordDirectory = this.userPasswords.get(user);
+        if (!currentPasswordDirectory) {
+          currentPasswordDirectory = {};
         }
-        if (!currentPasswordArray[url]) {
-          currentPasswordArray[url] = {};
-        }
-        currentPasswordArray[url][login] = encryptedPassword;
-        this.userPasswords.set(user, currentPasswordArray);
+        currentPasswordDirectory[key] = encryptedPassword;
+        this.userPasswords.set(user, currentPasswordDirectory);
     },
 
     getPasswords: function () {

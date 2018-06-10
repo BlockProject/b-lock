@@ -8,11 +8,12 @@ let account = undefined;
 const DEFAULT_GAS_LIMIT = 2000000;
 const DEFAULT_GAS_PRICE = 1000000;
 const contractAddress = {
-  testnet: 'n1gaLh8xF6exshxMCDxFWLWcBv4ZfBCbH5n'
+  testnet: 'n1segn8d15u5DPgVjCmyuTPdf94Uh3F7eUX'
 }
 const networkId = {
   testnet: 1001
 }
+const SECRETNOTE_URL = "Secret note";
 
 let keystore;
 let info = {
@@ -75,7 +76,18 @@ function fetchSavedPasswords() {
       }
     }).then(function(tx) {
         console.log('Result from fetching passwords: ', tx);
-        info.savedCredentials = JSON.parse(tx.result);
+
+        const encryptedPasswords = JSON.parse(tx.result);
+        for (const encryptedKey in encryptedPasswords) {
+          console.log('encrypted key: ', encryptedKey);
+
+          const key = decrypt(encryptedKey);
+          console.log('key decrypted: ', key);
+          const [ domain, login ] = key.split(':');
+          if (!info.savedCredentials[domain]) info.savedCredentials[domain] = {};
+          info.savedCredentials[domain][login] = encryptedPasswords[encryptedKey];
+        }
+
         info.allCredentialsArray = [];
         for (domain in info.savedCredentials) {
           for (login in info.savedCredentials[domain]) {
@@ -101,6 +113,7 @@ function savePastTransactionsToStorage() {
 function setPassword(url, login, encryptedPass) {
   if (!info.unlockAccount.unlocked) return;
   neb.api.getAccountState(account.getAddressString()).then(function (state) {
+    const encryptedKey = encrypt(`${url}:${login}`);
     let tx = new Transaction({
       chainID: networkId[info.network],
       from: account,
@@ -111,7 +124,7 @@ function setPassword(url, login, encryptedPass) {
       gasLimit: DEFAULT_GAS_LIMIT,
       contract: {
         function: "setPassword",
-        args: `[\"${url}\",\"${login}\",\"${encryptedPass}\"]`
+        args: `[\"${encryptedKey}\",\"${encryptedPass}\"]`
       }});
     tx.signTransaction();
     neb.api.sendRawTransaction(tx.toProtoString()).then(function (resp) {

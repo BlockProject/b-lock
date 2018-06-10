@@ -1,6 +1,7 @@
 $(document).ready(() => {
   let info;
   let filterByCurrentDomain = true;
+  let firstRefresh = true;
 
   $("#createAccountBtn").click(function () {
     chrome.runtime.sendMessage({
@@ -53,7 +54,6 @@ $(document).ready(() => {
 
   const refresh = () => {
     // $(".section").hide();
-    $('#saved-credentials').hide();
     $('#newAccount').hide();
     $('#unlockDiv').hide();
     $('#logged-in-view').hide();
@@ -79,10 +79,15 @@ $(document).ready(() => {
       $("#address").html(info.account.address);
       $("#accountBalance").html(info.account.balance);
       $("#accountNonce").html(info.account.nonce);
-      $("#saved-credentials").show();
+      $("#save-credentials").show();
+      $("#save-note").show();
       $("#plain-password-list").html(JSON.stringify(info.savedCredentials));
 
-      showSavePasswordDom(info.tempCredentials);
+      if (firstRefresh) {
+        showSavePasswordDom(info.tempCredentials);
+        firstRefresh = false;
+      }
+
       for (transaction of info.pastTransactions) {
         const description = transaction.type === 'send' ? `Send ${transaction.amount} NAS` : `${transaction.url} | ${transaction.login}`;
         const status = ["Failed", "Done", "Pending"][transaction.status];
@@ -166,6 +171,17 @@ $(document).ready(() => {
     $('#save-credentials-domain').val("");
     $('#save-credentials-login').val("");
     $('#save-credentials-password').val("");
+    chrome.runtime.sendMessage({type: "saveNewCrendentials", credentials: obj});
+  });
+
+  $('#save-note-submit').click(function (e) {
+    const obj = {
+      domain: "Secret note",
+      login: $('#save-note-title').val(),
+      password: $('#save-note-note').val()
+    };
+    $('#save-note-title').val("");
+    $('#save-note-note').val("");
     chrome.runtime.sendMessage({type: "saveNewCrendentials", credentials: obj});
   });
 })
