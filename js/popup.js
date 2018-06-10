@@ -238,7 +238,7 @@ $(document).ready(() => {
         const selectorString = `.${bareDomain}.${bareLogin}`;
         if ($(selectorString).length === 0) {
           const secretNote = entry.domain === "Secret note";
-          const newEntryDom = `<li class="${bareDomain} ${bareLogin} blockEntry hidden">\
+          const newEntryDom = `<li class="${bareDomain} ${bareLogin} blockEntry">\
               <div class="entry-domain">${entry.domain}</div>\
               <div class="entry-login">${entry.login}</div>\
               <button class="fillEntryBtn">Fill</button>\
