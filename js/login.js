@@ -1,12 +1,11 @@
 $(document).ready(() => {
   let info;
 
-  $("#unlockAccount").click(function() {
+  $("#unlock-keystore").click(function() {
     chrome.runtime.sendMessage({
       type: "unlockAccount",
-      password: $("#password").val()
+      password: $("#unlock-keystore-password").val()
     }, function (response) {
-      console.log('24');
       info = response;
       refresh();
     });
@@ -19,9 +18,9 @@ $(document).ready(() => {
     if (!info.unlockAccount.unlocked) { // user created account, haven't logged in
       console.log('info.account.address = ', info.account.address);
       if (info.unlockAccount.wrongPass) {
-        $("#wrongPass").show();
+        $("#login-div-main-wrong-password").show();
       } else {
-        $("#wrongPass").hide();
+        $("#login-div-main-wrong-password").hide();
       }
     } else { // user already logged in
       window.close()
