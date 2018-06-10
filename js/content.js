@@ -1,6 +1,7 @@
 $(document).ready(function () {
   var injectedButton = false;
   var filledForm = false;
+  var dialogOpen = false;
 
   const readCredentials = ($form) => {
     // console.log($form);
@@ -88,8 +89,15 @@ $(document).ready(function () {
     $(loginInput[0]).click(function (e) {
       var mousePosInElement = e.pageX - $(this).position().left;
       if (mousePosInElement > $(this).width()) {
+        e.stopPropagation();
         console.log('clicked on backhroundi mage');
-        injectSelectionDialog();
+        if (dialogOpen == false) {
+          injectSelectionDialog(getPosition(loginInput[0]));
+          dialogOpen = true;
+        } else {
+          $('#b-lock-show-credentials-options').remove();
+          dialogOpen = false;
+        }
       }
     });
     $(loginInput[0]).hover(function (e) {
@@ -102,18 +110,27 @@ $(document).ready(function () {
     });
   };
 
-  const injectSelectionDialog = () => {
+  const getPosition = (element) => {
+    var jElement = $(element);
+    var offset = jElement.offset();
+    let position = {};
+    position.bottom = offset.top + jElement.outerHeight();
+    position.right = $(window).width() - (offset.left + jElement.outerWidth());
+    return position;
+  };
+
+  const injectSelectionDialog = (position) => {
     $('body').append(`<div id='b-lock-show-credentials-options'><iframe src="${chrome.runtime.getURL('html/show-credentials-options.html')}?domain=${location.hostname}"></iframe></div>`);
     $('#b-lock-show-credentials-options').attr('style',
-      'position: fixed !important;\
+      `position: fixed !important;\
       z-index: 2147483647 !important;\
       display: block !important;\
       width: 100% !important;\
       height: 100% !important;\
-      top: 10px !important;\
-      right: 10px !important;\
+      top: ${position.bottom}px !important;\
+      right: ${position.right}px !important;\
       max-height: 182px !important;\
-      max-width: 368px !important;'
+      max-width: 368px !important;`
     );
 
     $('#b-lock-show-credentials-options iframe').attr('style',
@@ -123,8 +140,16 @@ $(document).ready(function () {
       width: 100% !important;\
       visibility: visible !important;'
     )
+    $('#b-lock-show-credentials-options').click(function (e) {
+      e.stopPropagation();
+    });
     console.log('addpended credentials iframe');
   };
+
+  $('html').click(function () {
+    $('#b-lock-show-credentials-options').remove();
+    dialogOpen = false;
+  });
 
   chrome.runtime.sendMessage({
     type: 'requestInfoForContent',
@@ -134,6 +159,7 @@ $(document).ready(function () {
   chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     if (request.type == "clearIframe") {
       $('#b-lock-show-credentials-options').remove();
+      dialogOpen = false;
     }
   });
 
@@ -161,16 +187,16 @@ $(document).ready(function () {
         for (const passwordField of passwordFields) {
           if (filledForm === false) {
             fillForm($(passwordField).closest('form'), request.credentials[0]);
-            filledForm = true;
           }
           if (request.credentials.length > 1) {
             console.log(request);
             if (injectedButton === false) {
               injectSelectionButton($(passwordField).closest('form'), request.credentials, request.imgURL);
-              injectedButton = true;
             }
           }
         }
+        filledForm = true;
+        injectedButton = true;
       }
     }
   });
