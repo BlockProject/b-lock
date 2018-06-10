@@ -33,6 +33,7 @@ let info = {
   tempCredentials: {},
   tempTxhash: undefined,
   savedCredentials: [],
+  allCredentialsArray: [],
   pastTransactions: [],
   savedCredentials: [],
   backgroundImgURL: chrome.extension.getURL('images/get_started16.png')
@@ -75,6 +76,16 @@ function fetchSavedPasswords() {
     }).then(function(tx) {
         console.log('Result from fetching passwords: ', tx);
         info.savedCredentials = JSON.parse(tx.result);
+        info.allCredentialsArray = [];
+        for (domain in info.savedCredentials) {
+          for (login in info.savedCredentials[domain]) {
+            info.allCredentialsArray.push({
+              domain,
+              login,
+              password: decrypt(info.savedCredentials[domain][login])
+            })
+          }
+        }
         console.log('savedCredentials = ', info.savedCredentials);
         // chrome.runtime.sendMessage({type: "infoForPopup", info});
     });
@@ -145,30 +156,30 @@ function sendNas(destination, amount) {
   });
 }
 
-const testEncryptDecrypt = (raw) => {
-  console.log('raw : ', raw);
-  var inBytes = aesjs.utils.utf8.toBytes(raw);
-  console.log('bytes : ', inBytes);
-  var encryptedBytes = getAESInstance().encrypt(inBytes);
-  console.log('encrypted bytes : ', encryptedBytes);
-  var encryptedHex = aesjs.utils.hex.fromBytes(encryptedBytes);
-  console.log('encrypted hex : ', encryptedHex);
-  var encryptedBytesFromHex = aesjs.utils.hex.toBytes(encryptedHex);
-  encryptedBytesFromHex = new Uint8Array(encryptedBytesFromHex);
-  console.log('encrypted bytes : ', encryptedBytesFromHex);
-  var decryptedBytes = getAESInstance().decrypt(encryptedBytesFromHex);
-  console.log('decrypted bytes : ', decryptedBytes);
-  var decryptedRaw = aesjs.utils.utf8.fromBytes(decryptedBytes);
-  console.log('decrypted raw : ', decryptedRaw);
-};
+// const testEncryptDecrypt = (raw) => {
+//   // console.log('raw : ', raw);
+//   var inBytes = aesjs.utils.utf8.toBytes(raw);
+//   // console.log('bytes : ', inBytes);
+//   var encryptedBytes = getAESInstance().encrypt(inBytes);
+//   // console.log('encrypted bytes : ', encryptedBytes);
+//   var encryptedHex = aesjs.utils.hex.fromBytes(encryptedBytes);
+//   // console.log('encrypted hex : ', encryptedHex);
+//   var encryptedBytesFromHex = aesjs.utils.hex.toBytes(encryptedHex);
+//   encryptedBytesFromHex = new Uint8Array(encryptedBytesFromHex);
+//   // console.log('encrypted bytes : ', encryptedBytesFromHex);
+//   var decryptedBytes = getAESInstance().decrypt(encryptedBytesFromHex);
+//   // console.log('decrypted bytes : ', decryptedBytes);
+//   var decryptedRaw = aesjs.utils.utf8.fromBytes(decryptedBytes);
+//   // console.log('decrypted raw : ', decryptedRaw);
+// };
 
 function getAESInstance() {
   return new aesjs.ModeOfOperation.ctr(info.account.privKeyArray);
 }
 
-function initAES() {
-  testEncryptDecrypt('hello');
-}
+// function initAES() {
+//   testEncryptDecrypt('hello');
+// }
 
 function openLoginTab() {
   if (info.account.keystore) {
@@ -207,10 +218,6 @@ const refreshInfo = () => {
       info.account.nonce = state.nonce;
       console.log('just updated account state, info: ', info);
       chrome.runtime.sendMessage({type: "infoForPopup", info});
-      // if (callback) {
-      //   callback(info);
-      // }
-      // sendResponse(info);
     }).catch(function (err) {
       console.log("err:",err);
     });
@@ -261,17 +268,7 @@ listenForMessage('requestInfoForContent', (request, sender, sendResponse) => {
   chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
     console.log('current tab = ', tabs[0].id, ' while tab id of credentials = ', info.tempCredentials.tabId);
 
-    const allCredentials = info.savedCredentials[request.domain];
-    let credentials = [];
-    if (allCredentials) {
-      for (login in allCredentials) {
-        credentials.push({
-          domain: request.domain,
-          login,
-          password: decrypt(allCredentials[login])
-        });
-      }
-    }
+    const credentials = info.allCredentialsArray.filter(credential => credential.domain === request.domain);
     console.log('Broadcasting infoForContent');
     chrome.tabs.sendMessage(tabs[0].id, {
       type: 'infoForContent',
@@ -298,11 +295,11 @@ const encrypt = (raw) => {
 const decrypt = (encryptedHex) => {
   var encryptedBytes = aesjs.utils.hex.toBytes(encryptedHex);
   encryptedBytes = new Uint8Array(encryptedBytes);
-  console.log('encrypted bytes : ', encryptedBytes);
+  // console.log('encrypted bytes : ', encryptedBytes);
   var decryptedBytes = getAESInstance().decrypt(encryptedBytes);
-  console.log('decrypted bytes : ', decryptedBytes);
+  // console.log('decrypted bytes : ', decryptedBytes);
   var decryptedRaw = aesjs.utils.utf8.fromBytes(decryptedBytes);
-  console.log('decrypted raw : ', decryptedRaw);
+  // console.log('decrypted raw : ', decryptedRaw);
   return decryptedRaw;
 }
 
@@ -321,8 +318,8 @@ listenForMessage('createAccount', (request, sender, sendResponse) => {
   chrome.storage.sync.set({ keystore: info.account.keystore }, function() {
     console.log("\tJust set new keystore");
   });
+  refreshInfo();
   sendResponse(info);
-  initAES();
 });
 
 listenForMessage('unlockAccount', (request, sender, sendResponse) => {
@@ -342,6 +339,6 @@ listenForMessage('unlockAccount', (request, sender, sendResponse) => {
   }
   refreshInfo();
   sendResponse(info);
-  initAES();
+  // initAES();
   fetchSavedPasswords();
 });

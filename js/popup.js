@@ -1,5 +1,6 @@
 $(document).ready(() => {
   let info;
+  let filterByCurrentDomain = true;
 
   $("#createAccountBtn").click(function () {
     chrome.runtime.sendMessage({
@@ -83,7 +84,6 @@ $(document).ready(() => {
 
       showSavePasswordDom(info.tempCredentials);
       for (transaction of info.pastTransactions) {
-        console.log('transaction = ', transaction);
         const description = transaction.type === 'send' ? `Send ${transaction.amount} NAS` : `${transaction.url} | ${transaction.login}`;
         const status = ["Failed", "Done", "Pending"][transaction.status];
         const item = $("#" + transaction.txhash);
@@ -98,7 +98,48 @@ $(document).ready(() => {
           item.find('a').html(status);
         }
       }
+
+      for (entry of info.allCredentialsArray) {
+        const bareDomain = entry.domain.replace(/[^a-zA-Z0-9]/g, '_');
+        if ($(`.${bareDomain}.${entry.login}`).length === 0) {
+          const secretNote = entry.domain === "Secret note";
+          const newEntryDom = `<li class="${bareDomain} ${entry.login} blockEntry hidden">\
+              <div class="entry-domain">${entry.domain}</div>\
+              <div class="entry-login">${entry.login}</div>\
+              <button class="fillEntry">Fill</button>\
+              <button class="editEntry">Edit</button>\
+              <button class="viewEntry">View</button>\
+              <div class="editEntryForm hidden">\
+                <label>${ secretNote ? "Password:" : "Note" }</label>\
+                <input type="text" class="edit-password-input"></input>\
+                <button class="submit-edit-entry">Save</button>\
+              </div>\
+              <div class="viewEntry hidden">\
+                ${entry.password}\
+              </div>\
+            </li>`;
+          console.log('newEntryDom = ', newEntryDom);
+          $("#matching-entries ul").append(newEntryDom);
+        } else {
+          console.log();
+        }
+      }
+      filterEntries();
     }
+  }
+
+  const filterEntries = () => {
+    chrome.tabs.getSelected(null,function(tab) {
+      const currentDomain = (new URL(tab.url)).hostname;
+      console.log('currentDomain = ', currentDomain);
+      for (entry of info.allCredentialsArray) {
+        const bareDomain = entry.domain.replace(/[^a-zA-Z0-9]/g, '_');
+        if (entry.domain === currentDomain) {
+          $(`.${bareDomain}.${entry.login}`).show();
+        }
+      }
+    });
+
   }
 
   const requestRefreshFromBackground = function() {
