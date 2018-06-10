@@ -1,3 +1,83 @@
+html.mdl-js {
+  width: 358px;
+  height: 500px;
+}
+
 body {
-  width: 200px;
+  width: 358px;
+  height: 500px;
+  margin: 0;
+}
+
+.cryptpass-popup {
+  width: 358px;
+  height: 500px;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.cryptpass-popup-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cryptpass-popup-header > h2 {
+  font-weight: bold;
+}
+
+.cryptpass-popup-new {
+  margin-top: 32px;
+  padding-left: 48px;
+  padding-right: 48px;
+  text-align: center;
+}
+
+.cryptpass-popup-new-label1 {
+  margin-bottom: 16px;
+}
+
+.cryptpass-popup-new-label2 {
+  margin-bottom: 16px;
+}
+
+.cryptpass-popup-restore {
+  margin-top: 32px;
+  padding-left: 48px;
+  padding-right: 48px;
+  text-align: center;
+}
+
+.cryptpass-popup-restore-label1 {
+  margin-bottom: 16px;
+}
+
+.cryptpass-popup-new-main-buttons {
+  margin-top: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#cancelCreateNew {
+  margin-right: 16px;
+}
+
+.cryptpass-popup-login-main {
+  margin-top: 32px;
+  padding-left: 48px;
+  padding-right: 48px;
+  text-align: center;
+}
+
+.cryptpass-popup-login-main-label1 {
+  margin-bottom: 16px;
+}
+
+#cryptpass-popup-login-main-wrong-password {
+  margin-top: 16px;
+}
+
+#unlock-keystore {
+  margin-top: 16px;
 }

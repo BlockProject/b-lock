@@ -3,27 +3,150 @@ $(document).ready(() => {
   let filterByCurrentDomain = true;
   let firstRefresh = true;
   let showingAll = false;
+  let creatingOrRestoring = false;
 
-  $("#createAccountBtn").click(function () {
+  $('#createNew').click(function () {
+    creatingOrRestoring = true;
+    $('#newAccountIntro').hide();
+    $('#restoreAccount').hide();
+    $('#newAccountMain').show();
+  });
+
+  $('#cancelCreateNew').click(function (e) {
+    creatingOrRestoring = false;
+    disableConfirmBtn();
+    resetCreateNewFields();
+    $('#newAccountMain').hide();
+    $('#newAccountIntro').show();
+    $('#restoreAccount').show();
+  });
+
+  $('#confirmCreateNew').click(function (e) {
+    if ($("#new-account-password").val() !== $('#new-account-password-confirm').val()) {
+      return;
+    }
     chrome.runtime.sendMessage({
       type: "createAccount",
-      password: $("#newPassword").val(),
+      password: $("#new-account-password").val(),
     }, function (response) {
-      console.log('13');
       info = response;
-      refresh();
+      // refresh();
+      console.log(info);
+      $('#newAccountMain').hide();
+      $('#newAccountSuccess').show();
     });
   });
 
-  $("#unlockAccount").click(function() {
+  $('#saveKeystoreBtn').click(function () {
+    if (info.account.keystore === null || info.account.keystore === undefined || info.account.keystore === '') return;
+    const address = JSON.parse(info.account.keystore).address;
+    const fileName = 'nebulas-'.concat(info.network).concat('-').concat(address).concat('.json');
+    const element = document.createElement('a');
+    element.setAttribute('href', 'data:text/plain;charset=utf-u,'+encodeURIComponent(info.account.keystore));
+    element.setAttribute('download', fileName);
+    document.body.appendChild(element);
+    element.click();
+    refresh();
+    creatingOrRestoring = false;
+  });
+
+  $('#new-account-password-confirm').keyup(function (e) {
+    const passwordField = $('#new-account-password');
+    const passwordConfirmField = $('#new-account-password-confirm');
+    disableConfirmBtn();
+    if (passwordField.val() !== '' && passwordField.val() === passwordConfirmField.val()) {
+      enableConfirmBtn();
+    }
+  });
+
+  $('#new-account-password').keyup(function (e) {
+    const passwordField = $('#new-account-password');
+    const passwordConfirmField = $('#new-account-password-confirm');
+    disableConfirmBtn();
+    if (passwordField.val() !== '' && passwordField.val() === passwordConfirmField.val()) {
+      enableConfirmBtn();
+    }
+  });
+
+  const disableConfirmBtn = () => {
+    $('#confirmCreateNew').attr('disabled', true);
+    $('#confirmCreateNew').removeClass('mdl-color--blue-800');
+    $('#confirmCreateNew').removeClass('mdl-color-text--white');
+  };
+
+  const enableConfirmBtn = () => {
+    $('#confirmCreateNew').attr('disabled', false);
+    $('#confirmCreateNew').addClass('mdl-color--blue-800');
+    $('#confirmCreateNew').addClass('mdl-color-text--white');
+  };
+
+  const resetCreateNewFields = () => {
+    $('#new-account-password').val('');
+    $('#new-account-password-confirm').val('');
+  }
+
+  $('#restore-keystore').change(function (e) {
+    const input = event.target;
+    creatingOrRestoring = true;
+    if ('files' in input && input.files.length > 0) {
+      // placeFileContent(
+      //   document.getElementById('content-target'),
+      //   input.files[0]
+      // );
+      readFileContent(input.files[0]).then(content => {
+        console.log('read this content');
+        console.log(content);
+        handleUploadedKeystore(content);
+      }).catch(error => console.log(error));
+    }
+  });
+
+  function readFileContent(file) {
+    const reader = new FileReader();
+    return new Promise((resolve, reject) => {
+      reader.onload = event => resolve(event.target.result);
+      reader.onerror = error => reject(error);
+      reader.readAsText(file);
+    });
+  }
+
+  const switchToLoginView = () => {
+    $('#newAccountIntro').hide();
+    $('#restoreAccount').hide();
+    $('#loginKeystore').show();
+  };
+
+  $("#unlock-keystore").click(function() {
     chrome.runtime.sendMessage({
       type: "unlockAccount",
-      password: $("#password").val()
+      password: $("#unlock-keystore-password").val()
     }, function (response) {
       info = response;
-      refresh();
+      handleLoginResponse(info);
     });
   });
+
+  const handleUploadedKeystore = (keystore) => {
+    chrome.runtime.sendMessage({
+      type: 'uploadedKeystore',
+      keystore: keystore,
+    }, switchToLoginView);
+  };
+
+  const handleLoginResponse = (info) => {
+    if (info == undefined) return;
+    if (!info.unlockAccount.unlocked) {
+      console.log('info.account.address = ', info.account.address);
+      if (info.unlockAccount.wrongPass) {
+        $("#cryptpass-popup-login-main-wrong-password").show();
+      } else {
+        $("#cryptpass-popup-login-main-wrong-password").hide();
+      }
+    } else {
+      refresh();
+      creatingOrRestoring = false;
+    }
+  }
 
   $("#submit-nas-tx").click(function() {
     const destination = $("#nas-destination").val();
@@ -56,23 +179,27 @@ $(document).ready(() => {
   const refresh = () => {
     // $(".section").hide();
     $('#newAccount').hide();
+    $('#newAccountIntro').hide();
+    $('#newAccountMain').hide();
+    $('#restoreAccount').hide();
     $('#unlockDiv').hide();
     $('#logged-in-view').hide();
+    $('#loginKeystore').hide();
 
-    console.log('got this info : ', info);
+    // console.log('got this info : ', info);
 
     if (info == undefined) return;
     if (info.account.keystore == undefined) { // user haven't created account
       $("#newAccount").show();
+      $('#newAccountIntro').show();
+      $('#restoreAccount').show();
     } else if (!info.unlockAccount.unlocked) { // user created account, haven't logged in
       console.log('info.account.address = ', info.account.address);
-      // $('#newAccount').show();
-      $("#address").html(info.account.address);
-      $("#unlockDiv").show();
+      $("#loginKeystore").show();
       if (info.unlockAccount.wrongPass) {
-        $("#wrongPass").show();
+        $("#cryptpass-popup-login-main-wrong-password").show();
       } else {
-        $("#wrongPass").hide();
+        $("#cryptpass-popup-login-main-wrong-password").hide();
       }
     } else { // user already logged in
       $('#logged-in-view').show();
@@ -111,7 +238,7 @@ $(document).ready(() => {
         const selectorString = `.${bareDomain}.${bareLogin}`;
         if ($(selectorString).length === 0) {
           const secretNote = entry.domain === "Secret note";
-          const newEntryDom = `<li class="${bareDomain} ${bareLogin} blockEntry hidden">\
+          const newEntryDom = `<li class="${bareDomain} ${bareLogin} blockEntry">\
               <div class="entry-domain">${entry.domain}</div>\
               <div class="entry-login">${entry.login}</div>\
               <button class="fillEntryBtn">Fill</button>\
@@ -163,11 +290,13 @@ $(document).ready(() => {
   }
 
   const requestRefreshFromBackground = function() {
-    chrome.runtime.sendMessage({type: "requestInfo"}, (newInfo) => {
-      console.log('newInfo', newInfo);
-      info = newInfo;
-      refresh();
-    });
+    if (!creatingOrRestoring) {
+      chrome.runtime.sendMessage({type: "requestInfo"}, (newInfo) => {
+        // console.log('newInfo', newInfo);
+        info = newInfo;
+        refresh();
+      });
+    }
   }
 
   requestRefreshFromBackground();

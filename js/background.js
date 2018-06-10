@@ -276,6 +276,13 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   }
 });
 
+chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+  if (request.type == 'uploadedKeystore') {
+    info.account.keystore = request.keystore;
+    sendResponse();
+  }
+});
+
 listenForMessage('requestInfoForContent', (request, sender, sendResponse) => {
   let response = { unlocked: info.unlockAccount.unlocked };
   chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
@@ -344,6 +351,9 @@ listenForMessage('unlockAccount', (request, sender, sendResponse) => {
     info.account.pubKey = account.getPublicKeyString();
     info.account.privKeyArray = account.getPrivateKey();
     console.log('Account as just unlocked: ',account);
+    chrome.storage.sync.set({ keystore: info.account.keystore }, function() {
+      console.log("\tJust set new keystore");
+    });
     chrome.storage.sync.get('pastTransactions', function(data) {
       info.pastTransactions = data.pastTransactions ? data.pastTransactions : [];
     });

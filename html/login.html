@@ -1,17 +1,41 @@
 <!DOCTYPE html>
   <html>
     <head>
-      <link rel="stylesheet" type="text/css" href="../css/common.css">
+      <link rel="stylesheet" type="text/css" href="../css/common.css" />
+      <link rel="stylesheet" type="text/css" href="../css/login.css" />
+      <link rel="stylesheet" type="text/css" href="../css/material.min.css" />
+      <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+      <link href='http://fonts.googleapis.com/css?family=Roboto:400,400italic,500,500italic,700,700italic' rel='stylesheet' type='text/css' />
+      <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.blue-pink.min.css" />
       <script src="../thirdparty/jquery-3.3.1.min.js"></script>
+      <script src="../thirdparty/material.min.js"></script>
       <script src="../js/login.js"></script>
     </head>
     <body>
-      <h2>Unlock your nebulas account to use CryptPass</h2>
+      <!-- <h2>Unlock your nebulas account to use CryptPass</h2>
       <div id="unlockDiv">
         <label>Password:</label>
         <input id="password" type="password"></input>
         <button id="unlockAccount">Unlock</button>
         <p id="wrongPass" class="hidden">Wrong pass !</p>
+      </div> -->
+      <div class="login-div">
+        <div class="login-div-header mdl-color-text--blue-800">
+          <h2>b.lock</h2>
+        </div>
+        <div class="login-div-main">
+          <div class="login-div-main-label1"><label class="mdl-typography--body-2">Unlock your keystore</label></div>
+          <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+            <input class="mdl-textfield__input" type="password" id="unlock-keystore-password">
+            <label class="mdl-textfield__label" for="unlock-keystore-password">Password</label>
+          </div>
+          <div id="login-div-main-wrong-password" class="login-div-wrong-password mdl-color-text--red-500" style="display:none;">
+            <label class="mdl-typography--body-2">Wrong password! Could not unlock keystore, please try again</label>
+          </div>
+          <button id="unlock-keystore" class="mdl-button mdl-js-button mdl-button--raised mdl-color--blue-800 mdl-color-text--white">
+            UNLOCK
+          </button>
+        </div>
       </div>
     </body>
   </html>
