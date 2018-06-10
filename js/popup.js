@@ -107,10 +107,11 @@ $(document).ready(() => {
 
       for (entry of info.allCredentialsArray) {
         const bareDomain = entry.domain.replace(/[^a-zA-Z0-9]/g, '_');
-        const selectorString = `.${bareDomain}.${entry.login}`;
+        const bareLogin = entry.login.replace(/[^a-zA-Z0-9]/g, '_');
+        const selectorString = `.${bareDomain}.${bareLogin}`;
         if ($(selectorString).length === 0) {
           const secretNote = entry.domain === "Secret note";
-          const newEntryDom = `<li class="${bareDomain} ${entry.login} blockEntry hidden">\
+          const newEntryDom = `<li class="${bareDomain} ${bareLogin} blockEntry hidden">\
               <div class="entry-domain">${entry.domain}</div>\
               <div class="entry-login">${entry.login}</div>\
               <button class="fillEntryBtn">Fill</button>\
@@ -142,7 +143,8 @@ $(document).ready(() => {
       $('.blockEntry').hide();
       for (entry of entries) {
         const bareDomain = entry.domain.replace(/[^a-zA-Z0-9]/g, '_');
-        $(`.${bareDomain}.${entry.login}`).show();
+        const bareLogin = entry.login.replace(/[^a-zA-Z0-9]/g, '_');
+        $(`.${bareDomain}.${bareLogin}`).show();
       }
     }
 
