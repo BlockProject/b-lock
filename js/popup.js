@@ -2,6 +2,7 @@ $(document).ready(() => {
   let info;
   let filterByCurrentDomain = true;
   let firstRefresh = true;
+  let showingAll = false;
 
   $("#createAccountBtn").click(function () {
     chrome.runtime.sendMessage({
@@ -106,14 +107,15 @@ $(document).ready(() => {
 
       for (entry of info.allCredentialsArray) {
         const bareDomain = entry.domain.replace(/[^a-zA-Z0-9]/g, '_');
-        if ($(`.${bareDomain}.${entry.login}`).length === 0) {
+        const selectorString = `.${bareDomain}.${entry.login}`;
+        if ($(selectorString).length === 0) {
           const secretNote = entry.domain === "Secret note";
           const newEntryDom = `<li class="${bareDomain} ${entry.login} blockEntry hidden">\
               <div class="entry-domain">${entry.domain}</div>\
               <div class="entry-login">${entry.login}</div>\
-              <button class="fillEntry">Fill</button>\
-              <button class="editEntry">Edit</button>\
-              <button class="viewEntry">View</button>\
+              <button class="fillEntryBtn">Fill</button>\
+              <button class="editEntryBtn">Edit</button>\
+              <button class="viewEntryBtn">View</button>\
               <div class="editEntryForm hidden">\
                 <label>${ secretNote ? "Password:" : "Note" }</label>\
                 <input type="text" class="edit-password-input"></input>\
@@ -123,8 +125,10 @@ $(document).ready(() => {
                 ${entry.password}\
               </div>\
             </li>`;
-          console.log('newEntryDom = ', newEntryDom);
           $("#matching-entries ul").append(newEntryDom);
+          $(`${selectorString} .viewEntryBtn`).click((e) => {
+            $(`${selectorString} .viewEntry`).toggleClass('hidden');
+          });
         } else {
           console.log();
         }
@@ -134,17 +138,26 @@ $(document).ready(() => {
   }
 
   const filterEntries = () => {
-    chrome.tabs.getSelected(null,function(tab) {
-      const currentDomain = (new URL(tab.url)).hostname;
-      console.log('currentDomain = ', currentDomain);
-      for (entry of info.allCredentialsArray) {
+    const showEntries = (entries) => {
+      $('.blockEntry').hide();
+      for (entry of entries) {
         const bareDomain = entry.domain.replace(/[^a-zA-Z0-9]/g, '_');
-        if (entry.domain === currentDomain) {
-          $(`.${bareDomain}.${entry.login}`).show();
-        }
+        $(`.${bareDomain}.${entry.login}`).show();
       }
-    });
+    }
 
+    if (filterByCurrentDomain) {
+      chrome.tabs.getSelected(null,function(tab) {
+        const currentDomain = (new URL(tab.url)).hostname;
+        console.log('currentDomain = ', currentDomain);
+        const matchingEntries = info.allCredentialsArray.filter((entry) => entry.domain === currentDomain);
+        showEntries(matchingEntries);
+      });
+    } else {
+      const keyword = $('#search-field').val();
+      const matchingEntries = info.allCredentialsArray.filter((entry) => (entry.domain + entry.login).includes(keyword));
+      showEntries(showingAll ? info.allCredentialsArray : matchingEntries);
+    }
   }
 
   const requestRefreshFromBackground = function() {
@@ -183,5 +196,19 @@ $(document).ready(() => {
     $('#save-note-title').val("");
     $('#save-note-note').val("");
     chrome.runtime.sendMessage({type: "saveNewCrendentials", credentials: obj});
+  });
+
+  $('#search-field').keyup(() => {
+    console.log('search field is changed');
+
+    filterByCurrentDomain = $('#search-field').val() === "" ? true : false;
+    showingAll = false;
+    filterEntries();
+  });
+
+  $('#see-all-entries').click((e) => {
+    filterByCurrentDomain = false;
+    showingAll = true;
+    filterEntries();
   });
 })
