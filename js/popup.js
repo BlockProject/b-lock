@@ -216,7 +216,7 @@ $(document).ready(() => {
         firstRefresh = false;
       }
 
-      for (transaction of info.pastTransactions) {
+      for (transaction of info.pastTransactions[info.network]) {
         const description = transaction.type === 'send' ? `Send ${transaction.amount} NAS` : `${transaction.url} | ${transaction.login}`;
         const status = ["Failed", "Done", "Pending"][transaction.status];
         const item = $("#" + transaction.txhash);
@@ -262,6 +262,7 @@ $(document).ready(() => {
         }
       }
       filterEntries();
+      showCurrentNetwork();
     }
   }
 
@@ -342,4 +343,25 @@ $(document).ready(() => {
     showingAll = true;
     filterEntries();
   });
+
+  $('.mainnet.network').click((e) => {
+    changeNetwork('mainnet');
+  });
+
+  $('.testnet.network').click((e) => {
+    changeNetwork('testnet');
+  });
+
+  const showCurrentNetwork = () => {
+    $(`.network span`).hide();
+    $(`.${info.network} span`).show();
+    console.log('Current network: ', info.network);
+  }
+
+  const changeNetwork = (network) => {
+    console.log('changing network to ', network);
+    chrome.runtime.sendMessage({ type: "changeNetwork", network });
+    info.network = network;
+    showCurrentNetwork();
+  }
 })

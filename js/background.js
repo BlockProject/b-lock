@@ -8,10 +8,12 @@ let account = undefined;
 const DEFAULT_GAS_LIMIT = 2000000;
 const DEFAULT_GAS_PRICE = 1000000;
 const contractAddress = {
-  testnet: 'n1segn8d15u5DPgVjCmyuTPdf94Uh3F7eUX'
+  testnet: 'n1segn8d15u5DPgVjCmyuTPdf94Uh3F7eUX',
+  mainnet: ''
 }
 const networkId = {
-  testnet: 1001
+  testnet: 1001,
+  mainnet: 1
 }
 const SECRETNOTE_URL = "Secret note";
 
@@ -35,14 +37,13 @@ let info = {
   tempTxhash: undefined,
   savedCredentials: [],
   allCredentialsArray: [],
-  pastTransactions: [],
+  pastTransactions: {
+    'testnet': [],
+    'mainnet': []
+  },
   savedCredentials: [],
   backgroundImgURL: chrome.extension.getURL('images/get_started16.png')
 };
-
-// chrome.storage.sync.set({ pastTransactions: [] }, function() {
-//   console.log("\tJust saved pastTransactions to storage");
-// });
 
 function setUpNeb() {
   neb.setRequest(new HttpRequest(`https://${info.network}.nebulas.io`));
@@ -79,10 +80,10 @@ function fetchSavedPasswords() {
 
         const encryptedPasswords = JSON.parse(tx.result);
         for (const encryptedKey in encryptedPasswords) {
-          console.log('encrypted key: ', encryptedKey);
+          // console.log('encrypted key: ', encryptedKey);
 
           const key = decrypt(encryptedKey);
-          console.log('key decrypted: ', key);
+          // console.log('key decrypted: ', key);
           const [ domain, login ] = key.split(':');
           if (!info.savedCredentials[domain]) info.savedCredentials[domain] = {};
           info.savedCredentials[domain][login] = encryptedPasswords[encryptedKey];
@@ -106,7 +107,7 @@ function fetchSavedPasswords() {
 
 function savePastTransactionsToStorage() {
   chrome.storage.sync.set({ pastTransactions: info.pastTransactions }, function() {
-    console.log("\tJust saved pastTransactions to storage");
+    console.log("\tJust saved pastTransactions to storage: ", info.pastTransactions);
   });
 }
 
@@ -129,7 +130,7 @@ function setPassword(url, login, encryptedPass) {
     tx.signTransaction();
     neb.api.sendRawTransaction(tx.toProtoString()).then(function (resp) {
       console.log(`Just set password for ${url} on contract, response is:`, resp);
-      info.pastTransactions.push({
+      info.pastTransactions[info.network].push({
         type: "password",
         status: 2,
         url,
@@ -157,7 +158,7 @@ function sendNas(destination, amount) {
     tx.signTransaction();
     neb.api.sendRawTransaction(tx.toProtoString()).then(function (resp) {
       console.log(`Just sent ${amount} NAS to ${destination} response is:`, resp);
-      info.pastTransactions.push({
+      info.pastTransactions[info.network].push({
         type: "send",
         amount,
         destination,
@@ -169,30 +170,9 @@ function sendNas(destination, amount) {
   });
 }
 
-// const testEncryptDecrypt = (raw) => {
-//   // console.log('raw : ', raw);
-//   var inBytes = aesjs.utils.utf8.toBytes(raw);
-//   // console.log('bytes : ', inBytes);
-//   var encryptedBytes = getAESInstance().encrypt(inBytes);
-//   // console.log('encrypted bytes : ', encryptedBytes);
-//   var encryptedHex = aesjs.utils.hex.fromBytes(encryptedBytes);
-//   // console.log('encrypted hex : ', encryptedHex);
-//   var encryptedBytesFromHex = aesjs.utils.hex.toBytes(encryptedHex);
-//   encryptedBytesFromHex = new Uint8Array(encryptedBytesFromHex);
-//   // console.log('encrypted bytes : ', encryptedBytesFromHex);
-//   var decryptedBytes = getAESInstance().decrypt(encryptedBytesFromHex);
-//   // console.log('decrypted bytes : ', decryptedBytes);
-//   var decryptedRaw = aesjs.utils.utf8.fromBytes(decryptedBytes);
-//   // console.log('decrypted raw : ', decryptedRaw);
-// };
-
 function getAESInstance() {
   return new aesjs.ModeOfOperation.ctr(info.account.privKeyArray);
 }
-
-// function initAES() {
-//   testEncryptDecrypt('hello');
-// }
 
 function openLoginTab() {
   if (info.account.keystore) {
@@ -222,6 +202,15 @@ listenForMessage('sendNas', (request, sender, sendResponse) => {
   sendNas(request.destination, request.amount);
 });
 
+listenForMessage('changeNetwork', (request, sender, sendResponse) => {
+  console.log("changing network to ", request.network);
+  if (!(request.network in networkId)) return;
+  info.network = request.network;
+  console.log("changed network to ", request.network);
+  refreshInfo();
+  // neb.setRequest(new HttpRequest(`https://${info.network}.nebulas.io`));
+});
+
 const refreshInfo = () => {
   if (info.unlockAccount.unlocked) {
     neb.api.getAccountState(account.getAddressString()).then(function (state) {
@@ -237,7 +226,7 @@ const refreshInfo = () => {
     fetchSavedPasswords();
   }
 
-  for (const transaction of info.pastTransactions) {
+  for (const transaction of info.pastTransactions[info.network]) {
     if (transaction.status !== 2) continue;
     neb.api.getTransactionReceipt({ hash: transaction.txhash }).then((receipt) => {
       transaction.status = receipt.status;
@@ -355,7 +344,13 @@ listenForMessage('unlockAccount', (request, sender, sendResponse) => {
       console.log("\tJust set new keystore");
     });
     chrome.storage.sync.get('pastTransactions', function(data) {
-      info.pastTransactions = data.pastTransactions ? data.pastTransactions : [];
+      if (data.pastTransactions) {
+        if (!('testnet' in data.pastTransactions)) {
+          console.log('Wrong format of pastTransactions, reseting');
+          data.pastTransactions = info.pastTransactions;
+        }
+        info.pastTransactions = data.pastTransactions;
+      }
     });
   } catch (err) {
     info.unlockAccount.wrongPass = true;
