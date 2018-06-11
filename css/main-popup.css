@@ -81,3 +81,110 @@ body {
 #unlock-keystore {
   margin-top: 16px;
 }
+
+.mdl-layout__header.is-casting-shadow {
+  min-height: 48px;
+}
+
+.mdl-layout__tab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tab-favorite-search {
+  padding-left: 16px;
+  padding-right: 16px;
+  display: flex;
+  align-items: center;
+}
+
+.list-container-title {
+  padding-left: 16px;
+}
+
+.mdl-textfield.mdl-js-textfield.is-upgraded {
+  margin-left: 8px;
+}
+
+.list-item {
+  display: flex;
+  align-items: center;
+  min-height: 60px;
+  padding-left: 24px;
+  padding-right: 24px;
+}
+
+.list-item:hover {
+  background-color: #e8e8e8;
+  cursor: pointer;
+}
+
+.list-item-icon {
+  height: 40px;
+  width: 40px;
+  background-color: #8c8c8c;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 24%;
+}
+
+.list-item-content {
+  padding-left: 16px;
+  flex-grow: 1;
+  min-height: 60px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  border-bottom: 1px solid #e8e8e8;
+}
+
+.list-item-action {
+  height: 40px;
+  width: 40px;
+  display: flex;
+  align-self: flex-end;
+  justify-content: center;
+  border-bottom: 1px solid #e8e8e8;
+}
+
+.list-item-action:hover {
+  cursor: pointer;
+}
+
+.list-item-content-details {
+  display: flex;
+  width: 214px;
+  align-items: center;
+}
+
+.list-item-content-details-main {
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+
+.list-item-content-details-login {
+  outline: none;
+  border: none;
+  font-size: 14px;
+  margin-top: 8px;
+  background: transparent;
+}
+
+.list-item-content-details-password {
+  outline: none;
+  border: none;
+  font-size: 14px;
+  background: transparent;
+}
+
+.list-item-content-details-action {
+  height: 40px;
+  width: 40px;
+  display: flex;
+  justify-content: center;
+  align-self: flex-end;
+  margin-left: 8px;
+}

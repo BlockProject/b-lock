@@ -3,81 +3,80 @@
     <head>
       <link rel="less" type="text/css" href="css/less/styles.less" />
       <link rel="stylesheet" type="text/css" href="css/common.css" />
-      <link rel="stylesheet" type="text/css" href="css/main-popup.css" />
       <link rel="stylesheet" type="text/css" href="css/material.min.css" />
       <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
       <link href='http://fonts.googleapis.com/css?family=Roboto:400,400italic,500,500italic,700,700italic' rel='stylesheet' type='text/css' />
-      <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.blue-pink.min.css" />
+      <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.indigo-pink.min.css" />
+      <link rel="stylesheet" type="text/css" href="css/main-popup.css" />
       <script src="thirdparty/jquery-3.3.1.min.js"></script>
       <script src="thirdparty/material.min.js"></script>
       <script src="thirdparty/nebulas.js"></script>
       <script src="js/popup.js"></script>
     </head>
     <body>
-      <div class="cryptpass-popup">
-
+      <div id="cryptpass-initial" class="cryptpass-popup">
         <div class="cryptpass-popup-header mdl-color-text--blue-800">
           <h2>b.lock</h2>
         </div>
 
-        <div id="logged-in-view">
+        <!-- <div id="logged-in-view">
           <input type="text" id="search-field" placeholder="Search..."></input>
           <div id="matching-entries">
             <ul>
             </ul>
           </div>
-        <button id="see-all-entries">See all saved entries</button>
-        <div id="transaction-history">
-          <h3>Transaction history</h3>
-          <ul>
-          </ul>
+          <button id="see-all-entries">See all saved entries</button>
+          <div id="transaction-history">
+            <h3>Transaction history</h3>
+            <ul>
+            </ul>
+          </div>
+          <div id="new-transaction">
+            <div id="new-nas-sending-tx">
+              <h3>Send NAS:
+                <div><label>Destination:</label><input id="nas-destination" type="text"></input></div>
+                <div><label>Amount:</label><input id="nas-amount" type="number"></input></div>
+                <div><button id="submit-nas-tx">Send</button></div>
+            </div>
+            <div id="save-credentials" style="display:none;">
+              <h2>Save new password</h2>
+              <div>
+                <label>Url:</label>
+                <input id="save-credentials-domain"></input>
+              </div>
+              <div>
+                <label>Username:</label>
+                <input id="save-credentials-login"></input>
+              </div>
+              <div>
+                <label>Password:</label>
+                <input id="save-credentials-password" type="password"></input>
+              </div>
+              <div>
+                <button id="save-credentials-submit">Save</button>
+              </div>
+            </div>
+            <div id="save-note" style="display:none;">
+              <h2>Save new secret note</h2>
+              <div>
+                <label>Title:</label>
+                <input id="save-note-title"></input>
+              </div>
+              <div>
+                <label>Note:</label>
+                <textarea id="save-note-note"></textarea>
+              </div>
+              <div>
+                <button id="save-note-submit">Save</button>
+              </div>
+            </div>
+          </div>
+
+       <div id="pendingTx" class="hidden">Sent pending Tx... <a>Link</a></div>
         </div>
-        <div id="new-transaction">
-          <div id="new-nas-sending-tx">
-            <h3>Send NAS:
-            <div><label>Destination:</label><input id="nas-destination" type="text"></input></div>
-            <div><label>Amount:</label><input id="nas-amount" type="number"></input></div>
-            <div><button id="submit-nas-tx">Send</button></div>
-
-          </div>
-          <div id="save-credentials" style="display:none;">
-            <h2>Save new password</h2>
-            <div>
-              <label>Url:</label>
-              <input id="save-credentials-domain"></input>
-            </div>
-            <div>
-              <label>Username:</label>
-              <input id="save-credentials-login"></input>
-            </div>
-            <div>
-              <label>Password:</label>
-              <input id="save-credentials-password" type="password"></input>
-            </div>
-            <div>
-              <button id="save-credentials-submit">Save</button>
-            </div>
-          </div>
-          <div id="save-note" style="display:none;">
-            <h2>Save new secret note</h2>
-            <div>
-              <label>Title:</label>
-              <input id="save-note-title"></input>
-            </div>
-            <div>
-              <label>Note:</label>
-              <textarea id="save-note-note"></textarea>
-            </div>
-            <div>
-              <button id="save-note-submit">Save</button>
-            </div>
-          </div>
-
-          <!-- <div id="pendingTx" class="hidden">Sent pending Tx... <a>Link</a></div> -->
-        </div>
 
 
-        <!-- <button id="refresh">Refresh</button> -->
+         <button id="refresh">Refresh</button>
       </div>
 
       <div id="setting-view">
@@ -94,7 +93,7 @@
           <label>Account nonce:</label>
           <div id="accountNonce"></div>
         </div>
-      </div>
+      </div> -->
 
         <div id="newAccount" class="cryptpass-popup-new">
           <div id="newAccountIntro">
@@ -158,7 +157,142 @@
             </button>
           </div>
         </div>
-
+      </div>
+      <div id="cryptpass-main" class="main" style="display:none;">
+        <div class="main-header">
+        </div>
+        <div class="main-content">
+          <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header mdl-layout--fixed-tabs">
+            <header class="mdl-layout__header">
+              <div class="mdl-layout__tab-bar mdl-js-ripple-effect">
+                <a id="tab-favorite" href="#scroll-tab-1" class="mdl-layout__tab is-active">
+                  <div class="icon material-icons">favorite</div>
+                </a>
+                <a id="tab-past-activity" href="#scroll-tab-2" class="mdl-layout__tab">
+                  <div class="icon material-icons">event</div>
+                </a>
+                <a id="tab-my-account" href="#scroll-tab-3" class="mdl-layout__tab">
+                  <div class="icon material-icons">person</div>
+                </a>
+                <a id="tab-settings" href="#scroll-tab-4" class="mdl-layout__tab">
+                  <div class="icon material-icons">menu</div>
+                </a>
+                <div class="mdl-tooltip" for="tab-favorite">Dashboard</div>
+                <div class="mdl-tooltip" for="tab-past-activity">Past Activity</div>
+                <div class="mdl-tooltip" for="tab-my-account">My Account</div>
+                <div class="mdl-tooltip" for="tab-settings">Settings</div>
+              </div>
+            </header>
+            <main class="mdl-layout__content">
+              <section class="mdl-layout__tab-panel is-active" id="scroll-tab-1">
+                <div class="layout-tab-content tab-favorite">
+                  <div class="tab-favorite-search">
+                    <div class="icon material-icons">search</div>
+                    <div class="mdl-textfield mdl-js-textfield">
+                      <input class="mdl-textfield__input" type="text" id="tab-favorite-search-input">
+                      <label class="mdl-textfield__label" for="tab-favorite-search-input">Search b.lock</label>
+                    </div>
+                  </div>
+                  <div class="tab-favorite-active-now list-container">
+                    <div class="list-container-title mdl-typography--body-2 mdl-color-text--blue-800">
+                      ACTIVE NOW
+                    </div>
+                    <div class="list-container-main">
+                    </div>
+                  </div>
+                  <div class="tab-favorite-recent-transactions list-container">
+                    <div class="list-container-title mdl-typography--body-2 mdl-color-text--blue-800">
+                      RECENT TRANSACTIONS
+                    </div>
+                    <div class="list-container-main">
+                    </div>
+                  </div>
+                </div>
+              </section>
+              <section class="mdl-layout__tab-panel" id="scroll-tab-2">
+                <div class="layout-tab-content">
+                </div>
+              </section>
+              <section class="mdl-layout__tab-panel" id="scroll-tab-3">
+                <div class="layout-tab-content">
+                </div>
+              </section>
+              <section class="mdl-layout__tab-panel" id="scroll-tab-4">
+                <div class="layout-tab-content">
+                </div>
+              </section>
+            </main>
+          </div>
+        </div>
+      </div>
+      <div id="template-list-item-credential" class="list-item hidden" item-type="credential">
+        <div class="list-item-icon">
+          <i class="material-icons">security</i>
+        </div>
+        <div class="list-item-content">
+          <div class="list-item-content-overview">
+            <div class="list-item-content-overview-title mdl-typography--body-2"></div>
+            <div class="list-item-content-overview-description mdl-color-text--grey-600 mdl-typography--caption"></div>
+          </div>
+          <div class="list-item-content-details" style="display:none;">
+            <div class="list-item-content-details-main">
+              <div class="list-item-content-details-topic mdl-typography--body-2"></div>
+              <input class="list-item-content-details-key" type="text" readonly>
+              <input class="list-item-content-details-value" type="password" readonly>
+            </div>
+            <div class="list-item-content-details-action toggle-visibility-div" style="display:none;">
+              <i class="material-icons toggle-visibility">visibility</i>
+            </div>
+            <div class="list-item-content-details-action">
+              <i class="material-icons toggle-edit-done">edit</i>
+            </div>
+          </div>
+        </div>
+        <div class="list-item-action mdl-color-text--blue-800">
+          <a class="material-icons toggle-dropdown-cancel">arrow_drop_down</a>
+        </div>
+      </div>
+      <div id="template-list-item-secretnote" class="list-item hidden" item-type="secretnote">
+        <div class="list-item-icon">
+          <i class="material-icons">speaker_notes</i>
+        </div>
+        <div class="list-item-content">
+          <div class="list-item-content-overview">
+            <div class="list-item-content-overview-title mdl-typography--body-2"></div>
+            <div class="list-item-content-overview-description mdl-color-text--grey-600 mdl-typography--caption"></div>
+          </div>
+          <div class="list-item-content-details" style="display:none;">
+            <div class="list-item-content-details-main">
+              <div class="list-item-content-details-topic mdl-typography--body-2"></div>
+              <input class="list-item-content-details-key" type="text" readonly>
+              <textarea class="list-item-content-details-value-encrypted" rows="3" readonly></textarea>
+              <textarea class="list-item-content-details-value-decrypted" rows="3" readonly></textarea>
+            </div>
+            <div class="list-item-content-details-action toggle-visibility-div" style="display:none;">
+              <i class="material-icons toggle-visibility">visibility</i>
+            </div>
+            <div class="list-item-content-details-action">
+              <i class="material-icons toggle-edit-done">edit</i>
+            </div>
+          </div>
+        </div>
+        <div class="list-item-action mdl-color-text--blue-800">
+          <i class="material-icons toggle-dropdown-cancel">arrow_drop_down</i>
+        </div>
+      </div>
+      <div id="template-list-item-transaction" class="list-item hidden" item-type="transaction">
+        <div class="list-item-icon">
+          <i class="material-icons">receipt</i>
+        </div>
+        <div class="list-item-content">
+          <div class="list-item-content-overview">
+            <div class="list-item-content-overview-title mdl-typography--body-2"></div>
+            <div class="list-item-content-overview-description mdl-color-text--grey-600 mdl-typography--caption"></div>
+          </div>
+        </div>
+        <div class="list-item-action mdl-color-text--blue-800">
+          <i class="material-icons open-txn-new-tab">open_in_new</i>
+        </div>
       </div>
     </body>
   </html>

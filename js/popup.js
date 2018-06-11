@@ -148,6 +148,166 @@ $(document).ready(() => {
     }
   }
 
+  //////////// ADDED AS PART OF NEW UI (BEGIN) ////////////
+
+  const enableVisibility = (e) => {
+    const listItem = $(e.target).closest('.list-item');
+    if (listItem.attr('item-type') == 'credential') {
+      const listItemDetails = $(e.target).closest('.list-item-content-details');
+      listItemDetails.find('.list-item-content-details-password').attr('type', 'text');
+      listItemDetails.find('.toggle-visibility').html('visibility_off');
+      listItemDetails.attr('is-visible', 'true');
+    } else if (listItem.attr('item-type') == 'secretnote') {
+      // TODO:
+      // handle enabling visibility of secret note
+    }
+  };
+
+  const disableVisibility = (e) => {
+    const listItem = $(e.target).closest('.list-item');
+    if (listItem.attr('item-type') == 'credential') {
+      const listItemDetails = $(e.target).closest('.list-item-content-details');
+      listItemDetails.find('.list-item-content-details-password').attr('type', 'password');
+      listItemDetails.find('.toggle-visibility').html('visibility');
+      listItemDetails.attr('is-visible', 'false');
+    } else if (listItem.attr('item-type') == 'secretnote') {
+      // TODO:
+      // handle disabling visibility of secret note
+    }
+  };
+
+  const handleToggleDropdownCancel = (e) => {
+    const listItemParent = $(e.target).closest('.list-item');
+    if (listItemParent.attr('expanded') == undefined ||
+        listItemParent.attr('expanded') == 'false') {
+      listItemParent.find('.list-item-content-overview').hide();
+      listItemParent.find('.list-item-content-details').show();
+      listItemParent.attr('expanded', 'true');
+      $(e.target).parent().removeClass('mdl-color-text--blue-800');
+      $(e.target).parent().addClass('mdl-color-text--red-800');
+      $(e.target).html('cancel');
+    } else {
+      listItemParent.find('.list-item-content-details').hide();
+      listItemParent.find('.list-item-content-overview').show();
+      listItemParent.attr('expanded', 'false');
+      $(e.target).parent().removeClass('mdl-color-text--red-800');
+      $(e.target).parent().addClass('mdl-color-text--blue-800');
+      $(e.target).html('arrow_drop_down');
+      disableEdit(e);
+    }
+  };
+
+  const disableEdit = (e) => {
+    const listItemParent = $(e.target).closest('.list-item');
+    if (listItemParent.attr('item-type') == 'credential') {
+      const listItemDetails = listItemParent.find('.list-item-content-details');
+      if (listItemDetails.attr('edit-mode') == 'true') {
+        listItemDetails.find('.toggle-visibility-div').hide();
+        listItemDetails.attr('edit-mode', 'false');
+        listItemDetails.find('.list-item-content-details-login').prop('readonly', true);
+        listItemDetails.find('.list-item-content-details-password').prop('readonly', true);
+        listItemDetails.find('.toggle-edit-done').html('edit');
+        listItemDetails.find('.toggle-edit-done').parent().removeClass('mdl-color-text--green-500');
+        disableVisibility({target: listItemDetails.find('.toggle-visibility')[0]});
+      }
+    } else if (listItemParent.attr('item-type') == 'secretnote') {
+      // TODO:
+      // handle disabling edit of secret note
+    }
+  };
+
+  const handleEditCredentials = (e) => {
+    const listItem = $(e.target).closest('.list-item');
+    if (listItem.attr('item-type') == 'credential') {
+      const listItemDetails = $(e.target).closest('.list-item-content-details');
+      const credentialsObj = {
+        domain: listItemDetails.find('.list-item-content-details-domain').html(),
+        login: listItemDetails.find('.list-item-content-details-login').val(),
+        password: listItemDetails.find('.list-item-content-details-password').val(),
+      };
+      chrome.runtime.sendMessage({type: "saveNewCrendentials", credentials: credentialsObj});
+      disableEdit(e);
+    } else if (listItem.attr('item-type') == 'secretnote') {
+      // TODO:
+      // handle secret note saving
+    }
+  };
+
+  const enableEdit = (e) => {
+    const listItemParent = $(e.target).closest('.list-item');
+    if (listItemParent.attr('item-type') == 'credential') {
+      const listItemDetails = listItemParent.find('.list-item-content-details');
+      if (listItemDetails.attr('edit-mode') == undefined ||
+          listItemDetails.attr('edit-mode') == 'false') {
+        listItemDetails.attr('edit-mode', 'true');
+        listItemDetails.find('.list-item-content-details-login').prop('readonly', false);
+        listItemDetails.find('.list-item-content-details-password').prop('readonly', false);
+        listItemDetails.find('.toggle-edit-done').html('done');
+        listItemDetails.find('.toggle-edit-done').parent().addClass('mdl-color-text--green-500');
+        listItemDetails.find('.toggle-visibility-div').show();
+      } else {
+        handleEditCredentials(e);
+      }
+    } else if (listItemParent.attr('item-type') == 'secretnote') {
+      // TODO:
+      // handle enabling edit of secret note
+    }
+  };
+
+  const handleToggleVisibility = (e) => {
+    const listItem = $(e.target).closest('.list-item');
+    if (listItem.attr('item-type') == 'credential') {
+      const listItemDetails = $(e.target).closest('.list-item-content-details');
+      if (listItemDetails.attr('is-visible') == undefined ||
+          listItemDetails.attr('is-visible') == 'false') {
+        enableVisibility(e);
+      } else {
+        disableVisibility(e);
+      }
+    } else if (listItem.attr('item-type') == 'secretnote') {
+      // TODO:
+      // handle toggle visibility of secret note
+    }
+  };
+
+  const handleOpenTxn = (e) => {
+    // TODO:
+    // open the transaction in block explorer, new tab
+  };
+
+  const attachResponsiveEvents = () => {
+    $('.toggle-dropdown-cancel').click(handleToggleDropdownCancel);
+    $('.toggle-edit-done').click(enableEdit);
+    $('.toggle-visibility').click(handleToggleVisibility);
+    $('.open-txn-new-tab').click(handleOpenTxn);
+  };
+
+  attachResponsiveEvents();
+
+  const createAndAppendCredential = (credentials, container) => {
+    const listItem = $('#template-list-item-credential').clone();
+    listItem.find('.list-item-content-overview-title').html(credentials.domain);
+    listItem.find('.list-item-content-overview-description').html(credentials.login);
+    listItem.find('.list-item-content-details-topic').html(credentials.domain);
+    listItem.find('.list-item-content-details-key').val(credentials.login);
+    listItem.find('.list-item-content-details-value').val(credentials.password);
+    container.append(listItem);
+  };
+
+  const createAndAppendSecretnote = (secretnote, container) => {
+    const listItem = $('#template-list-item-secretnote').clone();
+    // TODO:
+    // fill up like the above function
+  };
+
+  const createAndAppendTransaction = (txn, container) => {
+    const listItem = $('#template-list-item-transaction').clone();
+    // TODO:
+    // fill up like the above function
+  };
+
+  //////////// ADDED AS PART OF NEW UI (END) ////////////
+
   $("#submit-nas-tx").click(function() {
     const destination = $("#nas-destination").val();
     const amount = $("#nas-amount").val();
@@ -202,6 +362,8 @@ $(document).ready(() => {
         $("#cryptpass-popup-login-main-wrong-password").hide();
       }
     } else { // user already logged in
+      $('#cryptpass-initial').hide();
+      $('#cryptpass-main').show();
       $('#logged-in-view').show();
 
       $("#address").html(info.account.address);
