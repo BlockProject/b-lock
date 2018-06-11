@@ -9,7 +9,7 @@ const DEFAULT_GAS_LIMIT = 2000000;
 const DEFAULT_GAS_PRICE = 1000000;
 const contractAddress = {
   testnet: 'n1segn8d15u5DPgVjCmyuTPdf94Uh3F7eUX',
-  mainnet: ''
+  mainnet: 'n1qmQeLTUU6fPJMs1uwTadQZfgwfUAKEUJw'
 }
 const networkId = {
   testnet: 1001,
@@ -35,7 +35,7 @@ let info = {
   },
   tempCredentials: {},
   tempTxhash: undefined,
-  savedCredentials: [],
+  savedCredentials: {},
   allCredentialsArray: [],
   pastTransactions: {
     'testnet': [],
@@ -79,13 +79,13 @@ function fetchSavedPasswords() {
         console.log('Result from fetching passwords: ', tx);
 
         const encryptedPasswords = JSON.parse(tx.result);
+        if (!info.savedCredentials[domain]) info.savedCredentials[domain] = {};
         for (const encryptedKey in encryptedPasswords) {
           // console.log('encrypted key: ', encryptedKey);
 
           const key = decrypt(encryptedKey);
           // console.log('key decrypted: ', key);
           const [ domain, login ] = key.split(':');
-          if (!info.savedCredentials[domain]) info.savedCredentials[domain] = {};
           info.savedCredentials[domain][login] = encryptedPasswords[encryptedKey];
         }
 
@@ -208,7 +208,7 @@ listenForMessage('changeNetwork', (request, sender, sendResponse) => {
   info.network = request.network;
   console.log("changed network to ", request.network);
   refreshInfo();
-  // neb.setRequest(new HttpRequest(`https://${info.network}.nebulas.io`));
+  neb.setRequest(new HttpRequest(`https://${info.network}.nebulas.io`));
 });
 
 const refreshInfo = () => {

@@ -362,6 +362,7 @@ $(document).ready(() => {
     console.log('changing network to ', network);
     chrome.runtime.sendMessage({ type: "changeNetwork", network });
     info.network = network;
+    $('#transaction-history li').remove();
     showCurrentNetwork();
   }
 })
