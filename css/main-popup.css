@@ -103,6 +103,10 @@ body {
   align-items: center;
 }
 
+.tab-favorite-recent-transactions {
+  margin-top: 8px;
+}
+
 .list-container-title {
   padding-left: 16px;
 }
@@ -169,7 +173,7 @@ body {
   padding-bottom: 8px;
 }
 
-.list-item-content-details-login {
+.list-item-content-details-key {
   outline: none;
   border: none;
   font-size: 14px;
@@ -177,7 +181,7 @@ body {
   background: transparent;
 }
 
-.list-item-content-details-password {
+.list-item-content-details-value {
   outline: none;
   border: none;
   font-size: 14px;
@@ -191,4 +195,31 @@ body {
   justify-content: center;
   align-self: flex-end;
   margin-left: 8px;
+}
+
+.list-item-content-details-value-encrypted {
+  border: none;
+  padding-top: 8px;
+  background: transparent;
+}
+
+.list-item-content-details-value-decrypted {
+  border: none;
+  padding-top: 8px;
+  background: transparent;
+}
+
+.list-item-content-details-value-decrypted:focus {
+  outline: 1px solid blue;
+}
+
+.open-txn-new-tab {
+  color: #1564c0;
+}
+
+.list-item-content-overview-description {
+  white-space: nowrap;
+  overflow: hidden;
+  max-width: 214px;
+  text-overflow: ellipsis;
 }

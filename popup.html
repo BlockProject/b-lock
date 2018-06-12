@@ -19,7 +19,7 @@
           <h2>b.lock</h2>
         </div>
 
-        
+
 
         <div id="newAccount" class="cryptpass-popup-new">
           <div id="newAccountIntro">
@@ -130,7 +130,7 @@
                     <div class="list-container-title mdl-typography--body-2 mdl-color-text--blue-800">
                       RECENT TRANSACTIONS
                     </div>
-                    <div class="list-container-main">
+                    <div class="list-container-main" id="recent-entries">
                     </div>
                   </div>
                 </div>
@@ -157,12 +157,12 @@
         </div>
         <div class="list-item-content">
           <div class="list-item-content-overview">
-            <div class="list-item-content-overview-title mdl-typography--body-2">test</div>
+            <div class="list-item-content-overview-title mdl-typography--body-2"></div>
             <div class="list-item-content-overview-description mdl-color-text--grey-600 mdl-typography--caption">hellop</div>
           </div>
           <div class="list-item-content-details" style="display:none;">
             <div class="list-item-content-details-main">
-              <div class="list-item-content-details-topic mdl-typography--body-2">wef</div>
+              <div class="list-item-content-details-topic mdl-typography--body-2"></div>
               <input class="list-item-content-details-key" type="text" readonly>
               <input class="list-item-content-details-value" type="password" readonly>
             </div>
@@ -175,7 +175,7 @@
           </div>
         </div>
         <div class="list-item-action mdl-color-text--blue-800">
-          <a class="material-icons toggle-dropdown-cancel">arrow_drop_down</a>
+          <i class="material-icons toggle-dropdown-cancel">arrow_drop_down</i>
         </div>
       </div>
       <div id="template-list-item-secretnote" class="list-item hidden" item-type="secretnote">
@@ -192,7 +192,7 @@
               <div class="list-item-content-details-topic mdl-typography--body-2"></div>
               <input class="list-item-content-details-key" type="text" readonly>
               <textarea class="list-item-content-details-value-encrypted" rows="3" readonly></textarea>
-              <textarea class="list-item-content-details-value-decrypted" rows="3" readonly></textarea>
+              <textarea class="list-item-content-details-value-decrypted" rows="3" style="display:none;" readonly></textarea>
             </div>
             <div class="list-item-content-details-action toggle-visibility-div" style="display:none;">
               <i class="material-icons toggle-visibility">visibility</i>
@@ -217,69 +217,68 @@
           </div>
         </div>
         <div class="list-item-action mdl-color-text--blue-800">
-          <i class="material-icons open-txn-new-tab">open_in_new</i>
+          <a class="material-icons open-txn-new-tab">open_in_new</a>
         </div>
       </div>
 
       <div id="logged-in-view">
-          <input type="text" id="search-field" placeholder="Search..."></input>
-          <div id="matching-entries">
-            <ul>
-            </ul>
-          </div>
-          <button id="see-all-entries">See all saved entries</button>
-          <div id="transaction-history">
-            <h3>Transaction history</h3>
-            <ul>
-            </ul>
-          </div>
-          <div id="new-transaction">
-            <div id="new-nas-sending-tx">
-              <h3>Send NAS:
-                <div><label>Destination:</label><input id="nas-destination" type="text"></input></div>
-                <div><label>Amount:</label><input id="nas-amount" type="number"></input></div>
-                <div><button id="submit-nas-tx">Send</button></div>
-            </div>
-            <div id="save-credentials" style="display:none;">
-              <h2>Save new password</h2>
-              <div>
-                <label>Url:</label>
-                <input id="save-credentials-domain"></input>
-              </div>
-              <div>
-                <label>Username:</label>
-                <input id="save-credentials-login"></input>
-              </div>
-              <div>
-                <label>Password:</label>
-                <input id="save-credentials-password" type="password"></input>
-              </div>
-              <div>
-                <button id="save-credentials-submit">Save</button>
-              </div>
-            </div>
-            <div id="save-note" style="display:none;">
-              <h2>Save new secret note</h2>
-              <div>
-                <label>Title:</label>
-                <input id="save-note-title"></input>
-              </div>
-              <div>
-                <label>Note:</label>
-                <textarea id="save-note-note"></textarea>
-              </div>
-              <div>
-                <button id="save-note-submit">Save</button>
-              </div>
-            </div>
-          </div>
-
-       <div id="pendingTx" class="hidden">Sent pending Tx... <a>Link</a></div>
+        <input type="text" id="search-field" placeholder="Search..."></input>
+        <div id="matching-entries">
+          <ul>
+          </ul>
         </div>
-
-
-         <button id="refresh">Refresh</button>
+        <button id="see-all-entries">See all saved entries</button>
+        <div id="transaction-history">
+          <h3>Transaction history</h3>
+          <ul>
+          </ul>
+        </div>
+        <div id="new-transaction">
+          <div id="new-nas-sending-tx">
+            <h3>Send NAS:</h3>
+            <div><label>Destination:</label><input id="nas-destination" type="text"></input></div>
+            <div><label>Amount:</label><input id="nas-amount" type="number"></input></div>
+            <div><button id="submit-nas-tx">Send</button></div>
+          </div>
+          <div id="save-credentials" style="display:none;">
+            <h2>Save new password</h2>
+            <div>
+              <label>Url:</label>
+              <input id="save-credentials-domain"></input>
+            </div>
+            <div>
+              <label>Username:</label>
+              <input id="save-credentials-login"></input>
+            </div>
+            <div>
+              <label>Password:</label>
+              <input id="save-credentials-password" type="password"></input>
+            </div>
+            <div>
+              <button id="save-credentials-submit">Save</button>
+            </div>
+          </div>
+          <div id="save-note" style="display:none;">
+            <h2>Save new secret note</h2>
+            <div>
+              <label>Title:</label>
+              <input id="save-note-title"></input>
+            </div>
+            <div>
+              <label>Note:</label>
+              <textarea id="save-note-note"></textarea>
+            </div>
+            <div>
+              <button id="save-note-submit">Save</button>
+            </div>
+          </div>
+        </div>
+        <div id="pendingTx" class="hidden">Sent pending Tx... <a>Link</a></div>
       </div>
+
+
+      <button id="refresh">Refresh</button>
+      <!-- </div> -->
 
       <div id="setting-view">
         <div id="network-setting">

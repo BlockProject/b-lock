@@ -152,27 +152,35 @@ $(document).ready(() => {
 
   const enableVisibility = (e) => {
     const listItem = $(e.target).closest('.list-item');
+    const listItemDetails = $(e.target).closest('.list-item-content-details');
     if (listItem.attr('item-type') == 'credential') {
-      const listItemDetails = $(e.target).closest('.list-item-content-details');
-      listItemDetails.find('.list-item-content-details-password').attr('type', 'text');
+      listItemDetails.find('.list-item-content-details-value').attr('type', 'text');
       listItemDetails.find('.toggle-visibility').html('visibility_off');
       listItemDetails.attr('is-visible', 'true');
     } else if (listItem.attr('item-type') == 'secretnote') {
       // TODO:
       // handle enabling visibility of secret note
+      listItemDetails.find('.list-item-content-details-value-encrypted').hide();
+      listItemDetails.find('.list-item-content-details-value-decrypted').show();
+      listItemDetails.find('.toggle-visibility').html('visibility_off');
+      listItemDetails.attr('is-visible', 'true');
     }
   };
 
   const disableVisibility = (e) => {
     const listItem = $(e.target).closest('.list-item');
+    const listItemDetails = $(e.target).closest('.list-item-content-details');
     if (listItem.attr('item-type') == 'credential') {
-      const listItemDetails = $(e.target).closest('.list-item-content-details');
-      listItemDetails.find('.list-item-content-details-password').attr('type', 'password');
+      listItemDetails.find('.list-item-content-details-value').attr('type', 'password');
       listItemDetails.find('.toggle-visibility').html('visibility');
       listItemDetails.attr('is-visible', 'false');
     } else if (listItem.attr('item-type') == 'secretnote') {
       // TODO:
       // handle disabling visibility of secret note
+      listItemDetails.find('.list-item-content-details-value-decrypted').hide();
+      listItemDetails.find('.list-item-content-details-value-encrypted').show();
+      listItemDetails.find('.toggle-visibility').html('visibility');
+      listItemDetails.attr('is-visible', 'false');
     }
   };
 
@@ -199,112 +207,157 @@ $(document).ready(() => {
 
   const disableEdit = (e) => {
     const listItemParent = $(e.target).closest('.list-item');
-    if (listItemParent.attr('item-type') == 'credential') {
-      const listItemDetails = listItemParent.find('.list-item-content-details');
-      if (listItemDetails.attr('edit-mode') == 'true') {
-        listItemDetails.find('.toggle-visibility-div').hide();
-        listItemDetails.attr('edit-mode', 'false');
-        listItemDetails.find('.list-item-content-details-login').prop('readonly', true);
-        listItemDetails.find('.list-item-content-details-password').prop('readonly', true);
-        listItemDetails.find('.toggle-edit-done').html('edit');
-        listItemDetails.find('.toggle-edit-done').parent().removeClass('mdl-color-text--green-500');
-        disableVisibility({target: listItemDetails.find('.toggle-visibility')[0]});
-      }
-    } else if (listItemParent.attr('item-type') == 'secretnote') {
-      // TODO:
-      // handle disabling edit of secret note
+    const listItemDetails = listItemParent.find('.list-item-content-details');
+    if (listItemDetails.attr('edit-mode') == 'true') {
+      listItemDetails.find('.toggle-visibility-div').hide();
+      listItemDetails.attr('edit-mode', 'false');
+      listItemDetails.find('.list-item-content-details-key').prop('readonly', true);
+      listItemDetails.find('.list-item-content-details-value').prop('readonly', true);
+      listItemDetails.find('.list-item-content-details-value-decrypted').prop('readonly', true);
+      listItemDetails.find('.toggle-edit-done').html('edit');
+      listItemDetails.find('.toggle-edit-done').parent().removeClass('mdl-color-text--green-500');
+      disableVisibility({target: listItemDetails.find('.toggle-visibility')[0]});
     }
   };
 
   const handleEditCredentials = (e) => {
     const listItem = $(e.target).closest('.list-item');
+    const listItemDetails = $(e.target).closest('.list-item-content-details');
     if (listItem.attr('item-type') == 'credential') {
-      const listItemDetails = $(e.target).closest('.list-item-content-details');
       const credentialsObj = {
         domain: listItemDetails.find('.list-item-content-details-domain').html(),
-        login: listItemDetails.find('.list-item-content-details-login').val(),
-        password: listItemDetails.find('.list-item-content-details-password').val(),
+        login: listItemDetails.find('.list-item-content-details-key').val(),
+        password: listItemDetails.find('.list-item-content-details-value').val(),
       };
       chrome.runtime.sendMessage({type: "saveNewCrendentials", credentials: credentialsObj});
       disableEdit(e);
     } else if (listItem.attr('item-type') == 'secretnote') {
       // TODO:
       // handle secret note saving
+      const credentialsObj = {
+        domain: 'Secret Note',
+        login: listItemDetails.find('.list-item-content-details-key').val(),
+        password: listItemDetails.find('.list-item-content-details-value-decrypted').val(),
+      };
+      chrome.runtime.sendMessage({type: "saveNewCrendentials", credentials: credentialsObj});
+      disableEdit(e);
     }
   };
 
   const enableEdit = (e) => {
     console.log('enabling edit');
     const listItemParent = $(e.target).closest('.list-item');
-    if (listItemParent.attr('item-type') == 'credential') {
-      const listItemDetails = listItemParent.find('.list-item-content-details');
-      if (listItemDetails.attr('edit-mode') == undefined ||
-          listItemDetails.attr('edit-mode') == 'false') {
-        listItemDetails.attr('edit-mode', 'true');
-        listItemDetails.find('.list-item-content-details-login').prop('readonly', false);
-        listItemDetails.find('.list-item-content-details-password').prop('readonly', false);
-        listItemDetails.find('.toggle-edit-done').html('done');
-        listItemDetails.find('.toggle-edit-done').parent().addClass('mdl-color-text--green-500');
-        listItemDetails.find('.toggle-visibility-div').show();
-      } else {
-        handleEditCredentials(e);
-      }
-    } else if (listItemParent.attr('item-type') == 'secretnote') {
-      // TODO:
-      // handle enabling edit of secret note
+    const listItemDetails = listItemParent.find('.list-item-content-details');
+    if (listItemDetails.attr('edit-mode') == undefined ||
+        listItemDetails.attr('edit-mode') == 'false') {
+      listItemDetails.attr('edit-mode', 'true');
+      listItemDetails.find('.list-item-content-details-key').prop('readonly', false);
+      listItemDetails.find('.list-item-content-details-value').prop('readonly', false);
+      listItemDetails.find('.list-item-content-details-value-decrypted').prop('readonly', false);
+      listItemDetails.find('.toggle-edit-done').html('done');
+      listItemDetails.find('.toggle-edit-done').parent().addClass('mdl-color-text--green-500');
+      listItemDetails.find('.toggle-visibility-div').show();
+    } else {
+      handleEditCredentials(e);
     }
   };
 
   const handleToggleVisibility = (e) => {
     const listItem = $(e.target).closest('.list-item');
-    if (listItem.attr('item-type') == 'credential') {
-      const listItemDetails = $(e.target).closest('.list-item-content-details');
-      if (listItemDetails.attr('is-visible') == undefined ||
-          listItemDetails.attr('is-visible') == 'false') {
-        enableVisibility(e);
-      } else {
-        disableVisibility(e);
-      }
-    } else if (listItem.attr('item-type') == 'secretnote') {
-      // TODO:
-      // handle toggle visibility of secret note
+    const listItemDetails = $(e.target).closest('.list-item-content-details');
+    if (listItemDetails.attr('is-visible') == undefined ||
+        listItemDetails.attr('is-visible') == 'false') {
+      enableVisibility(e);
+    } else {
+      disableVisibility(e);
     }
   };
 
-  const handleOpenTxn = (e) => {
-    // TODO:
-    // open the transaction in block explorer, new tab
+  // const handleOpenTxn = (e) => {
+  //   // TODO:
+  //   // open the transaction in block explorer, new tab
+  // };
+
+  const attachResponsiveEvents = (listItem) => {
+    $(listItem).find('.toggle-dropdown-cancel').click(handleToggleDropdownCancel);
+    $(listItem).find('.toggle-edit-done').click(enableEdit);
+    $(listItem).find('.toggle-visibility').click(handleToggleVisibility);
+    // $(listItem).find('.open-txn-new-tab').click(handleOpenTxn);
   };
 
-  const attachResponsiveEvents = () => {
-    $('.toggle-dropdown-cancel').click(handleToggleDropdownCancel);
-    $('.toggle-edit-done').click(enableEdit);
-    $('.toggle-visibility').click(handleToggleVisibility);
-    $('.open-txn-new-tab').click(handleOpenTxn);
-  };
-
-  attachResponsiveEvents();
-
-  const createAndAppendCredential = (credentials, container) => {
+  const createAndAppendCredential = (credentials, elementId, elementClass, container) => {
     const listItem = $('#template-list-item-credential').clone();
     listItem.find('.list-item-content-overview-title').html(credentials.domain);
     listItem.find('.list-item-content-overview-description').html(credentials.login);
     listItem.find('.list-item-content-details-topic').html(credentials.domain);
     listItem.find('.list-item-content-details-key').val(credentials.login);
     listItem.find('.list-item-content-details-value').val(credentials.password);
+    listItem.removeClass('hidden').addClass(elementClass).attr('id', elementId);
     container.append(listItem);
+    return listItem;
   };
 
-  const createAndAppendSecretnote = (secretnote, container) => {
+  const createAndAppendSecretnote = (secretnote, elementId, elementClass, container) => {
+    // TODO:
+    // fill up like the above function
     const listItem = $('#template-list-item-secretnote').clone();
-    // TODO:
-    // fill up like the above function
+    listItem.find('.list-item-content-overview-title').html(secretnote.domain);
+    listItem.find('.list-item-content-details-topic').html(secretnote.domain);
+    listItem.find('.list-item-content-overview-description').html(secretnote.login);
+    listItem.find('.list-item-content-details-key').val(secretnote.login);
+    listItem.find('.list-item-content-details-value-decrypted').val(secretnote.password);
+    listItem.find('.list-item-content-details-value-encrypted').val(new Array(secretnote.password.length+1).join('*'));
+    listItem.removeClass('hidden').addClass(elementClass).attr('id', elementId);
+    container.append(listItem);
+    return listItem;
   };
 
-  const createAndAppendTransaction = (txn, container) => {
-    const listItem = $('#template-list-item-transaction').clone();
+  const createAndAppendTransaction = (txn, elementId, elementClass, container) => {
     // TODO:
     // fill up like the above function
+    const listItem = $('#template-list-item-transaction').clone();
+    listItem.removeClass('hidden').addClass(elementClass).attr('id', elementId);
+    listItem.find('.list-item-content-overview-title').html(getTxnTitle(txn));
+    listItem.find('.list-item-content-overview-description').html(getTxnDescription(txn));
+    listItem.find('.open-txn-new-tab').attr('href', getTxnUrl(txn));
+    listItem.find('.open-txn-new-tab').attr('target', '_blank');
+    container.append(listItem);
+    return listItem;
+  };
+
+  const getTxnTitle = (txn) => {
+    let result;
+    if (txn.type === 'send' || txn.type === 'receive') {
+      result = 'Transaction';
+    } else if (txn.type === 'password') {
+      if (txn.url === 'Secret note') {
+        result = 'Secret Note'
+      } else {
+        result = 'Password';
+      }
+    }
+    return result;
+  };
+
+  const getTxnDescription = (txn) => {
+    let result;
+    if (txn.type === 'send') {
+      result = 'Sent ' + txn.amount + ' NAS to ' + txn.destination;
+    } else if (txn.type === 'receive') {
+      result = 'Received ' + txn.amount + ' NAS from ' + txn.source;
+    } else if (txn.type === 'password') {
+      if (txn.url === 'Secret note') {
+        result = txn.login;
+      } else {
+        result = txn.url + ' / ' + txn.login;
+      }
+    }
+    return result;
+  }
+
+  const getTxnUrl = (txn) => {
+    let result = `https://explorer.nebulas.io/#/${info.network}/tx/${txn.txhash}`;
+    return result;
   };
 
   //////////// ADDED AS PART OF NEW UI (END) ////////////
@@ -380,6 +433,14 @@ $(document).ready(() => {
       }
 
       for (transaction of info.pastTransactions[info.network]) {
+        // append new
+        const elementId = `recent-${transaction.type}_${transaction.txhash}`;
+        const elementClass = `recent-${transaction.type}`;
+        if ($(`#${elementId}`) && $(`#${elementId}`).length === 0) {
+          listItem = createAndAppendTransaction(transaction, elementId, elementClass, $('#recent-entries'));
+          attachResponsiveEvents(listItem);
+        }
+
         const description = transaction.type === 'send' ? `Send ${transaction.amount} NAS` : `${transaction.url} | ${transaction.login}`;
         const status = ["Failed", "Done", "Pending"][transaction.status];
         const item = $("#" + transaction.txhash);
@@ -398,25 +459,19 @@ $(document).ready(() => {
       for (entry of info.allCredentialsArray) {
         const bareDomain = entry.domain.replace(/[^a-zA-Z0-9]/g, '_');
         const bareLogin = entry.login.replace(/[^a-zA-Z0-9]/g, '_');
-        const elementId = `${bareDomain}_${bareLogin}`;
+        const elementId = `active-${bareDomain}_${bareLogin}`;
+        const elementClass = `${bareDomain} ${bareLogin}`;
         const selectorString = `.${bareDomain}.${bareLogin}`;
-        if ($(selectorString).length === 0) {
+        if ($(selectorString) && $(selectorString).length === 0) {
           const secretNote = entry.domain === "Secret note";
           if (!secretNote) {
-            const newElement = $("#template-list-item-credential").clone().appendTo("#active-entries").addClass(`${bareDomain} ${bareLogin}`).removeClass('hidden').attr("id", elementId);
-            newElement.find('.list-item-content-overview-title').html(entry.domain);
-            newElement.find('.list-item-content-details-topic').html(entry.domain);
-            newElement.find('.list-item-content-overview-description').html(entry.login);
-            newElement.find('.list-item-content-details-key').val(entry.login);
-            newElement.find('.list-item-content-details-value').val(entry.password);
+            const newElement = createAndAppendCredential(entry, elementId, elementClass, $('#active-entries'));
+            attachResponsiveEvents(newElement);
           } else {
-            const newElement = $("#template-list-item-secretnote").clone().appendTo("#active-entries").removeAttr("id").addClass(`${bareDomain} ${bareLogin}`).removeClass('hidden');
-            newElement.find('.list-item-content-overview-title').html(entry.domain);
-            newElement.find('.list-item-content-details-topic').html(entry.domain);
-            newElement.find('.list-item-content-overview-description').html(entry.login);
-            newElement.find('.list-item-content-details-value-decrypted').val(entry.password);
+            const newElement = createAndAppendSecretnote(entry, elementId, elementClass, $('#active-entries'));
+            attachResponsiveEvents(newElement);
           }
-          const newEntryDom = `<li class="${bareDomain} ${bareLogin} blockEntry">\
+          const newEntryDom = `<li class="old-${bareDomain} old-${bareLogin} blockEntry">\
               <div class="entry-domain">${entry.domain}</div>\
               <div class="entry-login">${entry.login}</div>\
               <button class="fillEntryBtn">Fill</button>\
@@ -440,7 +495,7 @@ $(document).ready(() => {
         }
         // componentHandler.upgradeAllRegistered();
       }
-      attachResponsiveEvents();
+      // attachResponsiveEvents();
       filterEntries();
       showCurrentNetwork();
     }
