@@ -3,6 +3,10 @@ html.mdl-js {
   height: 500px;
 }
 
+#logged-in-view {
+  padding-top: 700px;
+}
+
 body {
   width: 358px;
   height: 500px;
