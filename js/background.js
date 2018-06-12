@@ -41,7 +41,6 @@ let info = {
     'testnet': [],
     'mainnet': []
   },
-  savedCredentials: [],
   backgroundImgURL: chrome.extension.getURL('images/get_started16.png')
 };
 
@@ -79,23 +78,26 @@ function fetchSavedPasswords() {
         console.log('Result from fetching passwords: ', tx);
 
         const encryptedPasswords = JSON.parse(tx.result);
-        if (!info.savedCredentials[domain]) info.savedCredentials[domain] = {};
+
+        if (!info.savedCredentials[info.network]) info.savedCredentials[info.network] = {};
+
         for (const encryptedKey in encryptedPasswords) {
           // console.log('encrypted key: ', encryptedKey);
 
           const key = decrypt(encryptedKey);
           // console.log('key decrypted: ', key);
           const [ domain, login ] = key.split(':');
-          info.savedCredentials[domain][login] = encryptedPasswords[encryptedKey];
+          if (!info.savedCredentials[info.network][domain]) info.savedCredentials[info.network][domain] = {};
+          info.savedCredentials[info.network][domain][login] = encryptedPasswords[encryptedKey];
         }
 
         info.allCredentialsArray = [];
-        for (domain in info.savedCredentials) {
-          for (login in info.savedCredentials[domain]) {
+        for (domain in info.savedCredentials[info.network]) {
+          for (login in info.savedCredentials[info.network][domain]) {
             info.allCredentialsArray.push({
               domain,
               login,
-              password: decrypt(info.savedCredentials[domain][login])
+              password: decrypt(info.savedCredentials[info.network][domain][login])
             })
           }
         }
@@ -186,8 +188,8 @@ console.log("Yo");
 
 listenForMessage('onTryLogin', (request, sender, sendResponse) => {
   console.log('User submited credentials: ', request.info);
-  if ((info.savedCredentials[request.info.domain] === undefined) ||
-      (info.savedCredentials[request.info.domain][request.info.login] === undefined)) {
+  if ((info.savedCredentials[info.network][request.info.domain] === undefined) ||
+      (info.savedCredentials[info.network][request.info.domain][request.info.login] === undefined)) {
     chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
       info.tempCredentials.domain = request.info.domain;
       info.tempCredentials.login = request.info.login;

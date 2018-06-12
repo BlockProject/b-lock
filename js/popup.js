@@ -387,7 +387,7 @@ $(document).ready(() => {
             <a target="_blank" href="https://explorer.nebulas.io/#/${info.network}/tx/${transaction.txhash}">\
             ${status}</a>\
             </li>`;
-          console.log('newElement = ', newElement);
+          // console.log('newElement = ', newElement);
           $("#transaction-history ul").append(newElement);
         } else {
           item.find('a').html(status);
@@ -400,28 +400,44 @@ $(document).ready(() => {
         const selectorString = `.${bareDomain}.${bareLogin}`;
         if ($(selectorString).length === 0) {
           const secretNote = entry.domain === "Secret note";
-          const newEntryDom = `<li class="${bareDomain} ${bareLogin} blockEntry">\
-              <div class="entry-domain">${entry.domain}</div>\
-              <div class="entry-login">${entry.login}</div>\
-              <button class="fillEntryBtn">Fill</button>\
-              <button class="editEntryBtn">Edit</button>\
-              <button class="viewEntryBtn">View</button>\
-              <div class="editEntryForm hidden">\
-                <label>${ secretNote ? "Password:" : "Note" }</label>\
-                <input type="text" class="edit-password-input"></input>\
-                <button class="submit-edit-entry">Save</button>\
-              </div>\
-              <div class="viewEntry hidden">\
-                ${entry.password}\
-              </div>\
-            </li>`;
-          $("#matching-entries ul").append(newEntryDom);
-          $(`${selectorString} .viewEntryBtn`).click((e) => {
-            $(`${selectorString} .viewEntry`).toggleClass('hidden');
-          });
+          if (!secretNote) {
+            const newElement = $("#template-list-item-credential").clone().appendTo("#active-entries").removeAttr("id").addClass(`${bareDomain} ${bareLogin}`).removeClass('hidden');
+            newElement.find('.list-item-content-overview-title').html(entry.domain);
+            newElement.find('.list-item-content-details-topic').html(entry.domain);
+            newElement.find('.list-item-content-overview-description').html(entry.login);
+            newElement.find('.list-item-content-details-key').val(entry.login);
+            newElement.find('.list-item-content-details-value').val(entry.password);
+            // componentHandler.upgradeElement(newElement);
+          } else {
+            const newElement = $("#template-list-item-secretnote").clone().appendTo("#active-entries").removeAttr("id").addClass(`${bareDomain} ${bareLogin}`).removeClass('hidden');
+            newElement.find('.list-item-content-overview-title').html(entry.domain);
+            newElement.find('.list-item-content-details-topic').html(entry.domain);
+            newElement.find('.list-item-content-overview-description').html(entry.login);
+            newElement.find('.list-item-content-details-value-decrypted').val(entry.password);
+          }
+          // const newEntryDom = `<li class="${bareDomain} ${bareLogin} blockEntry">\
+          //     <div class="entry-domain">${entry.domain}</div>\
+          //     <div class="entry-login">${entry.login}</div>\
+          //     <button class="fillEntryBtn">Fill</button>\
+          //     <button class="editEntryBtn">Edit</button>\
+          //     <button class="viewEntryBtn">View</button>\
+          //     <div class="editEntryForm hidden">\
+          //       <label>${ secretNote ? "Password:" : "Note" }</label>\
+          //       <input type="text" class="edit-password-input"></input>\
+          //       <button class="submit-edit-entry">Save</button>\
+          //     </div>\
+          //     <div class="viewEntry hidden">\
+          //       ${entry.password}\
+          //     </div>\
+          //   </li>`;
+          // $("#matching-entries ul").append(newEntryDom);
+          // $(`${selectorString} .viewEntryBtn`).click((e) => {
+          //   $(`${selectorString} .viewEntry`).toggleClass('hidden');
+          // });
         } else {
           console.log();
         }
+        // componentHandler.upgradeAllRegistered();
       }
       filterEntries();
       showCurrentNetwork();
