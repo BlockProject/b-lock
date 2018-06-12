@@ -416,25 +416,25 @@ $(document).ready(() => {
             newElement.find('.list-item-content-overview-description').html(entry.login);
             newElement.find('.list-item-content-details-value-decrypted').val(entry.password);
           }
-          // const newEntryDom = `<li class="${bareDomain} ${bareLogin} blockEntry">\
-          //     <div class="entry-domain">${entry.domain}</div>\
-          //     <div class="entry-login">${entry.login}</div>\
-          //     <button class="fillEntryBtn">Fill</button>\
-          //     <button class="editEntryBtn">Edit</button>\
-          //     <button class="viewEntryBtn">View</button>\
-          //     <div class="editEntryForm hidden">\
-          //       <label>${ secretNote ? "Password:" : "Note" }</label>\
-          //       <input type="text" class="edit-password-input"></input>\
-          //       <button class="submit-edit-entry">Save</button>\
-          //     </div>\
-          //     <div class="viewEntry hidden">\
-          //       ${entry.password}\
-          //     </div>\
-          //   </li>`;
-          // $("#matching-entries ul").append(newEntryDom);
-          // $(`${selectorString} .viewEntryBtn`).click((e) => {
-          //   $(`${selectorString} .viewEntry`).toggleClass('hidden');
-          // });
+          const newEntryDom = `<li class="${bareDomain} ${bareLogin} blockEntry">\
+              <div class="entry-domain">${entry.domain}</div>\
+              <div class="entry-login">${entry.login}</div>\
+              <button class="fillEntryBtn">Fill</button>\
+              <button class="editEntryBtn">Edit</button>\
+              <button class="viewEntryBtn">View</button>\
+              <div class="editEntryForm hidden">\
+                <label>${ secretNote ? "Password:" : "Note" }</label>\
+                <input type="text" class="edit-password-input"></input>\
+                <button class="submit-edit-entry">Save</button>\
+              </div>\
+              <div class="viewEntry hidden">\
+                ${entry.password}\
+              </div>\
+            </li>`;
+          $("#matching-entries ul").append(newEntryDom);
+          $(`${selectorString} .viewEntryBtn`).click((e) => {
+            $(`${selectorString} .viewEntry`).toggleClass('hidden');
+          });
         } else {
           console.log();
         }
