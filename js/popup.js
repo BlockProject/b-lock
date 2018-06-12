@@ -234,6 +234,7 @@ $(document).ready(() => {
   };
 
   const enableEdit = (e) => {
+    console.log('enabling edit');
     const listItemParent = $(e.target).closest('.list-item');
     if (listItemParent.attr('item-type') == 'credential') {
       const listItemDetails = listItemParent.find('.list-item-content-details');
@@ -397,17 +398,17 @@ $(document).ready(() => {
       for (entry of info.allCredentialsArray) {
         const bareDomain = entry.domain.replace(/[^a-zA-Z0-9]/g, '_');
         const bareLogin = entry.login.replace(/[^a-zA-Z0-9]/g, '_');
+        const elementId = `${bareDomain}_${bareLogin}`;
         const selectorString = `.${bareDomain}.${bareLogin}`;
         if ($(selectorString).length === 0) {
           const secretNote = entry.domain === "Secret note";
           if (!secretNote) {
-            const newElement = $("#template-list-item-credential").clone().appendTo("#active-entries").removeAttr("id").addClass(`${bareDomain} ${bareLogin}`).removeClass('hidden');
+            const newElement = $("#template-list-item-credential").clone().appendTo("#active-entries").addClass(`${bareDomain} ${bareLogin}`).removeClass('hidden').attr("id", elementId);
             newElement.find('.list-item-content-overview-title').html(entry.domain);
             newElement.find('.list-item-content-details-topic').html(entry.domain);
             newElement.find('.list-item-content-overview-description').html(entry.login);
             newElement.find('.list-item-content-details-key').val(entry.login);
             newElement.find('.list-item-content-details-value').val(entry.password);
-            // componentHandler.upgradeElement(newElement);
           } else {
             const newElement = $("#template-list-item-secretnote").clone().appendTo("#active-entries").removeAttr("id").addClass(`${bareDomain} ${bareLogin}`).removeClass('hidden');
             newElement.find('.list-item-content-overview-title').html(entry.domain);
@@ -439,6 +440,7 @@ $(document).ready(() => {
         }
         // componentHandler.upgradeAllRegistered();
       }
+      attachResponsiveEvents();
       filterEntries();
       showCurrentNetwork();
     }
