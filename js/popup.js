@@ -4,6 +4,7 @@ $(document).ready(() => {
   let firstRefresh = true;
   let showingAll = false;
   let creatingOrRestoring = false;
+  let notAttachedFloatingEvents = true;
 
   $('#createNew').click(function () {
     creatingOrRestoring = true;
@@ -516,6 +517,107 @@ $(document).ready(() => {
     }
   }
 
+  const openNewCredential = () => {
+    $('.btn-floating').hide();
+    $('#overlay-div').fadeOut(100);
+    $('#new-credential-container').show();
+    $('#sliding-up-div').animate({
+      top: 0,
+    });
+  };
+
+  const openNewSecretnote = () => {
+    $('.btn-floating').hide();
+    $('#overlay-div').fadeOut(100);
+    $('#new-secretnote-container').show();
+    $('#sliding-up-div').animate({
+      top: 0,
+    });
+  };
+
+  const openNewTransaction = () => {
+    $('.btn-floating').hide();
+    $('#overlay-div').fadeOut(100);
+    $('#new-transaction-container').show();
+    $('#sliding-up-div').animate({
+      top: 0,
+    });
+  };
+
+  const closePopupView = (e) => {
+    $('#sliding-up-div').animate({
+      top: 600,
+    });
+    $('.btn-floating').show();
+    $('#sliding-up-div').find('input').each(function (i, el) {
+      $(el).val('');
+    });
+    $('#new-secretnote-content').val('');
+    $('#new-credential-password').attr('type', 'text');
+    $('#new-credential-password').closest('.new-credential-password-wrapper').attr('is-visible', 'false');
+    $('#new-credential-password').closest('.new-credential-password-wrapper').find('.new-credential-toggle-visibility').html('visibility');
+    $('#new-transaction-container').hide();
+    $('#new-secretnote-container').hide();
+    $('#new-credential-container').hide();
+  };
+
+  const toggleNewCredentialPasswordVisibility = (e) => {
+    const wrapper = $(e.target).closest('.new-credential-password-wrapper');
+    if (wrapper.attr('is-visible') === undefined || wrapper.attr('is-visible') === 'false') {
+      wrapper.attr('is-visible', 'true');
+      $('#new-credential-password').attr('type', 'text');
+      $(e.target).html('visibility_off');
+    } else {
+      wrapper.attr('is-visible', 'false');
+      $('#new-credential-password').attr('type', 'password');
+      $(e.target).html('visibility');
+    }
+  };
+
+  $('#close-popup-view').click(closePopupView);
+  $('.new-credential-toggle-visibility').click(toggleNewCredentialPasswordVisibility);
+
+  $('#new-credential-save').click(function (e) {
+    // new-credential-domain
+    // new-credential-login
+    // new-credential-password
+  });
+
+  $('#new-secretnote-save').click(function (e) {
+    // new-secretnote-title
+    // new-secretnote-content
+  });
+
+  $('#new-transaction-send').click(function (e) {
+    // new-transaction-destination
+    // new-transaction-amount
+  });
+
+  const initFloatingActionButton = () => {
+    var elems = document.querySelectorAll('.fixed-action-btn');
+    var instances = M.FloatingActionButton.init(elems, {
+      hoverEnabled: false
+    });
+    $('#main-floating-action-btn').click(function (e) {
+      e.stopPropagation();
+      var instance = M.FloatingActionButton.getInstance($(e.currentTarget).parent()[0]);
+      if (instance.isOpen) {
+        $('#overlay-div').fadeOut(500);
+        instance.close();
+      } else {
+        $('#overlay-div').fadeIn(500);
+        instance.open();
+        if (notAttachedFloatingEvents) {
+          $('#new-credential').click(openNewCredential);
+          $('#new-secretnote').click(openNewSecretnote);
+          $('#new-transaction').click(openNewTransaction);
+          notAttachedFloatingEvents = false;
+        }
+      }
+    });
+  };
+
+  initFloatingActionButton();
   requestRefreshFromBackground();
   setInterval(requestRefreshFromBackground, 2000);
 

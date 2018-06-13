@@ -1,6 +1,7 @@
 html.mdl-js {
   width: 358px;
-  height: 500px;
+  height: 600px;
+  overflow: hidden;
 }
 
 #logged-in-view {
@@ -9,13 +10,14 @@ html.mdl-js {
 
 body {
   width: 358px;
-  height: 500px;
+  height: 600px;
   margin: 0;
+  overflow: hidden
 }
 
 .cryptpass-popup {
   width: 358px;
-  height: 500px;
+  height: 600px;
   overflow-x: hidden;
   overflow-y: auto;
 }
@@ -222,4 +224,73 @@ body {
   overflow: hidden;
   max-width: 214px;
   text-overflow: ellipsis;
+}
+
+.fixed-action-btn > ul {
+  left: -56px;
+}
+
+.fixed-action-btn ul a.btn-floating {
+  width: 100%;
+  height: 32px;
+  border-radius: 12px;
+  padding-right: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+#overlay-div {
+    position   : absolute;
+    top        : 0;
+    left       : 0;
+    width      : 100%;
+    height     : 100%;
+    background : #000;
+    opacity    : 0.6;
+    filter     : alpha(opacity=60);
+    z-index    : 5;
+    display    : none;
+}
+
+.sliding-up-div {
+  position: relative;
+  height: 600px;
+  top: 600px;
+  z-index: 4;
+  background-color: white;
+  padding-top: 16px;
+  padding-bottom: 16px;
+}
+
+#close-popup-view {
+  padding-left: 16px;
+}
+
+.popup-view-container {
+  padding-left: 40px;
+  padding-right: 40px;
+}
+
+.popup-view-container > .mdl-textfield.mdl-js-textfield.mdl-textfield--floating-label.is-upgraded {
+  margin-left: 0px;
+}
+
+.new-credential-password-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+.new-credential-password-wrapper > .mdl-textfield.mdl-js-textfield.mdl-textfield--floating-label {
+  flex-grow: 1;
+  margin-left: 0px;
+}
+
+.new-credential-toggle-visibility {
+  height: 40px;
+  width: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
 }
