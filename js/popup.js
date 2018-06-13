@@ -154,41 +154,26 @@ $(document).ready(() => {
   const enableVisibility = (e) => {
     const listItem = $(e.target).closest('.list-item');
     const listItemDetails = $(e.target).closest('.list-item-content-details');
-    if (listItem.attr('item-type') == 'credential') {
-      listItemDetails.find('.list-item-content-details-value').attr('type', 'text');
-      listItemDetails.find('.toggle-visibility').html('visibility_off');
-      listItemDetails.attr('is-visible', 'true');
-    } else if (listItem.attr('item-type') == 'secretnote') {
-      // TODO:
-      // handle enabling visibility of secret note
-      listItemDetails.find('.list-item-content-details-value-encrypted').hide();
-      listItemDetails.find('.list-item-content-details-value-decrypted').show();
-      listItemDetails.find('.toggle-visibility').html('visibility_off');
-      listItemDetails.attr('is-visible', 'true');
-    }
+    listItemDetails.find('.list-item-content-details-value').attr('type', 'text');
+    listItemDetails.find('textarea.list-item-content-details-value.real.in-use').removeClass('hidden');
+    listItemDetails.find('textarea.list-item-content-details-value.dummy.in-use').addClass('hidden');
+    listItemDetails.find('.toggle-visibility').html('visibility_off');
+    listItemDetails.attr('is-visible', 'true');
   };
 
   const disableVisibility = (e) => {
     const listItem = $(e.target).closest('.list-item');
     const listItemDetails = $(e.target).closest('.list-item-content-details');
-    if (listItem.attr('item-type') == 'credential') {
-      listItemDetails.find('.list-item-content-details-value').attr('type', 'password');
-      listItemDetails.find('.toggle-visibility').html('visibility');
-      listItemDetails.attr('is-visible', 'false');
-    } else if (listItem.attr('item-type') == 'secretnote') {
-      // TODO:
-      // handle disabling visibility of secret note
-      listItemDetails.find('.list-item-content-details-value-decrypted').hide();
-      listItemDetails.find('.list-item-content-details-value-encrypted').show();
-      listItemDetails.find('.toggle-visibility').html('visibility');
-      listItemDetails.attr('is-visible', 'false');
-    }
+    listItemDetails.find('.list-item-content-details-value').attr('type', 'password');
+    listItemDetails.find('textarea.list-item-content-details-value.real.in-use').addClass('hidden');
+    listItemDetails.find('textarea.list-item-content-details-value.dummy.in-use').removeClass('hidden');
+    listItemDetails.find('.toggle-visibility').html('visibility');
+    listItemDetails.attr('is-visible', 'false');
   };
 
   const handleToggleDropdownCancel = (e) => {
     const listItemParent = $(e.target).closest('.list-item');
-    if (listItemParent.attr('expanded') == undefined ||
-        listItemParent.attr('expanded') == 'false') {
+    if (listItemParent.attr('expanded') == 'false') {
       listItemParent.find('.list-item-content-overview').hide();
       listItemParent.find('.list-item-content-details').show();
       listItemParent.attr('expanded', 'true');
@@ -203,6 +188,7 @@ $(document).ready(() => {
       $(e.target).parent().addClass('mdl-color-text--blue-800');
       $(e.target).html('arrow_drop_down');
       disableEdit(e);
+      disableVisibility({target: listItemParent.find('.toggle-visibility')[0]});
     }
   };
 
@@ -210,11 +196,16 @@ $(document).ready(() => {
     const listItemParent = $(e.target).closest('.list-item');
     const listItemDetails = listItemParent.find('.list-item-content-details');
     if (listItemDetails.attr('edit-mode') == 'true') {
-      listItemDetails.find('.toggle-visibility-div').hide();
       listItemDetails.attr('edit-mode', 'false');
-      listItemDetails.find('.list-item-content-details-key').prop('readonly', true);
-      listItemDetails.find('.list-item-content-details-value').prop('readonly', true);
-      listItemDetails.find('.list-item-content-details-value-decrypted').prop('readonly', true);
+
+      const keyItem = listItemDetails.find('.list-item-content-details-key');
+      // keyItem.prop('readonly', true);
+      keyItem.val(keyItem.attr('pastValue'));
+
+      const valueItem = listItemDetails.find('.list-item-content-details-value.in-use.real');
+      valueItem.prop('readonly', true);
+      valueItem.val(valueItem.attr('pastValue'));
+
       listItemDetails.find('.toggle-edit-done').html('edit');
       listItemDetails.find('.toggle-edit-done').parent().removeClass('mdl-color-text--green-500');
       disableVisibility({target: listItemDetails.find('.toggle-visibility')[0]});
@@ -224,40 +215,34 @@ $(document).ready(() => {
   const handleEditCredentials = (e) => {
     const listItem = $(e.target).closest('.list-item');
     const listItemDetails = $(e.target).closest('.list-item-content-details');
-    if (listItem.attr('item-type') == 'credential') {
-      const credentialsObj = {
-        domain: listItemDetails.find('.list-item-content-details-domain').html(),
-        login: listItemDetails.find('.list-item-content-details-key').val(),
-        password: listItemDetails.find('.list-item-content-details-value').val(),
-      };
-      chrome.runtime.sendMessage({type: "saveNewCrendentials", credentials: credentialsObj});
-      disableEdit(e);
-    } else if (listItem.attr('item-type') == 'secretnote') {
-      // TODO:
-      // handle secret note saving
-      const credentialsObj = {
-        domain: 'Secret Note',
-        login: listItemDetails.find('.list-item-content-details-key').val(),
-        password: listItemDetails.find('.list-item-content-details-value-decrypted').val(),
-      };
-      chrome.runtime.sendMessage({type: "saveNewCrendentials", credentials: credentialsObj});
-      disableEdit(e);
-    }
+    const valueItem = listItemDetails.find('.list-item-content-details-value.in-use.real');
+    const credentialsObj = {
+      domain: listItemDetails.find('.list-item-content-details-topic').html(),
+      login: listItemDetails.find('.list-item-content-details-key').val(),
+      password: valueItem.val(),
+    };
+    valueItem.attr('pastValue', valueItem.val());
+    chrome.runtime.sendMessage({type: "saveNewCrendentials", credentials: credentialsObj});
+    disableEdit(e);
   };
 
   const enableEdit = (e) => {
     console.log('enabling edit');
     const listItemParent = $(e.target).closest('.list-item');
     const listItemDetails = listItemParent.find('.list-item-content-details');
-    if (listItemDetails.attr('edit-mode') == undefined ||
-        listItemDetails.attr('edit-mode') == 'false') {
+    if (listItemDetails.attr('edit-mode') == 'false') {
       listItemDetails.attr('edit-mode', 'true');
-      listItemDetails.find('.list-item-content-details-key').prop('readonly', false);
-      listItemDetails.find('.list-item-content-details-value').prop('readonly', false);
-      listItemDetails.find('.list-item-content-details-value-decrypted').prop('readonly', false);
+      enableVisibility(e);
+      const keyItem = listItemDetails.find('.list-item-content-details-key')
+      // keyItem.prop('readonly', false);
+      keyItem.attr('pastValue', keyItem.val());
+
+      const valueItem = listItemDetails.find('.list-item-content-details-value.in-use.real');
+      valueItem.prop('readonly', false);
+      valueItem.attr('pastValue', valueItem.val());
+
       listItemDetails.find('.toggle-edit-done').html('done');
       listItemDetails.find('.toggle-edit-done').parent().addClass('mdl-color-text--green-500');
-      listItemDetails.find('.toggle-visibility-div').show();
     } else {
       handleEditCredentials(e);
     }
@@ -266,8 +251,7 @@ $(document).ready(() => {
   const handleToggleVisibility = (e) => {
     const listItem = $(e.target).closest('.list-item');
     const listItemDetails = $(e.target).closest('.list-item-content-details');
-    if (listItemDetails.attr('is-visible') == undefined ||
-        listItemDetails.attr('is-visible') == 'false') {
+    if (listItemDetails.attr('is-visible') == 'false') {
       enableVisibility(e);
     } else {
       disableVisibility(e);
@@ -286,32 +270,32 @@ $(document).ready(() => {
     // $(listItem).find('.open-txn-new-tab').click(handleOpenTxn);
   };
 
-  const createAndAppendCredential = (credentials, elementId, elementClass, container) => {
-    const listItem = $('#template-list-item-credential').clone();
-    listItem.find('.list-item-content-overview-title').html(credentials.domain);
-    listItem.find('.list-item-content-overview-description').html(credentials.login);
-    listItem.find('.list-item-content-details-topic').html(credentials.domain);
-    listItem.find('.list-item-content-details-key').val(credentials.login);
-    listItem.find('.list-item-content-details-value').val(credentials.password);
-    listItem.removeClass('hidden').addClass(elementClass).attr('id', elementId);
-    container.append(listItem);
-    return listItem;
-  };
-
-  const createAndAppendSecretnote = (secretnote, elementId, elementClass, container) => {
-    // TODO:
-    // fill up like the above function
-    const listItem = $('#template-list-item-secretnote').clone();
-    listItem.find('.list-item-content-overview-title').html(secretnote.domain);
-    listItem.find('.list-item-content-details-topic').html(secretnote.domain);
-    listItem.find('.list-item-content-overview-description').html(secretnote.login);
-    listItem.find('.list-item-content-details-key').val(secretnote.login);
-    listItem.find('.list-item-content-details-value-decrypted').val(secretnote.password);
-    listItem.find('.list-item-content-details-value-encrypted').val(new Array(secretnote.password.length+1).join('*'));
-    listItem.removeClass('hidden').addClass(elementClass).attr('id', elementId);
-    container.append(listItem);
-    return listItem;
-  };
+  // const createAndAppendCredential = (credentials, elementId, elementClass, container) => {
+  //   const listItem = $('#template-list-item-credential').clone();
+  //   listItem.find('.list-item-content-overview-title').html(credentials.domain);
+  //   listItem.find('.list-item-content-overview-description').html(credentials.login);
+  //   listItem.find('.list-item-content-details-topic').html(credentials.domain);
+  //   listItem.find('.list-item-content-details-key').val(credentials.login);
+  //   listItem.find('.list-item-content-details-value').val(credentials.password);
+  //   listItem.removeClass('hidden').addClass(elementClass).attr('id', elementId);
+  //   container.append(listItem);
+  //   return listItem;
+  // };
+  //
+  // const createAndAppendSecretnote = (secretnote, elementId, elementClass, container) => {
+  //   // TODO:
+  //   // fill up like the above function
+  //   const listItem = $('#template-list-item-secretnote').clone();
+  //   listItem.find('.list-item-content-overview-title').html(secretnote.domain);
+  //   listItem.find('.list-item-content-details-topic').html(secretnote.domain);
+  //   listItem.find('.list-item-content-overview-description').html(secretnote.login);
+  //   listItem.find('.list-item-content-details-key').val(secretnote.login);
+  //   listItem.find('.list-item-content-details-value-decrypted').val(secretnote.password);
+  //   listItem.find('.list-item-content-details-value-encrypted').val(new Array(secretnote.password.length+1).join('*'));
+  //   listItem.removeClass('hidden').addClass(elementClass).attr('id', elementId);
+  //   container.append(listItem);
+  //   return listItem;
+  // };
 
   const createAndAppendTransaction = (txn, elementId, elementClass, container) => {
     // TODO:
@@ -322,7 +306,7 @@ $(document).ready(() => {
     listItem.find('.list-item-content-overview-description').html(getTxnDescription(txn));
     listItem.find('.open-txn-new-tab').attr('href', getTxnUrl(txn));
     listItem.find('.open-txn-new-tab').attr('target', '_blank');
-    container.append(listItem);
+    container.prepend(listItem);
     return listItem;
   };
 
@@ -363,17 +347,22 @@ $(document).ready(() => {
 
   //////////// ADDED AS PART OF NEW UI (END) ////////////
 
-  $("#submit-nas-tx").click(function() {
-    const destination = $("#nas-destination").val();
-    const amount = $("#nas-amount").val();
-    $('#nas-destination').val("");
-    $('#nas-amount').val(0);
+  $("#new-transaction-send").click(function() {
+    const destination = $("#new-transaction-destination").val();
+    const amount = $("#new-transaction-amount").val();
+    if (destination === "" || amount === 0) {
+      $('#send-nas-notice').html('Invalid inputs');
+      return;
+    }
+    $('#new-transaction-destination').val("");
+    $('#new-transaction-amount').val(0);
 
     chrome.runtime.sendMessage({
       type: "sendNas",
       destination,
       amount,
     });
+    $('#send-nas-notice').html('Sent transaction');
   });
 
   chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
@@ -451,7 +440,7 @@ $(document).ready(() => {
             ${status}</a>\
             </li>`;
           console.log('newElement = ', newElement);
-          $("#transaction-history ul").append(newElement);
+          $("#transaction-history ul").prepend(newElement);
         } else {
           item.find('a').html(status);
         }
@@ -464,23 +453,33 @@ $(document).ready(() => {
         const elementClass = `${bareDomain} ${bareLogin} blockEntry`;
         const selectorString = `.${bareDomain}.${bareLogin}`;
         if ($(selectorString) && $(selectorString).length === 0) {
-          const secretNote = entry.domain === "Secret note";
-          if (!secretNote) {
-            const newElement = createAndAppendCredential(entry, elementId, elementClass, $('#active-entries'));
-            attachResponsiveEvents(newElement);
-          } else {
-            const newElement = createAndAppendSecretnote(entry, elementId, elementClass, $('#active-entries'));
-            attachResponsiveEvents(newElement);
-          }
+          createAndAppendEntry(entry, elementId, elementClass);
         } else {
           console.log();
         }
-        // componentHandler.upgradeAllRegistered();
       }
-      // attachResponsiveEvents();
       filterEntries();
       showCurrentNetwork();
     }
+  }
+
+  const createAndAppendEntry = (entry, elementId, elementClass) => {
+    const secretNote = entry.domain === "Secret note";
+    const listItem = $('#template-list-item-entry').clone();
+    listItem.removeClass('hidden').addClass(elementClass).attr('id', elementId);
+    listItem.find('.list-item-content-overview-title').html(entry.domain);
+    listItem.find('.list-item-content-details-topic').html(entry.domain);
+    listItem.find('.list-item-content-overview-description').html(entry.login);
+    listItem.find('.list-item-content-details-key').val(entry.login);
+    listItem.find('.list-item-content-details-value.real').val(entry.password);
+    $('#active-entries').append(listItem);
+    const passwordField = listItem.find(`${secretNote ? 'textarea' : 'input'}.list-item-content-details-value`);
+    passwordField.addClass('in-use').removeClass('hidden');
+    listItem.find("textarea.list-item-content-details-value.real").addClass('hidden');
+    if (secretNote) {
+      listItem.find('.list-item-icon i').html('speaker_notes');
+    }
+    attachResponsiveEvents(listItem);
   }
 
   const filterEntries = () => {
@@ -588,11 +587,6 @@ $(document).ready(() => {
     // new-secretnote-content
   });
 
-  $('#new-transaction-send').click(function (e) {
-    // new-transaction-destination
-    // new-transaction-amount
-  });
-
   const initFloatingActionButton = () => {
     var elems = document.querySelectorAll('.fixed-action-btn');
     var instances = M.FloatingActionButton.init(elems, {
@@ -625,27 +619,44 @@ $(document).ready(() => {
     requestRefreshFromBackground();
   })
 
-  $('#save-credentials-submit').click(function (e) {
+  $('#new-credential-save').click(function (e) {
+    const domain = $('#new-credential-domain').val();
+    const login = $('#new-credential-login').val();
+    const password = $('#new-credential-password').val();
+    if (domain === "" || login === "" || password === "") {
+      $('#new-credential-notice').html('Invalid inputs');
+      return;
+    }
+
     const obj = {
-      domain: $('#save-credentials-domain').val(),
-      login: $('#save-credentials-login').val(),
-      password: $('#save-credentials-password').val()
+      domain,
+      login,
+      password
     };
-    $('#save-credentials-domain').val("");
-    $('#save-credentials-login').val("");
-    $('#save-credentials-password').val("");
+    $('#new-credential-domain').val("");
+    $('#new-credential-login').val("");
+    $('#new-credential-password').val("");
     chrome.runtime.sendMessage({type: "saveNewCrendentials", credentials: obj});
+    $('#new-credential-notice').html('Saved new credentials');
   });
 
-  $('#save-note-submit').click(function (e) {
+  $('#new-secretnote-save').click(function (e) {
+    const login = $('#new-secretnote-title').val();
+    const password = $('#new-secretnote-content').val();
+    if (login === "" || password === "") {
+      $('#new-secretnote-notice').html('Invalid inputs');
+      return;
+    }
     const obj = {
       domain: "Secret note",
-      login: $('#save-note-title').val(),
-      password: $('#save-note-note').val()
+      login,
+      password
     };
-    $('#save-note-title').val("");
-    $('#save-note-note').val("");
+    $('#new-secretnote-title').val("");
+    $('#new-secretnote-content').val("");
+    console.log('saving secret note yo');
     chrome.runtime.sendMessage({type: "saveNewCrendentials", credentials: obj});
+    $('#new-secretnote-notice').html('Saved new secret note');
   });
 
   $('#search-field').keyup(() => {

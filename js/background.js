@@ -79,7 +79,7 @@ function fetchSavedPasswords() {
          args: ""
       }
     }).then(function(tx) {
-        console.log('Result from fetching passwords: ', tx);
+        // console.log('Result from fetching passwords: ', tx);
 
         const encryptedPasswords = JSON.parse(tx.result);
 
@@ -105,7 +105,7 @@ function fetchSavedPasswords() {
             })
           }
         }
-        console.log('savedCredentials = ', info.savedCredentials);
+        // console.log('savedCredentials = ', info.savedCredentials);
         // chrome.runtime.sendMessage({type: "infoForPopup", info});
     });
   });
@@ -322,6 +322,7 @@ const decrypt = (encryptedHex) => {
 
 listenForMessage('saveNewCrendentials', (request, sender, sendResponse) => {
   info.tempCredentials = {};
+  console.log('Saving new credentials here: ', request.credentials);
   setPassword(request.credentials.domain, request.credentials.login, encrypt(request.credentials.password));
 });
 

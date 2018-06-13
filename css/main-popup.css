@@ -121,8 +121,9 @@ body {
   display: flex;
   align-items: center;
   min-height: 60px;
-  padding-left: 24px;
-  padding-right: 24px;
+  margin-left: 24px;
+  margin-right: 24px;
+  border-bottom: 1px solid #e8e8e8;
 }
 
 .list-item:hover {
@@ -148,16 +149,16 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  border-bottom: 1px solid #e8e8e8;
+  /*border-bottom: 1px solid #e8e8e8;*/
 }
 
 .list-item-action {
   height: 40px;
-  width: 40px;
-  display: flex;
-  align-self: flex-end;
-  justify-content: center;
-  border-bottom: 1px solid #e8e8e8;
+    width: 36px;
+    display: flex;
+    align-self: flex-start;
+    justify-content: right;
+    padding-top: 8px;
 }
 
 .list-item-action:hover {
