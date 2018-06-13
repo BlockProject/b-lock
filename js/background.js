@@ -54,6 +54,10 @@ function setUpNeb() {
 }
 setUpNeb();
 
+// chrome.storage.sync.set({ pastTransactions: info.pastTransactions }, function() {
+//   console.log("\tJust saved pastTransactions to storage: ", info.pastTransactions);
+// });
+
 const listenForMessage = (type, callback) => {
   chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     if (request.type === type) callback(request, sender, sendResponse);
@@ -106,6 +110,8 @@ function fetchSavedPasswords() {
     });
   });
 }
+
+
 
 function savePastTransactionsToStorage() {
   chrome.storage.sync.set({ pastTransactions: info.pastTransactions }, function() {

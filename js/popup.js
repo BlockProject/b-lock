@@ -440,7 +440,7 @@ $(document).ready(() => {
           listItem = createAndAppendTransaction(transaction, elementId, elementClass, $('#recent-entries'));
           attachResponsiveEvents(listItem);
         }
-
+        console.log('transaction is', transaction);
         const description = transaction.type === 'send' ? `Send ${transaction.amount} NAS` : `${transaction.url} | ${transaction.login}`;
         const status = ["Failed", "Done", "Pending"][transaction.status];
         const item = $("#" + transaction.txhash);
@@ -449,7 +449,7 @@ $(document).ready(() => {
             <a target="_blank" href="https://explorer.nebulas.io/#/${info.network}/tx/${transaction.txhash}">\
             ${status}</a>\
             </li>`;
-          // console.log('newElement = ', newElement);
+          console.log('newElement = ', newElement);
           $("#transaction-history ul").append(newElement);
         } else {
           item.find('a').html(status);
@@ -460,7 +460,7 @@ $(document).ready(() => {
         const bareDomain = entry.domain.replace(/[^a-zA-Z0-9]/g, '_');
         const bareLogin = entry.login.replace(/[^a-zA-Z0-9]/g, '_');
         const elementId = `active-${bareDomain}_${bareLogin}`;
-        const elementClass = `${bareDomain} ${bareLogin}`;
+        const elementClass = `${bareDomain} ${bareLogin} blockEntry`;
         const selectorString = `.${bareDomain}.${bareLogin}`;
         if ($(selectorString) && $(selectorString).length === 0) {
           const secretNote = entry.domain === "Secret note";
@@ -471,25 +471,6 @@ $(document).ready(() => {
             const newElement = createAndAppendSecretnote(entry, elementId, elementClass, $('#active-entries'));
             attachResponsiveEvents(newElement);
           }
-          const newEntryDom = `<li class="old-${bareDomain} old-${bareLogin} blockEntry">\
-              <div class="entry-domain">${entry.domain}</div>\
-              <div class="entry-login">${entry.login}</div>\
-              <button class="fillEntryBtn">Fill</button>\
-              <button class="editEntryBtn">Edit</button>\
-              <button class="viewEntryBtn">View</button>\
-              <div class="editEntryForm hidden">\
-                <label>${ secretNote ? "Password:" : "Note" }</label>\
-                <input type="text" class="edit-password-input"></input>\
-                <button class="submit-edit-entry">Save</button>\
-              </div>\
-              <div class="viewEntry hidden">\
-                ${entry.password}\
-              </div>\
-            </li>`;
-          $("#matching-entries ul").append(newEntryDom);
-          $(`${selectorString} .viewEntryBtn`).click((e) => {
-            $(`${selectorString} .viewEntry`).toggleClass('hidden');
-          });
         } else {
           console.log();
         }
