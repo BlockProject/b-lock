@@ -31,7 +31,6 @@ $(document).ready(() => {
       password: $("#new-account-password").val(),
     }, function (response) {
       info = response;
-      // refresh();
       console.log(info);
       $('#newAccountMain').hide();
       $('#newAccountSuccess').show();
@@ -90,10 +89,6 @@ $(document).ready(() => {
     const input = event.target;
     creatingOrRestoring = true;
     if ('files' in input && input.files.length > 0) {
-      // placeFileContent(
-      //   document.getElementById('content-target'),
-      //   input.files[0]
-      // );
       readFileContent(input.files[0]).then(content => {
         console.log('read this content');
         console.log(content);
@@ -199,7 +194,6 @@ $(document).ready(() => {
       listItemDetails.attr('edit-mode', 'false');
 
       const keyItem = listItemDetails.find('.list-item-content-details-key');
-      // keyItem.prop('readonly', true);
       keyItem.val(keyItem.attr('pastValue'));
 
       const valueItem = listItemDetails.find('.list-item-content-details-value.in-use.real');
@@ -234,7 +228,6 @@ $(document).ready(() => {
       listItemDetails.attr('edit-mode', 'true');
       enableVisibility(e);
       const keyItem = listItemDetails.find('.list-item-content-details-key')
-      // keyItem.prop('readonly', false);
       keyItem.attr('pastValue', keyItem.val());
 
       const valueItem = listItemDetails.find('.list-item-content-details-value.in-use.real');
@@ -258,48 +251,13 @@ $(document).ready(() => {
     }
   };
 
-  // const handleOpenTxn = (e) => {
-  //   // TODO:
-  //   // open the transaction in block explorer, new tab
-  // };
-
   const attachResponsiveEvents = (listItem) => {
     $(listItem).find('.toggle-dropdown-cancel').click(handleToggleDropdownCancel);
     $(listItem).find('.toggle-edit-done').click(enableEdit);
     $(listItem).find('.toggle-visibility').click(handleToggleVisibility);
-    // $(listItem).find('.open-txn-new-tab').click(handleOpenTxn);
   };
 
-  // const createAndAppendCredential = (credentials, elementId, elementClass, container) => {
-  //   const listItem = $('#template-list-item-credential').clone();
-  //   listItem.find('.list-item-content-overview-title').html(credentials.domain);
-  //   listItem.find('.list-item-content-overview-description').html(credentials.login);
-  //   listItem.find('.list-item-content-details-topic').html(credentials.domain);
-  //   listItem.find('.list-item-content-details-key').val(credentials.login);
-  //   listItem.find('.list-item-content-details-value').val(credentials.password);
-  //   listItem.removeClass('hidden').addClass(elementClass).attr('id', elementId);
-  //   container.append(listItem);
-  //   return listItem;
-  // };
-  //
-  // const createAndAppendSecretnote = (secretnote, elementId, elementClass, container) => {
-  //   // TODO:
-  //   // fill up like the above function
-  //   const listItem = $('#template-list-item-secretnote').clone();
-  //   listItem.find('.list-item-content-overview-title').html(secretnote.domain);
-  //   listItem.find('.list-item-content-details-topic').html(secretnote.domain);
-  //   listItem.find('.list-item-content-overview-description').html(secretnote.login);
-  //   listItem.find('.list-item-content-details-key').val(secretnote.login);
-  //   listItem.find('.list-item-content-details-value-decrypted').val(secretnote.password);
-  //   listItem.find('.list-item-content-details-value-encrypted').val(new Array(secretnote.password.length+1).join('*'));
-  //   listItem.removeClass('hidden').addClass(elementClass).attr('id', elementId);
-  //   container.append(listItem);
-  //   return listItem;
-  // };
-
   const createAndAppendTransaction = (txn, elementId, elementClass, container) => {
-    // TODO:
-    // fill up like the above function
     const listItem = $('#template-list-item-transaction').clone();
     listItem.removeClass('hidden').addClass(elementClass).attr('id', elementId);
     listItem.find('.list-item-content-overview-title').html(getTxnTitle(txn));
@@ -351,7 +309,8 @@ $(document).ready(() => {
     const destination = $("#new-transaction-destination").val();
     const amount = $("#new-transaction-amount").val();
     if (destination === "" || amount === 0) {
-      $('#send-nas-notice').html('Invalid inputs');
+      const message = {message: 'Invalid destination address or amount'};
+      document.querySelector('#new-transaction-snackbar').MaterialSnackbar.showSnackbar(message);
       return;
     }
     $('#new-transaction-destination').val("");
@@ -362,7 +321,8 @@ $(document).ready(() => {
       destination,
       amount,
     });
-    $('#send-nas-notice').html('Sent transaction');
+    const message = {message: 'Sent ' + amount + ' NAS to ' + destination};
+    document.querySelector('#new-transaction-snackbar').MaterialSnackbar.showSnackbar(message);
   });
 
   chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
@@ -381,7 +341,6 @@ $(document).ready(() => {
   };
 
   const refresh = () => {
-    // $(".section").hide();
     $('#newAccount').hide();
     $('#newAccountIntro').hide();
     $('#newAccountMain').hide();
@@ -390,7 +349,6 @@ $(document).ready(() => {
     $('#logged-in-view').hide();
     $('#loginKeystore').hide();
 
-    // console.log('got this info : ', info);
 
     if (info == undefined) return;
     if (info.account.keystore == undefined) { // user haven't created account
@@ -509,7 +467,6 @@ $(document).ready(() => {
   const requestRefreshFromBackground = function() {
     if (!creatingOrRestoring) {
       chrome.runtime.sendMessage({type: "requestInfo"}, (newInfo) => {
-        // console.log('newInfo', newInfo);
         info = newInfo;
         refresh();
       });
@@ -576,17 +533,6 @@ $(document).ready(() => {
   $('#close-popup-view').click(closePopupView);
   $('.new-credential-toggle-visibility').click(toggleNewCredentialPasswordVisibility);
 
-  $('#new-credential-save').click(function (e) {
-    // new-credential-domain
-    // new-credential-login
-    // new-credential-password
-  });
-
-  $('#new-secretnote-save').click(function (e) {
-    // new-secretnote-title
-    // new-secretnote-content
-  });
-
   const initFloatingActionButton = () => {
     var elems = document.querySelectorAll('.fixed-action-btn');
     var instances = M.FloatingActionButton.init(elems, {
@@ -624,7 +570,8 @@ $(document).ready(() => {
     const login = $('#new-credential-login').val();
     const password = $('#new-credential-password').val();
     if (domain === "" || login === "" || password === "") {
-      $('#new-credential-notice').html('Invalid inputs');
+      const message = {message: 'Invalid inputs, value cannot be empty'};
+      document.querySelector('#new-credential-snackbar').MaterialSnackbar.showSnackbar(message);
       return;
     }
 
@@ -637,14 +584,16 @@ $(document).ready(() => {
     $('#new-credential-login').val("");
     $('#new-credential-password').val("");
     chrome.runtime.sendMessage({type: "saveNewCrendentials", credentials: obj});
-    $('#new-credential-notice').html('Saved new credentials');
+    const message = {message: 'Saved new ' + domain + ' credential for ' + login};
+    document.querySelector('#new-credential-snackbar').MaterialSnackbar.showSnackbar(message);
   });
 
   $('#new-secretnote-save').click(function (e) {
     const login = $('#new-secretnote-title').val();
     const password = $('#new-secretnote-content').val();
     if (login === "" || password === "") {
-      $('#new-secretnote-notice').html('Invalid inputs');
+      const message = {message: 'Invalid inputs, input cannot be empty'};
+      document.querySelector('#new-secretnote-snackbar').MaterialSnackbar.showSnackbar(message);
       return;
     }
     const obj = {
@@ -656,7 +605,8 @@ $(document).ready(() => {
     $('#new-secretnote-content').val("");
     console.log('saving secret note yo');
     chrome.runtime.sendMessage({type: "saveNewCrendentials", credentials: obj});
-    $('#new-secretnote-notice').html('Saved new secret note');
+    const message = {message: 'Saved new secret note ' + login};
+    document.querySelector('#new-secretnote-snackbar').MaterialSnackbar.showSnackbar(message);
   });
 
   $('#search-field').keyup(() => {
