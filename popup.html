@@ -88,6 +88,23 @@
       <div id="cryptpass-main" class="main" style="display:none;">
           <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header mdl-layout--fixed-tabs">
             <header class="mdl-layout__header">
+              <div class="header-options">
+                <!-- <div style="flex-grow:1;padding-left:24px;display:flex;align-items:center;font-size:24px" class="mdl-color-text--white">
+                  b.lock
+                </div> -->
+                <div>
+                  <span id="active-network">Mainnet</span>
+                  <button id="demo-menu-lower-right" class="mdl-button mdl-js-button mdl-button--icon">
+                    <i class="material-icons">arrow_drop_down</i>
+                  </button>
+                  <ul class="mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect"
+                    for="demo-menu-lower-right">
+                    <li id="select-network-mainnet" class="mdl-menu__item">Mainnet</li>
+                    <li id="select-network-testnet" class="mdl-menu__item mdl-menu__item--full-bleed-divider">Testnet</li>
+                    <li id="logout-keystore" class="mdl-menu__item">Logout</li>
+                  </ul>
+                </div>
+              </div>
               <div class="mdl-layout__tab-bar mdl-js-ripple-effect">
                 <a id="tab-favorite" href="#scroll-tab-1" class="mdl-layout__tab is-active">
                   <div class="icon material-icons">favorite</div>
@@ -98,13 +115,13 @@
                 <a id="tab-my-account" href="#scroll-tab-3" class="mdl-layout__tab">
                   <div class="icon material-icons">person</div>
                 </a>
-                <a id="tab-settings" href="#scroll-tab-4" class="mdl-layout__tab">
+                <!-- <a id="tab-settings" href="#scroll-tab-4" class="mdl-layout__tab">
                   <div class="icon material-icons">menu</div>
-                </a>
+                </a> -->
                 <div class="mdl-tooltip" for="tab-favorite">Dashboard</div>
                 <div class="mdl-tooltip" for="tab-past-activity">Past Activity</div>
                 <div class="mdl-tooltip" for="tab-my-account">My Account</div>
-                <div class="mdl-tooltip" for="tab-settings">Settings</div>
+                <!-- <div class="mdl-tooltip" for="tab-settings">Settings</div> -->
               </div>
             </header>
             <main class="mdl-layout__content">
@@ -149,13 +166,13 @@
                 </div>
               </section>
               <section class="mdl-layout__tab-panel" id="scroll-tab-3">
-                <div class="layout-tab-content">
+                <div class="layout-tab-content tab-my-account">
                 </div>
               </section>
-              <section class="mdl-layout__tab-panel" id="scroll-tab-4">
+              <!-- <section class="mdl-layout__tab-panel" id="scroll-tab-4">
                 <div class="layout-tab-content">
                 </div>
-              </section>
+              </section> -->
             </main>
           </div>
       </div>
@@ -260,6 +277,7 @@
         <div id="pendingTx" class="hidden">Sent pending Tx... <a>Link</a></div>
       </div>
       <button id="refresh">Refresh</button>
+
       <div id="setting-view">
         <div id="network-setting">
           <h2>Change network</h2>
@@ -297,8 +315,6 @@
             <div class="mdl-snackbar__text"></div>
             <button class="mdl-snackbar__action" type="button"></button>
           </div>
-          <!-- <div class="mdl-color-text--blue-800" id="send-nas-notice">
-          </div> -->
         </div>
 
         <div id="new-credential-container" class="popup-view-container" style="color:white;display:none;">
@@ -327,8 +343,6 @@
             <div class="mdl-snackbar__text"></div>
             <button class="mdl-snackbar__action" type="button"></button>
           </div>
-          <!-- <div class="mdl-color-text--blue-800" id="new-credential-notice">
-          </div> -->
         </div>
 
         <div id="new-secretnote-container" class="popup-view-container" style="color:white;display:none;">
@@ -350,8 +364,6 @@
             <div class="mdl-snackbar__text"></div>
             <button class="mdl-snackbar__action" type="button"></button>
           </div>
-          <!-- <div class="mdl-color-text--blue-800" id="new-secretnote-notice">
-          </div> -->
         </div>
       </div>
 

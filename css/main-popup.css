@@ -295,3 +295,16 @@ body {
   justify-content: center;
   cursor: pointer;
 }
+
+#demo-menu-lower-right {
+  height: 24px;
+}
+
+.header-options {
+  display: flex;
+  padding-right: 4px;
+  padding-top: 4px;
+  justify-content: flex-end;
+  background-color: #b2b9e3;
+  color: #3f50b5;
+}
