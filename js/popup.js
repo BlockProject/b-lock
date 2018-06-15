@@ -501,8 +501,8 @@ $(document).ready(() => {
     } else {
       const keyword = $('#search-field').val();
       const matchingEntries = info.allCredentialsArray[info.network].filter((entry) => (entry.domain + entry.login).includes(keyword));
-      showEntries(showingAll ? info.allCredentialsArray[info.network] : matchingEntries);
-      $('#active-entries-title').html("MATCHING ENTRIES");
+      showEntries(matchingEntries);
+      $('#active-entries-title').html(showingAll && keyword === "" ? "ALL ENTRIES" : "MATCHING ENTRIES");
     }
 
   }
@@ -654,15 +654,9 @@ $(document).ready(() => {
 
   $('#search-field').keyup(() => {
     console.log('search field is changed');
-
-    filterByCurrentDomain = $('#search-field').val() === "" ? true : false;
-    showingAll = false;
-    filterEntries();
-  });
-
-  $('#see-all-entries').click((e) => {
-    filterByCurrentDomain = false;
-    showingAll = true;
+    if (!showingAll) {
+      filterByCurrentDomain = $('#search-field').val() === "" ? true : false;
+    }
     filterEntries();
   });
 
@@ -688,6 +682,20 @@ $(document).ready(() => {
 
   $('#tab-favorite').click((e) => {
     $('#recent-entries').detach().appendTo(".tab-favorite-recent-transactions");
+    $('.tab-favorite-active-now').detach().prependTo(".tab-favorite");
+    $('.tab-favorite-search').detach().prependTo(".tab-favorite");
+    showingAll = false;
+    filterByCurrentDomain = true;
+    filterEntries();
+    refreshRecentTransactions();
+  });
+
+  $('#tab-all-entries').click((e) => {
+    $('.tab-favorite-search').detach().appendTo("#all-entries-container");
+    $('.tab-favorite-active-now').detach().appendTo("#all-entries-container");
+    showingAll = true;
+    filterByCurrentDomain = false;
+    filterEntries();
     refreshRecentTransactions();
   });
 
@@ -697,7 +705,6 @@ $(document).ready(() => {
     $('.mdl-layout__tab-bar a').removeClass('is-active');
     $('#scroll-tab-2').addClass('is-active');
     $('#tab-past-activity').addClass('is-active');
-
   });
 
   const refreshRecentTransactions = () => {
