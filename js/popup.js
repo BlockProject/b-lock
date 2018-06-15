@@ -37,7 +37,7 @@ $(document).ready(() => {
     });
   });
 
-  $('#saveKeystoreBtn').click(function () {
+  const handleSaveKeystore = () => {
     if (info.account.keystore === null || info.account.keystore === undefined || info.account.keystore === '') return;
     const address = JSON.parse(info.account.keystore).address;
     const fileName = 'nebulas-'.concat(info.network).concat('-').concat(address).concat('.json');
@@ -48,7 +48,10 @@ $(document).ready(() => {
     element.click();
     refresh(info);
     creatingOrRestoring = false;
-  });
+  };
+
+  $('#saveKeystoreBtn').click(handleSaveKeystore);
+  $('#my-account-download-keystore-btn').click(handleSaveKeystore);
 
   $('#new-account-password-confirm').keyup(function (e) {
     const passwordField = $('#new-account-password');
@@ -257,6 +260,51 @@ $(document).ready(() => {
     $(listItem).find('.toggle-visibility').click(handleToggleVisibility);
   };
 
+  const displayMyAccountInfo = (info) => {
+    $('#my-account-public-address').val(info.account.address);
+    const balance = parseInt(info.account.balance) / (10 ** 18);
+    $('#my-account-balance').html(balance + ' NAS');
+    $('#my-account-nonce').html(info.account.nonce);
+  };
+
+  const togglePrivateKey = () => {
+    if ($('#my-account-privatekey-wrapper').attr('is-visible') === 'true') {
+      $('#my-account-private-key').hide();
+      $('#my-account-private-key').html('');
+      $('#my-account-view-privatekey-password-wrapper').show();
+      $('#my-account-view-privatekey-password').val('');
+      $('#view-private-key').html('VIEW');
+      $('#my-account-privatekey-wrapper').attr('is-visible', 'false');
+    } else {
+      chrome.runtime.sendMessage({
+        type: "unlockAccount",
+        password: $('#my-account-view-privatekey-password').val()
+      }, function (response) {
+        if (response.unlockAccount.unlocked) {
+          $('#my-account-view-privatekey-password-wrapper').hide();
+          $('#my-account-private-key').show();
+          $('#my-account-private-key').html(response.account.privKey);
+          $('#view-private-key').html('HIDE');
+          $('#my-account-privatekey-wrapper').attr('is-visible', 'true');
+        }
+      });
+    }
+  };
+
+  const copyAddressToClipboard = () => {
+    document.getElementById("my-account-public-address").select();
+    document.execCommand("copy");
+    window.getSelection().removeAllRanges();
+    document.getElementById("copy-public-address-snackbar").MaterialSnackbar.showSnackbar({
+      message: 'Copied to clipboard',
+    });
+  };
+
+  const initMyAccountEvents = () => {
+    $('#view-private-key').click(togglePrivateKey);
+    $('#my-account-public-address-copy').click(copyAddressToClipboard);
+  };
+
   const createAndAppendTransaction = (txn, elementId, elementClass, container) => {
     const listItem = $('#template-list-item-transaction').clone();
     listItem.removeClass('hidden').addClass(elementClass).attr('id', elementId);
@@ -337,12 +385,12 @@ $(document).ready(() => {
     }
   });
 
-  const showSavePasswordDom = (obj) => {
-    console.log('showing this div, ', obj);
-    $('#save-credentials-domain').val(obj.domain);
-    $('#save-credentials-login').val(obj.login);
-    $('#save-credentials-password').val(obj.password);
-  };
+  // const showSavePasswordDom = (obj) => {
+  //   console.log('showing this div, ', obj);
+  //   $('#save-credentials-domain').val(obj.domain);
+  //   $('#save-credentials-login').val(obj.login);
+  //   $('#save-credentials-password').val(obj.password);
+  // };
 
   const refresh = (infoObject) => {
     $('#newAccount').hide();
@@ -373,15 +421,21 @@ $(document).ready(() => {
       $('#cryptpass-main').show();
       $('#logged-in-view').show();
 
-      $("#address").html(infoObject.account.address);
-      $("#accountBalance").html(infoObject.account.balance);
-      $("#accountNonce").html(infoObject.account.nonce);
-      $("#save-credentials").show();
-      $("#save-note").show();
-      $("#plain-password-list").html(JSON.stringify(infoObject.savedCredentials));
+      // $("#address").html(info.account.address);
+      // $("#accountBalance").html(info.account.balance);
+      // $("#accountNonce").html(info.account.nonce);
+      // $("#save-credentials").show();
+      // $("#save-note").show();
+      // $("#plain-password-list").html(JSON.stringify(info.savedCredentials));
+
+      // if (firstRefresh) {
+      //   showSavePasswordDom(info.tempCredentials);
+      //   firstRefresh = false;
+      // }
 
       if (firstRefresh) {
-        showSavePasswordDom(infoObject.tempCredentials);
+        displayMyAccountInfo(info);
+        initMyAccountEvents();
         firstRefresh = false;
       }
 

@@ -168,6 +168,46 @@
               </section>
               <section class="mdl-layout__tab-panel" id="scroll-tab-3">
                 <div class="layout-tab-content tab-my-account">
+                  <div class="my-account-public">
+                    <div class="mdl-typography--body-2">Your Public Address</div>
+                    <div class="mdl-typography--body-1 my-account-public-address-wrapper">
+                      <input id="my-account-public-address" readonly></input>
+                      <span id="my-account-public-address-copy">COPY</span>
+                    </div>
+                    <div class="my-account-info">
+                      <div class="my-account-info-part">
+                        <div class="info-label mdl-typography--body-2">Balance</div>
+                        <div id="my-account-balance" class="info-value"></div>
+                      </div>
+                      <div class="my-account-info-part">
+                        <div class="info-label mdl-typography--body-2">Nonce</div>
+                        <div id="my-account-nonce" class="info-value"></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="my-account-privatekey-container">
+                    <div class="mdl-typography--body-2">Your Private Key</div>
+                    <div class="my-account-privatekey-wrapper" id="my-account-privatekey-wrapper">
+                      <div id="my-account-view-privatekey-password-wrapper" class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                        <input class="mdl-textfield__input mdl-color-text--black" type="password" id="my-account-view-privatekey-password">
+                        <label class="mdl-textfield__label" for="new-credential-password">Password</label>
+                      </div>
+                      <div id="my-account-private-key" style="display:none;"></div>
+                      <button id="view-private-key" class="mdl-button mdl-js-button mdl-button--raised mdl-color--blue-800 mdl-color-text--white">
+                        VIEW
+                      </button>
+                    </div>
+                  </div>
+                  <div class="my-account-downloadkeystore">
+                    <div class="mdl-typography--body-2" style="margin-bottom:12px;">Download your JSON keystore</div>
+                    <button id="my-account-download-keystore-btn" class="mdl-button mdl-js-button mdl-button--raised mdl-color--blue-800 mdl-color-text--white">
+                      DOWNLOAD
+                    </button>
+                  </div>
+                  <div id="copy-public-address-snackbar" class="mdl-js-snackbar mdl-snackbar">
+                    <div class="mdl-snackbar__text"></div>
+                    <button class="mdl-snackbar__action" type="button"></button>
+                  </div>
                 </div>
               </section>
               <!-- <section class="mdl-layout__tab-panel" id="scroll-tab-4">
