@@ -231,6 +231,16 @@ listenForMessage('changeNetwork', (request, sender, sendResponse) => {
   });
 });
 
+listenForMessage('fillPassword', (request, sender, sendResponse) => {
+  console.log('filling password');
+  chrome.tabs.query({active: true, currentWindow: true}, function (tabs) {
+    chrome.tabs.sendMessage(tabs[0].id, {
+      type: 'fillPassword',
+      credentials: request.credentials
+    });
+  });
+});
+
 const refreshInfo = (infoObject) => {
   if (!infoObject.unlockAccount.unlocked) return;
 

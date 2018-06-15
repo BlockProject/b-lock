@@ -258,6 +258,27 @@ $(document).ready(() => {
     $(listItem).find('.toggle-dropdown-cancel').click(handleToggleDropdownCancel);
     $(listItem).find('.toggle-edit-done').click(enableEdit);
     $(listItem).find('.toggle-visibility').click(handleToggleVisibility);
+
+    $(listItem).find('.list-item-content-overview').click ((e) => {
+      console.log("clicked FILL");
+      const listItemParent = $(e.target).closest('.list-item');
+      if (listItemParent.find('input.in-use').length === 0) return;
+      console.log("FILLING for real");
+      chrome.runtime.sendMessage({ type: "fillPassword", credentials: {
+        login: listItemParent.find('.list-item-content-details-key').val(),
+        password: $(this).find('.list-item-content-details-value').val()
+      }})
+    });
+    $(listItem).find('.list-item-content-overview').hover ((e) => {
+      console.log('on hover');
+      console.log($(listItem).find('.list-item-content-overview-fill'));
+      $(listItem).find('.list-item-content-overview-fill').removeClass('hidden');
+      $(listItem).find('.list-item-content-overview-description').addClass('hidden');
+    }, (e) => {
+      console.log('off hover');
+      $(listItem).find('.list-item-content-overview-fill').addClass('hidden');
+      $(listItem).find('.list-item-content-overview-description').removeClass('hidden');
+    });
   };
 
   const displayMyAccountInfo = (info) => {
@@ -706,6 +727,8 @@ $(document).ready(() => {
     $('#scroll-tab-2').addClass('is-active');
     $('#tab-past-activity').addClass('is-active');
   });
+
+
 
   const refreshRecentTransactions = () => {
     const transactionCount = info.pastTransactions[info.network].length;

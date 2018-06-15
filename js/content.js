@@ -172,6 +172,21 @@ $(document).ready(function () {
     }
   });
 
+  const fillAllForms = (credentials) => {
+    const passwordFields = $('input:password');
+    for (const passwordField of passwordFields) {
+      const form = $(passwordField).closest('form');
+      fillForm(form, credentials);
+    }
+  }
+
+  chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.type == "fillPassword") {
+      console.log('filling password');
+      fillAllForms(request.credentials);
+    }
+  })
+
   chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     if (request.type == "infoForContent") {
       console.log('got infoForContent:', request);
