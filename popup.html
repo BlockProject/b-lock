@@ -140,6 +140,9 @@
                       ACTIVE NOW
                     </div>
                     <div class="list-container-main" id="active-entries">
+                      <div id="such-empty">
+                        Such empty ~
+                      </div>
                     </div>
                   </div>
                   <div class="tab-favorite-recent-transactions list-container">
@@ -149,6 +152,9 @@
                     <div class="list-container-main" id="recent-entries">
                     </div>
                   </div>
+                  <button id="see-all-tnxs-btn" class="mdl-button mdl-js-button mdl-button--raised mdl-color--blue-800 mdl-color-text--white">
+                    SEE ALL
+                  </button>
                 </div>
                 <div id="overlay-div"></div>
                 <div class="fixed-action-btn">
@@ -164,6 +170,11 @@
               </section>
               <section class="mdl-layout__tab-panel" id="scroll-tab-2">
                 <div class="layout-tab-content">
+                  <div id="all-transactions-container" class="list-container">
+                    <div class="list-container-title mdl-typography--body-2 mdl-color-text--blue-800">
+                      ALL PAST TRANSACTIONS
+                    </div>
+                  </div>
                 </div>
               </section>
               <section class="mdl-layout__tab-panel" id="scroll-tab-3">
@@ -218,7 +229,7 @@
           </div>
       </div>
 
-      <div id="template-list-item-entry" class="list-item hidden" expanded='false'>
+      <div id="template-list-item-entry" class="list-item entry-item hidden" expanded='false'>
         <div class="list-item-icon">
           <i class="material-icons">security</i>
         </div>
@@ -262,78 +273,6 @@
           <a class="material-icons open-txn-new-tab">open_in_new</a>
         </div>
       </div>
-
-      <!-- <div id="logged-in-view" class="hidden">
-        <input type="text" id="search-field" placeholder="Search..."></input>
-        <div id="matching-entries">
-          <ul>
-          </ul>
-        </div>
-        <button id="see-all-entries">See all saved entries</button>
-        <div id="transaction-history">
-          <h3>Transaction history</h3>
-          <ul>
-          </ul>
-        </div>
-        <div id="new-transaction">
-          <div id="new-nas-sending-tx">
-            <h3>Send NAS:</h3>
-            <div><label>Destination:</label><input id="nas-destination" type="text"></input></div>
-            <div><label>Amount:</label><input id="nas-amount" type="number"></input></div>
-            <div><button id="submit-nas-tx">Send</button></div>
-          </div>
-          <div id="save-credentials" style="display:none;">
-            <h2>Save new password</h2>
-            <div>
-              <label>Url:</label>
-              <input id="save-credentials-domain"></input>
-            </div>
-            <div>
-              <label>Username:</label>
-              <input id="save-credentials-login"></input>
-            </div>
-            <div>
-              <label>Password:</label>
-              <input id="save-credentials-password" type="password"></input>
-            </div>
-            <div>
-              <button id="save-credentials-submit">Save</button>
-            </div>
-          </div>
-          <div id="save-note" style="display:none;">
-            <h2>Save new secret note</h2>
-            <div>
-              <label>Title:</label>
-              <input id="save-note-title"></input>
-            </div>
-            <div>
-              <label>Note:</label>
-              <textarea id="save-note-note"></textarea>
-            </div>
-            <div>
-              <button id="save-note-submit">Save</button>
-            </div>
-          </div>
-        </div>
-        <div id="pendingTx" class="hidden">Sent pending Tx... <a>Link</a></div>
-      </div>
-      <button id="refresh">Refresh</button>
-
-      <div id="setting-view">
-        <div id="network-setting">
-          <h2>Change network</h2>
-          <button network="mainnet" class="mainnet network">Mainnet <span><b>*</b></span></button>
-          <button network="testnet" class="testnet network">Testnet <span><b>*</b></span></button>
-        </div>
-        <div id="accountInfo">
-          <label>Public address:</label>
-          <div id="address"></div>
-          <label>Account balance:</label>
-          <div id="accountBalance"></div>
-          <label>Account nonce:</label>
-          <div id="accountNonce"></div>
-        </div>
-      </div> -->
 
       <div id="sliding-up-div" class="sliding-up-div">
         <a id="close-popup-view" style="cursor:pointer;"><i class="material-icons mdl-color-text--red-500">close</i></a>

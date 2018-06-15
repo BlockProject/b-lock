@@ -421,18 +421,6 @@ $(document).ready(() => {
       $('#cryptpass-main').show();
       $('#logged-in-view').show();
 
-      // $("#address").html(info.account.address);
-      // $("#accountBalance").html(info.account.balance);
-      // $("#accountNonce").html(info.account.nonce);
-      // $("#save-credentials").show();
-      // $("#save-note").show();
-      // $("#plain-password-list").html(JSON.stringify(info.savedCredentials));
-
-      // if (firstRefresh) {
-      //   showSavePasswordDom(info.tempCredentials);
-      //   firstRefresh = false;
-      // }
-
       if (firstRefresh) {
         displayMyAccountInfo(info);
         initMyAccountEvents();
@@ -449,6 +437,7 @@ $(document).ready(() => {
         }
         console.log('transaction is', transaction);
       }
+      refreshRecentTransactions();
 
       for (entry of infoObject.allCredentialsArray[infoObject.network]) {
         const bareDomain = entry.domain.replace(/[^a-zA-Z0-9]/g, '_');
@@ -494,6 +483,11 @@ $(document).ready(() => {
         const bareLogin = entry.login.replace(/[^a-zA-Z0-9]/g, '_');
         $(`.${bareDomain}.${bareLogin}`).show();
       }
+      if (entries.length === 0) {
+        $('#such-empty').show();
+      } else {
+        $('#such-empty').hide();
+      }
     }
 
     if (filterByCurrentDomain) {
@@ -508,6 +502,7 @@ $(document).ready(() => {
       const matchingEntries = info.allCredentialsArray[info.network].filter((entry) => (entry.domain + entry.login).includes(keyword));
       showEntries(showingAll ? info.allCredentialsArray[info.network] : matchingEntries);
     }
+
   }
 
   const requestRefreshFromBackground = function() {
@@ -683,6 +678,37 @@ $(document).ready(() => {
     refresh(info);
   });
 
+  $('#tab-past-activity').click((e) => {
+    $('#recent-entries').detach().appendTo("#all-transactions-container");
+    $('.transaction-item').show();
+  });
+
+  $('#tab-favorite').click((e) => {
+    $('#recent-entries').detach().appendTo(".tab-favorite-recent-transactions");
+    refreshRecentTransactions();
+  });
+
+  $('#see-all-tnxs-btn').click((e) => {
+    $('#tab-past-activity').trigger("click");
+    $('.mdl-layout__tab-panel').removeClass('is-active');
+    $('.mdl-layout__tab-bar a').removeClass('is-active');
+    $('#scroll-tab-2').addClass('is-active');
+    $('#tab-past-activity').addClass('is-active');
+
+  });
+
+  const refreshRecentTransactions = () => {
+    const transactionCount = info.pastTransactions[info.network].length;
+
+    $(".tab-favorite-recent-transactions .transaction-item").hide();
+    const startIndex = Math.max(0, transactionCount - 3);
+    // console.log('transactions to be shown: ', info.pastTransactions[info.network].slice(startIndex, transactionCount));
+    for (const transaction of info.pastTransactions[info.network].slice(startIndex, transactionCount)) {
+      const elementId = `recent-${transaction.type}_${transaction.txhash}`;
+      console.log('showing elementid =', elementId);
+      $(`.tab-favorite-recent-transactions #${elementId}`).show();
+    }
+  }
 
   const showCurrentNetwork = () => {
     $('.active-network').hide();

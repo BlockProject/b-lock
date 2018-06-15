@@ -15,6 +15,15 @@ body {
   overflow: hidden
 }
 
+#all-transactions-container {
+  padding-top: 20px;
+}
+
+#such-empty {
+  padding: 5px;
+  text-align: center;
+}
+
 .cryptpass-popup {
   width: 358px;
   height: 600px;
