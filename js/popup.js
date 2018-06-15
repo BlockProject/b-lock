@@ -421,7 +421,7 @@ $(document).ready(() => {
       $('#cryptpass-main').show();
       $('#logged-in-view').show();
 
-      if (firstRefresh) {
+      if (firstRefresh && (info.account.address !== undefined)) {
         displayMyAccountInfo(info);
         initMyAccountEvents();
         firstRefresh = false;
@@ -676,6 +676,7 @@ $(document).ready(() => {
     chrome.runtime.sendMessage({ type: "logout" });
     info.unlockAccount.unlocked = false;
     refresh(info);
+    firstRefresh = true;
   });
 
   $('#tab-past-activity').click((e) => {
