@@ -496,11 +496,13 @@ $(document).ready(() => {
         console.log('currentDomain = ', currentDomain);
         const matchingEntries = info.allCredentialsArray[info.network].filter((entry) => entry.domain === currentDomain);
         showEntries(matchingEntries);
+        $('#active-entries-title').html("ON THIS SITE");
       });
     } else {
       const keyword = $('#search-field').val();
       const matchingEntries = info.allCredentialsArray[info.network].filter((entry) => (entry.domain + entry.login).includes(keyword));
       showEntries(showingAll ? info.allCredentialsArray[info.network] : matchingEntries);
+      $('#active-entries-title').html("MATCHING ENTRIES");
     }
 
   }

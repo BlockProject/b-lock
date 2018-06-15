@@ -344,6 +344,14 @@ body {
   flex-basis: 50%;
 }
 
+.center-align {
+  text-align: center;
+}
+#see-all-tnxs-btn {
+  margin-top: 10px !important;
+  margin-bottom: 50px !important;
+}
+
 .my-account-privatekey-container {
   margin-top: 32px;
   text-align: center;
