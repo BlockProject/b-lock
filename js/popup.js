@@ -46,7 +46,7 @@ $(document).ready(() => {
     element.setAttribute('download', fileName);
     document.body.appendChild(element);
     element.click();
-    refresh();
+    refresh(info);
     creatingOrRestoring = false;
   });
 
@@ -139,7 +139,7 @@ $(document).ready(() => {
         $("#cryptpass-popup-login-main-wrong-password").hide();
       }
     } else {
-      refresh();
+      refresh(info);
       creatingOrRestoring = false;
     }
   }
@@ -152,7 +152,7 @@ $(document).ready(() => {
     listItemDetails.find('.list-item-content-details-value').attr('type', 'text');
     listItemDetails.find('textarea.list-item-content-details-value.real.in-use').removeClass('hidden');
     listItemDetails.find('textarea.list-item-content-details-value.dummy.in-use').addClass('hidden');
-    listItemDetails.find('.toggle-visibility').html('visibility_off');
+    listItemDetails.find('.toggle-visibility').html('visibility');
     listItemDetails.attr('is-visible', 'true');
   };
 
@@ -162,7 +162,7 @@ $(document).ready(() => {
     listItemDetails.find('.list-item-content-details-value').attr('type', 'password');
     listItemDetails.find('textarea.list-item-content-details-value.real.in-use').addClass('hidden');
     listItemDetails.find('textarea.list-item-content-details-value.dummy.in-use').removeClass('hidden');
-    listItemDetails.find('.toggle-visibility').html('visibility');
+    listItemDetails.find('.toggle-visibility').html('visibility_off');
     listItemDetails.attr('is-visible', 'false');
   };
 
@@ -264,6 +264,10 @@ $(document).ready(() => {
     listItem.find('.list-item-content-overview-description').html(getTxnDescription(txn));
     listItem.find('.open-txn-new-tab').attr('href', getTxnUrl(txn));
     listItem.find('.open-txn-new-tab').attr('target', '_blank');
+    listItem.find('.open-txn-new-tab')
+      .html(["error", "done", "..."][txn.status])
+      .addClass(["error-tx", "done-tx", "pending-tx"][txn.status])
+      .css('color', ['red', '#1564c0', 'grey'][txn.status]);
     container.prepend(listItem);
     return listItem;
   };
@@ -329,7 +333,7 @@ $(document).ready(() => {
     if (request.type == 'infoForPopUp') {
       console.log('got infoForPopUp');
       info = request.info;
-      refresh();
+      refresh(info);
     }
   });
 
@@ -340,7 +344,7 @@ $(document).ready(() => {
     $('#save-credentials-password').val(obj.password);
   };
 
-  const refresh = () => {
+  const refresh = (infoObject) => {
     $('#newAccount').hide();
     $('#newAccountIntro').hide();
     $('#newAccountMain').hide();
@@ -350,37 +354,38 @@ $(document).ready(() => {
     $('#loginKeystore').hide();
 
 
-    if (info == undefined) return;
-    if (info.account.keystore == undefined) { // user haven't created account
+    if (infoObject == undefined) return;
+    if (infoObject.account.keystore == undefined) { // user haven't created account
       $("#newAccount").show();
       $('#newAccountIntro').show();
       $('#restoreAccount').show();
-    } else if (!info.unlockAccount.unlocked) { // user created account, haven't logged in
-      console.log('info.account.address = ', info.account.address);
+    } else if (!infoObject.unlockAccount.unlocked) { // user created account, haven't logged in
+      console.log('infoObject.account.address = ', infoObject.account.address);
       $("#loginKeystore").show();
-      if (info.unlockAccount.wrongPass) {
+      if (infoObject.unlockAccount.wrongPass) {
         $("#cryptpass-popup-login-main-wrong-password").show();
       } else {
         $("#cryptpass-popup-login-main-wrong-password").hide();
       }
     } else { // user already logged in
+      console.log('refreshing for network', infoObject.network);
       $('#cryptpass-initial').hide();
       $('#cryptpass-main').show();
       $('#logged-in-view').show();
 
-      $("#address").html(info.account.address);
-      $("#accountBalance").html(info.account.balance);
-      $("#accountNonce").html(info.account.nonce);
+      $("#address").html(infoObject.account.address);
+      $("#accountBalance").html(infoObject.account.balance);
+      $("#accountNonce").html(infoObject.account.nonce);
       $("#save-credentials").show();
       $("#save-note").show();
-      $("#plain-password-list").html(JSON.stringify(info.savedCredentials));
+      $("#plain-password-list").html(JSON.stringify(infoObject.savedCredentials));
 
       if (firstRefresh) {
-        showSavePasswordDom(info.tempCredentials);
+        showSavePasswordDom(infoObject.tempCredentials);
         firstRefresh = false;
       }
 
-      for (transaction of info.pastTransactions[info.network]) {
+      for (transaction of infoObject.pastTransactions[infoObject.network]) {
         // append new
         const elementId = `recent-${transaction.type}_${transaction.txhash}`;
         const elementClass = `recent-${transaction.type}`;
@@ -389,22 +394,9 @@ $(document).ready(() => {
           attachResponsiveEvents(listItem);
         }
         console.log('transaction is', transaction);
-        const description = transaction.type === 'send' ? `Send ${transaction.amount} NAS` : `${transaction.url} | ${transaction.login}`;
-        const status = ["Failed", "Done", "Pending"][transaction.status];
-        const item = $("#" + transaction.txhash);
-        if (item.length === 0) {
-          const newElement = `<li id='${transaction.txhash}'>${description}\
-            <a target="_blank" href="https://explorer.nebulas.io/#/${info.network}/tx/${transaction.txhash}">\
-            ${status}</a>\
-            </li>`;
-          console.log('newElement = ', newElement);
-          $("#transaction-history ul").prepend(newElement);
-        } else {
-          item.find('a').html(status);
-        }
       }
 
-      for (entry of info.allCredentialsArray) {
+      for (entry of infoObject.allCredentialsArray[infoObject.network]) {
         const bareDomain = entry.domain.replace(/[^a-zA-Z0-9]/g, '_');
         const bareLogin = entry.login.replace(/[^a-zA-Z0-9]/g, '_');
         const elementId = `active-${bareDomain}_${bareLogin}`;
@@ -454,13 +446,13 @@ $(document).ready(() => {
       chrome.tabs.getSelected(null,function(tab) {
         const currentDomain = (new URL(tab.url)).hostname;
         console.log('currentDomain = ', currentDomain);
-        const matchingEntries = info.allCredentialsArray.filter((entry) => entry.domain === currentDomain);
+        const matchingEntries = info.allCredentialsArray[info.network].filter((entry) => entry.domain === currentDomain);
         showEntries(matchingEntries);
       });
     } else {
       const keyword = $('#search-field').val();
-      const matchingEntries = info.allCredentialsArray.filter((entry) => (entry.domain + entry.login).includes(keyword));
-      showEntries(showingAll ? info.allCredentialsArray : matchingEntries);
+      const matchingEntries = info.allCredentialsArray[info.network].filter((entry) => (entry.domain + entry.login).includes(keyword));
+      showEntries(showingAll ? info.allCredentialsArray[info.network] : matchingEntries);
     }
   }
 
@@ -468,7 +460,7 @@ $(document).ready(() => {
     if (!creatingOrRestoring) {
       chrome.runtime.sendMessage({type: "requestInfo"}, (newInfo) => {
         info = newInfo;
-        refresh();
+        refresh(info);
       });
     }
   }
@@ -522,11 +514,11 @@ $(document).ready(() => {
     if (wrapper.attr('is-visible') === undefined || wrapper.attr('is-visible') === 'false') {
       wrapper.attr('is-visible', 'true');
       $('#new-credential-password').attr('type', 'text');
-      $(e.target).html('visibility_off');
+      $(e.target).html('visibility');
     } else {
       wrapper.attr('is-visible', 'false');
       $('#new-credential-password').attr('type', 'password');
-      $(e.target).html('visibility');
+      $(e.target).html('visibility_off');
     }
   };
 
@@ -623,25 +615,36 @@ $(document).ready(() => {
     filterEntries();
   });
 
-  $('.mainnet.network').click((e) => {
+  $('.mainnet.select-network').click((e) => {
     changeNetwork('mainnet');
   });
 
-  $('.testnet.network').click((e) => {
+  $('.testnet.select-network').click((e) => {
     changeNetwork('testnet');
   });
 
+  $('#logout-keystore').click((e) => {
+    chrome.runtime.sendMessage({ type: "logout" });
+    info.unlockAccount.unlocked = false;
+    refresh(info);
+  });
+
+
   const showCurrentNetwork = () => {
-    $(`.network span`).hide();
-    $(`.${info.network} span`).show();
+    $('.active-network').hide();
+    $(`.active-network.${info.network}`).show();
     console.log('Current network: ', info.network);
   }
 
   const changeNetwork = (network) => {
     console.log('changing network to ', network);
-    chrome.runtime.sendMessage({ type: "changeNetwork", network });
     info.network = network;
-    $('#transaction-history li').remove();
+    const item = $('.blockEntry').remove();
+    console.log(item);
+    $('#recent-entries').html('');
+    console.log('refreshing from changeNetwork');
+    refresh(info);
+    chrome.runtime.sendMessage({ type: "changeNetwork", network });
     showCurrentNetwork();
   }
 })

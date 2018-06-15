@@ -93,14 +93,15 @@
                   b.lock
                 </div> -->
                 <div>
-                  <span id="active-network">Mainnet</span>
+                  <span class="active-network mainnet">Mainnet</span>
+                  <span class="active-network testnet">Testnet</span>
                   <button id="demo-menu-lower-right" class="mdl-button mdl-js-button mdl-button--icon">
                     <i class="material-icons">arrow_drop_down</i>
                   </button>
                   <ul class="mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect"
                     for="demo-menu-lower-right">
-                    <li id="select-network-mainnet" class="mdl-menu__item">Mainnet</li>
-                    <li id="select-network-testnet" class="mdl-menu__item mdl-menu__item--full-bleed-divider">Testnet</li>
+                    <li class="select-network mdl-menu__item mainnet">Mainnet</li>
+                    <li class="select-network mdl-menu__item mdl-menu__item--full-bleed-divider testnet">Testnet</li>
                     <li id="logout-keystore" class="mdl-menu__item">Logout</li>
                   </ul>
                 </div>
@@ -195,7 +196,7 @@
               <textarea class="list-item-content-details-value hidden dummy" rows="3" readonly>********</textarea>
             </div>
             <div class="list-item-content-details-action toggle-visibility-div">
-              <i class="material-icons toggle-visibility">visibility</i>
+              <i class="material-icons toggle-visibility">visibility_off</i>
             </div>
             <div class="list-item-content-details-action">
               <i class="material-icons toggle-edit-done">edit</i>
@@ -207,7 +208,7 @@
         </div>
       </div>
 
-      <div id="template-list-item-transaction" class="list-item hidden" item-type="transaction">
+      <div id="template-list-item-transaction" class="list-item hidden transaction-item" item-type="transaction">
         <div class="list-item-icon">
           <i class="material-icons">receipt</i>
         </div>
