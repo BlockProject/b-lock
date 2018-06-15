@@ -11,8 +11,7 @@
   "content_scripts": [
     {
       "matches": ["http://*/*", "https://*/*"],
-      "css": ["css/material.min.css"],
-      "js": ["thirdparty/jquery-3.3.1.min.js", "thirdparty/material.min.js", "js/content.js"]
+      "js": ["thirdparty/jquery-3.3.1.min.js", "js/content.js"]
     }
   ],
   "options_page": "options.html",

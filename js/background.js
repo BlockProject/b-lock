@@ -88,8 +88,8 @@ function fetchSavedPasswords(network) {
          args: ""
       }
     }).then(function(tx) {
-        // console.log('Result from fetching passwords: ', tx);
-
+        console.log('Result from fetching passwords: ', tx);
+        // if (tx.error)
         const encryptedPasswords = JSON.parse(tx.result);
 
         if (!info.savedCredentials[network]) info.savedCredentials[network] = {};
@@ -231,16 +231,6 @@ listenForMessage('changeNetwork', (request, sender, sendResponse) => {
   });
 });
 
-listenForMessage('fillPassword', (request, sender, sendResponse) => {
-  console.log('filling password');
-  chrome.tabs.query({active: true, currentWindow: true}, function (tabs) {
-    chrome.tabs.sendMessage(tabs[0].id, {
-      type: 'fillPassword',
-      credentials: request.credentials
-    });
-  });
-});
-
 const refreshInfo = (infoObject) => {
   if (!infoObject.unlockAccount.unlocked) return;
 
@@ -286,7 +276,8 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 });
 
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-  if (request.type == 'switchCredentials') {
+  if (request.type == 'chooseCredentials') {
+    console.log("Filling credentials");
     chrome.tabs.query({active: true, currentWindow: true}, function (tabs) {
       chrome.tabs.sendMessage(tabs[0].id, {
         type: 'chooseCredentials',

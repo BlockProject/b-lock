@@ -10,7 +10,7 @@ $(document).ready(() => {
       $("#show-credentials-options-main").append(credentialsDiv);
       credentialsDiv.click(function (e) {
         chrome.runtime.sendMessage({
-          type: 'switchCredentials',
+          type: 'chooseCredentials',
           credentials: credential,
         });
         hideIframe();

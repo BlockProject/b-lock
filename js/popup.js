@@ -259,17 +259,17 @@ $(document).ready(() => {
     $(listItem).find('.toggle-edit-done').click(enableEdit);
     $(listItem).find('.toggle-visibility').click(handleToggleVisibility);
 
-    $(listItem).find('.list-item-content-overview').click ((e) => {
+    $(listItem).find('.list-item-content-overview.entries').click ((e) => {
       console.log("clicked FILL");
       const listItemParent = $(e.target).closest('.list-item');
       if (listItemParent.find('input.in-use').length === 0) return;
       console.log("FILLING for real");
-      chrome.runtime.sendMessage({ type: "fillPassword", credentials: {
+      chrome.runtime.sendMessage({ type: "chooseCredentials", credentials: {
         login: listItemParent.find('.list-item-content-details-key').val(),
         password: $(this).find('.list-item-content-details-value').val()
       }})
     });
-    $(listItem).find('.list-item-content-overview').hover ((e) => {
+    $(listItem).find('.list-item-content-overview.entries').hover ((e) => {
       console.log('on hover');
       console.log($(listItem).find('.list-item-content-overview-fill'));
       $(listItem).find('.list-item-content-overview-fill').removeClass('hidden');
@@ -343,8 +343,8 @@ $(document).ready(() => {
 
   const getTxnTitle = (txn) => {
     let result;
-    if (txn.type === 'send' || txn.type === 'receive') {
-      result = 'Transaction';
+    if (txn.type === 'send') {
+      result = 'Send NAS';
     } else if (txn.type === 'password') {
       if (txn.url === 'Secret note') {
         result = 'Secret Note'
@@ -358,9 +358,8 @@ $(document).ready(() => {
   const getTxnDescription = (txn) => {
     let result;
     if (txn.type === 'send') {
-      result = 'Sent ' + txn.amount + ' NAS to ' + txn.destination;
-    } else if (txn.type === 'receive') {
-      result = 'Received ' + txn.amount + ' NAS from ' + txn.source;
+      result = txn.amount + ' NAS to ' + txn.destination.slice(0,16) + '...';
+      // result = 'Sent ' + txn.amount + ' NAS';
     } else if (txn.type === 'password') {
       if (txn.url === 'Secret note') {
         result = txn.login;
@@ -438,6 +437,7 @@ $(document).ready(() => {
       }
     } else { // user already logged in
       console.log('refreshing for network', infoObject.network);
+      console.log('into = ', infoObject);
       $('#cryptpass-initial').hide();
       $('#cryptpass-main').show();
       $('#logged-in-view').show();
@@ -456,7 +456,7 @@ $(document).ready(() => {
           listItem = createAndAppendTransaction(transaction, elementId, elementClass, $('#recent-entries'));
           attachResponsiveEvents(listItem);
         }
-        console.log('transaction is', transaction);
+        // console.log('transaction is', transaction);
       }
       refreshRecentTransactions();
 
@@ -479,6 +479,7 @@ $(document).ready(() => {
 
   const createAndAppendEntry = (entry, elementId, elementClass) => {
     const secretNote = entry.domain === "Secret note";
+    console.log("adding entry: ", entry);
     const listItem = $('#template-list-item-entry').clone();
     listItem.removeClass('hidden').addClass(elementClass).attr('id', elementId);
     listItem.find('.list-item-content-overview-title').html(entry.domain);

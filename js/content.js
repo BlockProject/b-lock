@@ -165,27 +165,18 @@ $(document).ready(function () {
 
   chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     if (request.type == 'chooseCredentials') {
-      const passwordFields = $('input:password');
-      for (const passwordField of passwordFields) {
-        fillForm($(passwordField).closest('form'), request.credentials);
-      }
+      fillAllForms(request.credentials);
     }
   });
 
   const fillAllForms = (credentials) => {
+    console.log("Filling all forms with credentials");
     const passwordFields = $('input:password');
     for (const passwordField of passwordFields) {
       const form = $(passwordField).closest('form');
       fillForm(form, credentials);
     }
   }
-
-  chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    if (request.type == "fillPassword") {
-      console.log('filling password');
-      fillAllForms(request.credentials);
-    }
-  })
 
   chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     if (request.type == "infoForContent") {
