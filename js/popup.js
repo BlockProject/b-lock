@@ -433,7 +433,7 @@ $(document).ready(() => {
       //   firstRefresh = false;
       // }
 
-      if (firstRefresh) {
+      if (firstRefresh && (info.account.address !== undefined)) {
         displayMyAccountInfo(info);
         initMyAccountEvents();
         firstRefresh = false;
@@ -681,6 +681,7 @@ $(document).ready(() => {
     chrome.runtime.sendMessage({ type: "logout" });
     info.unlockAccount.unlocked = false;
     refresh(info);
+    firstRefresh = true;
   });
 
 
