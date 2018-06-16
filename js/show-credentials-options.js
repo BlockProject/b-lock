@@ -58,12 +58,12 @@ $(document).ready(() => {
       const listItemParent = $(e.target).closest('.list-item');
       if (listItemParent.find('input.in-use').length === 0) return;
       console.log("FILLING for real");
-      hideIframe();
       const credentials = {
         login: listItemParent.find('.list-item-content-details-key').val(),
-        password: $(this).find('.list-item-content-details-value').val()
+        password: listItemParent.find('.list-item-content-details-value').val()
       };
       chrome.runtime.sendMessage({ type: "chooseCredentials", credentials: credentials});
+      hideIframe();
     });
     $(listItem).find('.list-item-content-overview.entries').hover ((e) => {
       console.log('on hover');

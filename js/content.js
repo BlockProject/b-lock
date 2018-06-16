@@ -10,7 +10,7 @@ $(document).ready(function () {
     returnVal.password = passwordField[0].value;
     const allInputs = $($form).find('input');
     for (const input of allInputs) {
-      if (input['type'] == 'text' &&
+      if ((input['type'] == 'text' || input['type'] == 'email') &&
           input.value != undefined &&
           input.value != '') {
         returnVal.login = input.value;
@@ -73,7 +73,20 @@ $(document).ready(function () {
     const allInputs = $($form).find('input');
     if (allInputs.length > 1) {
       const passwordInput = $($form).find('input:password');
-      const loginInput = $($form).find('input:text');
+      let loginInput = $($form).find('input:text');
+      if (loginInput.length == 0) {
+        let loginInputs = $($form).find('input');
+        for (z in loginInputs) {
+          if ($(loginInputs[z]).attr('type') == 'email') {
+            loginInput = $(loginInputs[z]);
+            break;
+          }
+        }
+      }
+      if (passwordInput.length == 0 ||
+          loginInput.length == 0) {
+        return;
+      }
       passwordInput[0].value = credentials.password;
       loginInput[0].value = credentials.login;
     }

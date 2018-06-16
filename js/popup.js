@@ -198,6 +198,7 @@ $(document).ready(() => {
       listItemDetails.attr('edit-mode', 'false');
 
       const keyItem = listItemDetails.find('.list-item-content-details-key');
+      keyItem.prop('readonly', true);
       keyItem.val(keyItem.attr('pastValue'));
 
       const valueItem = listItemDetails.find('.list-item-content-details-value.in-use.real');
@@ -231,7 +232,8 @@ $(document).ready(() => {
     if (listItemDetails.attr('edit-mode') == 'false') {
       listItemDetails.attr('edit-mode', 'true');
       enableVisibility(e);
-      const keyItem = listItemDetails.find('.list-item-content-details-key')
+      const keyItem = listItemDetails.find('.list-item-content-details-key');
+      keyItem.prop('readonly', false);
       keyItem.attr('pastValue', keyItem.val());
 
       const valueItem = listItemDetails.find('.list-item-content-details-value.in-use.real');
