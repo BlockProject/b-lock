@@ -44,7 +44,7 @@ const initialInfo = {
     'testnet': [],
     'mainnet': []
   },
-  backgroundImgURL: chrome.extension.getURL('images/get_started16.png')
+  backgroundImgURL: chrome.extension.getURL('images/block_logo-16px.png')
 };
 let info = JSON.parse(JSON.stringify(initialInfo));
 
