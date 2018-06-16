@@ -289,6 +289,14 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   }
 });
 
+const resetInfoForNewAccount = () => {
+  info = initialInfo;
+  chrome.storage.sync.set({ pastTransactions: {
+    'testnet': [],
+    'mainnet': []
+  }});
+}
+
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   if (request.type == 'uploadedKeystore') {
     info.account.keystore = request.keystore;
@@ -350,6 +358,7 @@ listenForMessage('logout', (request, sender, sendResponse) => {
 
 listenForMessage('createAccount', (request, sender, sendResponse) => {
   account = Account.NewAccount();
+  resetInfoForNewAccount();
   info.account.privKey = account.getPrivateKeyString();
   info.account.pubKey = account.getPublicKeyString();
   info.account.privKeyArray = account.getPrivateKey();
