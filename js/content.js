@@ -129,8 +129,8 @@ $(document).ready(function () {
       height: 100% !important;\
       top: ${position.bottom}px !important;\
       right: ${position.right}px !important;\
-      max-height: 182px !important;\
-      max-width: 368px !important;`
+      max-height: 240px !important;\
+      max-width: 376px !important;`
     );
 
     $('#b-lock-show-credentials-options iframe').attr('style',
