@@ -48,7 +48,7 @@ const initialInfo = {
 };
 let info = JSON.parse(JSON.stringify(initialInfo));
 
-function setUpNeb() {
+function setUpNeb(openNewTab) {
   chrome.storage.sync.get('network', function(data) {
     info.network = data.network ? data.network : 'testnet';
 
@@ -56,11 +56,13 @@ function setUpNeb() {
 
     chrome.storage.sync.get('keystore', function(data) {
       info.account.keystore = data.keystore;
-      openLoginTab();
+      if (openNewTab) {
+        openLoginTab();
+      }
     });
   });
 }
-setUpNeb();
+setUpNeb(true);
 
 // chrome.storage.sync.set({ pastTransactions: info.pastTransactions }, function() {
 //   console.log("\tJust saved pastTransactions to storage: ", info.pastTransactions);
@@ -343,7 +345,7 @@ listenForMessage('saveNewCrendentials', (request, sender, sendResponse) => {
 listenForMessage('logout', (request, sender, sendResponse) => {
   console.log('Loging out ...', request.credentials);
   info = JSON.parse(JSON.stringify(initialInfo));
-  setUpNeb();
+  setUpNeb(false);
 });
 
 listenForMessage('createAccount', (request, sender, sendResponse) => {

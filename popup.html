@@ -238,6 +238,18 @@
               </section> -->
             </main>
           </div>
+          <div id="new-transaction-snackbar" class="mdl-js-snackbar mdl-snackbar">
+            <div class="mdl-snackbar__text"></div>
+            <button class="mdl-snackbar__action" type="button"></button>
+          </div>
+          <div id="new-credential-snackbar" class="mdl-js-snackbar mdl-snackbar">
+            <div class="mdl-snackbar__text"></div>
+            <button class="mdl-snackbar__action" type="button"></button>
+          </div>
+          <div id="new-secretnote-snackbar" class="mdl-js-snackbar mdl-snackbar">
+            <div class="mdl-snackbar__text"></div>
+            <button class="mdl-snackbar__action" type="button"></button>
+          </div>
       </div>
 
       <div id="template-list-item-entry" class="list-item entry-item hidden" expanded='false'>
@@ -297,13 +309,13 @@
             <label class="mdl-textfield__label" for="new-transaction-destination">Destination</label>
           </div>
           <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-            <input class="mdl-textfield__input mdl-color-text--black" type="number" id="new-transaction-amount">
+            <input class="mdl-textfield__input mdl-color-text--black" type="number" step=".00001" id="new-transaction-amount">
             <label class="mdl-textfield__label" for="new-transaction-amount">Amount (NAS)</label>
           </div>
           <button id="new-transaction-send" class="mdl-button mdl-js-button mdl-button--raised mdl-color--blue-800 mdl-color-text--white">
             SEND
           </button>
-          <div id="new-transaction-snackbar" class="mdl-js-snackbar mdl-snackbar">
+          <div id="new-transaction-snackbar-error" class="mdl-js-snackbar mdl-snackbar">
             <div class="mdl-snackbar__text"></div>
             <button class="mdl-snackbar__action" type="button"></button>
           </div>
@@ -331,7 +343,7 @@
           <button id="new-credential-save" class="mdl-button mdl-js-button mdl-button--raised mdl-color--blue-800 mdl-color-text--white">
             SAVE
           </button>
-          <div id="new-credential-snackbar" class="mdl-js-snackbar mdl-snackbar">
+          <div id="new-credential-snackbar-error" class="mdl-js-snackbar mdl-snackbar">
             <div class="mdl-snackbar__text"></div>
             <button class="mdl-snackbar__action" type="button"></button>
           </div>
@@ -352,7 +364,7 @@
           <button id="new-secretnote-save" class="mdl-button mdl-js-button mdl-button--raised mdl-color--blue-800 mdl-color-text--white">
             SAVE
           </button>
-          <div id="new-secretnote-snackbar" class="mdl-js-snackbar mdl-snackbar">
+          <div id="new-secretnote-snackbar-error" class="mdl-js-snackbar mdl-snackbar">
             <div class="mdl-snackbar__text"></div>
             <button class="mdl-snackbar__action" type="button"></button>
           </div>

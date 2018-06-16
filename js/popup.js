@@ -120,6 +120,7 @@ $(document).ready(() => {
       type: "unlockAccount",
       password: $("#unlock-keystore-password").val()
     }, function (response) {
+      $("#unlock-keystore-password").val('');
       info = response;
       handleLoginResponse(info);
     });
@@ -284,7 +285,7 @@ $(document).ready(() => {
   const displayMyAccountInfo = (info) => {
     $('#my-account-public-address').val(info.account.address);
     const balance = parseInt(info.account.balance) / (10 ** 18);
-    $('#my-account-balance').html(balance + ' NAS');
+    $('#my-account-balance').html(balance.toFixed(5) + ' NAS');
     $('#my-account-nonce').html(info.account.nonce);
   };
 
@@ -382,7 +383,7 @@ $(document).ready(() => {
     const amount = $("#new-transaction-amount").val();
     if (destination === "" || amount === 0) {
       const message = {message: 'Invalid destination address or amount'};
-      document.querySelector('#new-transaction-snackbar').MaterialSnackbar.showSnackbar(message);
+      document.querySelector('#new-transaction-snackbar-error').MaterialSnackbar.showSnackbar(message);
       return;
     }
     $('#new-transaction-destination').val("");
@@ -393,6 +394,7 @@ $(document).ready(() => {
       destination,
       amount,
     });
+    closePopupView();
     const message = {message: 'Sent ' + amount + ' NAS to ' + destination};
     document.querySelector('#new-transaction-snackbar').MaterialSnackbar.showSnackbar(message);
   });
@@ -421,14 +423,17 @@ $(document).ready(() => {
     $('#logged-in-view').hide();
     $('#loginKeystore').hide();
 
-
     if (infoObject == undefined) return;
     if (infoObject.account.keystore == undefined) { // user haven't created account
+      $('#cryptpass-main').hide();
+      $('#cryptpass-initial').show();
       $("#newAccount").show();
       $('#newAccountIntro').show();
       $('#restoreAccount').show();
     } else if (!infoObject.unlockAccount.unlocked) { // user created account, haven't logged in
       console.log('infoObject.account.address = ', infoObject.account.address);
+      $('#cryptpass-main').hide();
+      $('#cryptpass-initial').show();
       $("#loginKeystore").show();
       if (infoObject.unlockAccount.wrongPass) {
         $("#cryptpass-popup-login-main-wrong-password").show();
@@ -440,7 +445,6 @@ $(document).ready(() => {
       console.log('into = ', infoObject);
       $('#cryptpass-initial').hide();
       $('#cryptpass-main').show();
-      $('#logged-in-view').show();
 
       if (firstRefresh && (info.account.address !== undefined)) {
         displayMyAccountInfo(info);
@@ -636,7 +640,7 @@ $(document).ready(() => {
     const password = $('#new-credential-password').val();
     if (domain === "" || login === "" || password === "") {
       const message = {message: 'Invalid inputs, value cannot be empty'};
-      document.querySelector('#new-credential-snackbar').MaterialSnackbar.showSnackbar(message);
+      document.querySelector('#new-credential-snackbar-error').MaterialSnackbar.showSnackbar(message);
       return;
     }
 
@@ -648,6 +652,7 @@ $(document).ready(() => {
     $('#new-credential-domain').val("");
     $('#new-credential-login').val("");
     $('#new-credential-password').val("");
+    closePopupView();
     chrome.runtime.sendMessage({type: "saveNewCrendentials", credentials: obj});
     const message = {message: 'Saved new ' + domain + ' credential for ' + login};
     document.querySelector('#new-credential-snackbar').MaterialSnackbar.showSnackbar(message);
@@ -658,7 +663,7 @@ $(document).ready(() => {
     const password = $('#new-secretnote-content').val();
     if (login === "" || password === "") {
       const message = {message: 'Invalid inputs, input cannot be empty'};
-      document.querySelector('#new-secretnote-snackbar').MaterialSnackbar.showSnackbar(message);
+      document.querySelector('#new-secretnote-snackbar-error').MaterialSnackbar.showSnackbar(message);
       return;
     }
     const obj = {
@@ -669,6 +674,7 @@ $(document).ready(() => {
     $('#new-secretnote-title').val("");
     $('#new-secretnote-content').val("");
     console.log('saving secret note yo');
+    closePopupView();
     chrome.runtime.sendMessage({type: "saveNewCrendentials", credentials: obj});
     const message = {message: 'Saved new secret note ' + login};
     document.querySelector('#new-secretnote-snackbar').MaterialSnackbar.showSnackbar(message);
