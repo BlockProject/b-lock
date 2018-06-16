@@ -21,6 +21,19 @@ $(document).ready(() => {
     });
   });
 
+  $('#toggle-visibility').click(function (e) {
+    const container = $(e.target).closest('.save-credentials-container-item');
+    if (container.attr('is-visible') == 'true') {
+      $('#save-credentials-password').attr('type', 'password');
+      $(e.target).html('visibility');
+      container.attr('is-visible', 'false');
+    } else {
+      $('#save-credentials-password').attr('type', 'text');
+      $(e.target).html('visibility_off');
+      container.attr('is-visible', 'true');
+    }
+  });
+
   $('#dismiss-save').click(function (e) {
     $('#save-credentials').hide();
     chrome.runtime.sendMessage({

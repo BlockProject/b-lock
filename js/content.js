@@ -55,8 +55,8 @@ $(document).ready(function () {
       height: 100% !important;\
       top: 10px !important;\
       right: 10px !important;\
-      max-height: 182px !important;\
-      max-width: 368px !important;'
+      max-height: 240px !important;\
+      max-width: 376px !important;'
     );
 
     $('#b-lock-save-popup iframe').attr('style',

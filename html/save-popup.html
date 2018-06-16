@@ -2,28 +2,36 @@
   <html>
     <head>
       <link rel="stylesheet" type="text/css" href="../css/common.css">
+      <link rel="stylesheet" type="text/css" href="../css/material.min.css" />
+      <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
       <link rel="stylesheet" type="text/css" href="../css/save-popup.css">
       <script src="../thirdparty/jquery-3.3.1.min.js"></script>
+      <script src="../thirdparty/material.min.js"></script>
       <script src="../js/save-popup.js"></script>
     </head>
     <body>
       <div id="save-credentials">
-        <h2>Save credentials to B.Lock ?</h2>
-        <div>
-          <label>Domain:</label>
-          <input id="save-credentials-domain"></input>
-        </div>
-        <div>
-          <label>Login:</label>
-          <input id="save-credentials-login"></input>
-        </div>
-        <div>
-          <label>Password:</label>
-          <input id="save-credentials-password" type="password"></input>
-        </div>
-        <div>
-          <button id="save-credentials-submit">Save</button>
-          <button id="dismiss-save">Dismiss</button>
+        <div class="save-credentials-container">
+          <h4 style="text-align:center;margin:12px 0px 8px;">SAVE CREDENTIALS</h4>
+          <div class="save-credentials-container-item">
+            <label class="mdl-typography--body-2 save-credentials-container-item-label">DOMAIN:</label>
+            <input class="save-credentials-container-value" id="save-credentials-domain"></input>
+          </div>
+          <div class="save-credentials-container-item">
+            <label class="mdl-typography--body-2 save-credentials-container-item-label">LOGIN:</label>
+            <input class="save-credentials-container-value" id="save-credentials-login"></input>
+          </div>
+          <div class="save-credentials-container-item">
+            <label class="mdl-typography--body-2 save-credentials-container-item-label">PASSWORD:</label>
+            <input class="save-credentials-container-value" id="save-credentials-password" type="password"></input>
+            <i id="toggle-visibility" style="margin-left:8px;cursor:pointer;" class="material-icons">visibility</i>
+          </div>
+          <div class="save-credentials-container-footer">
+            <button class="mdl-button mdl-js-button mdl-button--raised mdl-color--blue-800 mdl-color-text--white" id="save-credentials-submit">
+              Save</button>
+            <button class="mdl-button mdl-js-button mdl-button--raised mdl-color--blue-800 mdl-color-text--white" id="dismiss-save">
+              Dismiss</button>
+          </div>
         </div>
       </div>
     </body>

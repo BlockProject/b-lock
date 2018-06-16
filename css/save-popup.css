@@ -1,10 +1,49 @@
 #save-credentials {
-  width: 350px;
+  width: 360px;
   position: absolute;
-  top: 0;
-  right: 0;
+  top: 4;
+  right: 4;
   border-radius: 2px;
   box-shadow: 0 2px 9px rgba(60, 74, 84, .7);
   margin: 7px 9px 11px 9px;
-  background-color: #F3F4F7;
+  background-color: #e8e8e8;
+}
+
+.save-credentials-container {
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+.save-credentials-container-item {
+  display: flex;
+  margin-bottom: 8px;
+}
+
+.save-credentials-container-item-label {
+  flex-basis: 35%;
+  text-align: right;
+  margin-right: 16px;
+}
+
+.save-credentials-container-footer {
+  padding-top: 8px;
+  padding-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#dismiss-save {
+  margin-left: 16px;
+}
+
+input {
+  font-size: 14px;
+  background-color: transparent;
+  border: none;
+}
+
+input:focus {
+  border-radius: 4px;
+  border: #2d65d6;
 }
