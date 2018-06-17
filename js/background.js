@@ -131,7 +131,8 @@ function savePastTransactionsToStorage() {
   });
 }
 
-function setPassword(url, login, encryptedPass) {
+function setPassword(url, login, password) {
+  const encryptedPass = encrypt(password)
   if (!info.unlockAccount.unlocked) return;
   neb.api.getAccountState(account.getAddressString()).then(function (state) {
     const encryptedKey = encrypt(`${url}:${login}`);
@@ -151,7 +152,7 @@ function setPassword(url, login, encryptedPass) {
     neb.api.sendRawTransaction(tx.toProtoString()).then(function (resp) {
       console.log(`Just set password for ${url} on contract, response is:`, resp);
       info.pastTransactions[info.network].push({
-        type: "password",
+        type: password === "" ? "delete" : "password",
         status: 2,
         url,
         login,
@@ -351,7 +352,7 @@ const decrypt = (encryptedHex) => {
 listenForMessage('saveNewCrendentials', (request, sender, sendResponse) => {
   info.tempCredentials = {};
   // console.log('Saving new credentials here: ', request.credentials);
-  setPassword(request.credentials.domain, request.credentials.login, encrypt(request.credentials.password));
+  setPassword(request.credentials.domain, request.credentials.login, request.credentials.password);
 });
 
 listenForMessage('logout', (request, sender, sendResponse) => {

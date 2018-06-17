@@ -178,7 +178,7 @@ $(document).ready(() => {
       listItemParent.attr('expanded', 'true');
       $(e.target).parent().removeClass('mdl-color-text--blue-800');
       $(e.target).parent().addClass('mdl-color-text--red-800');
-      $(e.target).html('cancel');
+      $(e.target).html('arrow_drop_up');
     } else {
       listItemParent.find('.list-item-content-details').hide();
       listItemParent.find('.list-item-content-overview').show();
@@ -261,6 +261,14 @@ $(document).ready(() => {
     $(listItem).find('.toggle-dropdown-cancel').click(handleToggleDropdownCancel);
     $(listItem).find('.toggle-edit-done').click(enableEdit);
     $(listItem).find('.toggle-visibility').click(handleToggleVisibility);
+    $(listItem).find('.button-delete').click((e) => {
+      if (confirm('Are you sure you want to delete this password ?')) {
+        const valueItem = $(listItem).find('.list-item-content-details-value.in-use.real');
+        valueItem.val("");
+        handleEditCredentials(e);
+        $(listItem).addClass('hidden');
+      }
+    });
 
     $(listItem).find('.list-item-content-overview.entries').click ((e) => {
       // console.log("clicked FILL");
@@ -354,9 +362,15 @@ $(document).ready(() => {
       result = 'Send NAS';
     } else if (txn.type === 'password') {
       if (txn.url === 'Secret note') {
-        result = 'Secret Note'
+        result = 'Secret note'
       } else {
         result = 'Password';
+      }
+    } else {
+      if (txn.url === 'Secret note') {
+        result = 'Delete secret note'
+      } else {
+        result = 'Delete password';
       }
     }
     return result;
@@ -367,7 +381,7 @@ $(document).ready(() => {
     if (txn.type === 'send') {
       result = txn.amount + ' NAS to ' + txn.destination.slice(0,16) + '...';
       // result = 'Sent ' + txn.amount + ' NAS';
-    } else if (txn.type === 'password') {
+    } else {
       if (txn.url === 'Secret note') {
         result = txn.login;
       } else {
@@ -474,6 +488,7 @@ $(document).ready(() => {
       refreshRecentTransactions();
 
       for (entry of infoObject.allCredentialsArray[infoObject.network]) {
+        if (entry.password === "") continue;
         const bareDomain = entry.domain.replace(/[^a-zA-Z0-9]/g, '_');
         const bareLogin = entry.login.replace(/[^a-zA-Z0-9]/g, '_');
         const elementId = `active-${bareDomain}_${bareLogin}`;

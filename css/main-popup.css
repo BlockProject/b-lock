@@ -130,9 +130,9 @@ body {
   display: flex;
   align-items: center;
   min-height: 60px;
-  margin-left: 16px;
+  margin-left: 14px;
   padding-left: 8px;
-  margin-right: 24px;
+  margin-right: 20px;
   border-bottom: 1px solid #e8e8e8;
 }
 
@@ -182,6 +182,7 @@ body {
 }
 
 .list-item-content-details-main {
+  width: 164px;
   padding-top: 8px;
   padding-bottom: 8px;
 }
@@ -202,12 +203,12 @@ body {
 }
 
 .list-item-content-details-action {
-  height: 40px;
-  width: 40px;
+  height: 30px;
+  width: 30px;
   display: flex;
   justify-content: center;
   align-self: flex-end;
-  margin-left: 8px;
+  margin-left: 5px;
 }
 
 .list-item-content-details-value-encrypted {
