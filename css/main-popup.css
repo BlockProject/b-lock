@@ -184,6 +184,7 @@ body {
 
 .action-buttons {
   display: flex;
+  align-self: flex-end;
 }
 
 .list-item-content-details-main {
