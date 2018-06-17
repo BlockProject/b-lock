@@ -273,6 +273,7 @@ $(document).ready(() => {
       }})
     });
     $(listItem).find('.list-item-content-overview.entries').hover ((e) => {
+      if ($(e.target).closest('.list-item').find("textarea.in-use").length > 0) return;
       console.log('on hover');
       console.log($(listItem).find('.list-item-content-overview-fill'));
       $(listItem).find('.list-item-content-overview-fill').removeClass('hidden');
@@ -458,9 +459,11 @@ $(document).ready(() => {
         // append new
         const elementId = `recent-${transaction.type}_${transaction.txhash}`;
         const elementClass = `recent-${transaction.type}`;
-        if ($(`#${elementId}`) && $(`#${elementId}`).length === 0) {
+        if ($(`#${elementId}`).length === 0) {
           listItem = createAndAppendTransaction(transaction, elementId, elementClass, $('#recent-entries'));
+          console.log('adding recent transaction : ', listItem);
           attachResponsiveEvents(listItem);
+          console.log('attachResponsiveEvents for transaction : ', listItem);
         }
         // console.log('transaction is', transaction);
       }
@@ -478,6 +481,13 @@ $(document).ready(() => {
           console.log();
         }
       }
+
+      if (infoObject.network === "mainnet" && infoObject.account.balance === 0) {
+        $('.get-free-nas-section').show();
+      } else {
+        $('.get-free-nas-section').hide();
+      }
+
       filterEntries();
       showCurrentNetwork();
     }
@@ -737,11 +747,14 @@ $(document).ready(() => {
     $('#tab-past-activity').addClass('is-active');
   });
 
-
-
   const refreshRecentTransactions = () => {
     const transactionCount = info.pastTransactions[info.network].length;
-
+    if (transactionCount === 0) {
+      $('.recent-transactions').hide();
+      return;
+    } else {
+      $('.recent-transactions').show();
+    }
     $(".tab-favorite-recent-transactions .transaction-item").hide();
     const startIndex = Math.max(0, transactionCount - 3);
     // console.log('transactions to be shown: ', info.pastTransactions[info.network].slice(startIndex, transactionCount));

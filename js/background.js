@@ -50,7 +50,7 @@ let info = JSON.parse(JSON.stringify(initialInfo));
 
 function setUpNeb(openNewTab) {
   chrome.storage.sync.get('network', function(data) {
-    info.network = data.network ? data.network : 'testnet';
+    info.network = data.network ? data.network : 'mainnet';
 
     neb.setRequest(new HttpRequest(`https://${info.network}.nebulas.io`));
 

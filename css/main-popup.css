@@ -344,6 +344,16 @@ body {
   flex-basis: 50%;
 }
 
+.get-free-nas-section {
+  margin-top: 30px;
+  text-align: center;
+}
+.get-free-nas-section a {
+}
+.get-free-nas-section button {
+  margin-top: 10px;
+}
+
 .center-align {
   text-align: center;
 }
