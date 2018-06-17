@@ -21,13 +21,15 @@
     "default_icon": {
       "16": "images/block_logo-16px.png",
       "32": "images/block_logo-32px.png",
-      "48": "images/block_logo-64px.png"
+      "48": "images/block_logo-64px.png",
+      "128": "images/block_logo-128px.png"
     }
   },
   "icons": {
     "16": "images/block_logo-16px.png",
     "32": "images/block_logo-32px.png",
-    "48": "images/block_logo-64px.png"
+    "48": "images/block_logo-64px.png",
+    "128": "images/block_logo-128px.png"
   },
   "web_accessible_resources": [
     "html/save-popup.html"
