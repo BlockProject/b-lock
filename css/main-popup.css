@@ -179,10 +179,14 @@ body {
   display: flex;
   width: 214px;
   align-items: center;
+  flex-direction: column;
+}
+
+.action-buttons {
+  display: flex;
 }
 
 .list-item-content-details-main {
-  width: 164px;
   padding-top: 8px;
   padding-bottom: 8px;
 }

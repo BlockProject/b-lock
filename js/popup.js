@@ -178,7 +178,7 @@ $(document).ready(() => {
       listItemParent.attr('expanded', 'true');
       $(e.target).parent().removeClass('mdl-color-text--blue-800');
       $(e.target).parent().addClass('mdl-color-text--red-800');
-      $(e.target).html('arrow_drop_up');
+      $(e.target).html('cancel');
     } else {
       listItemParent.find('.list-item-content-details').hide();
       listItemParent.find('.list-item-content-overview').show();
