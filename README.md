@@ -1,17 +1,33 @@
-# B.Lock Password Manager
+# b.lock - The truly secure and trustless password manager
+### Using encryption and blockchain technology, b.lock is a Chrome extension that helps you manage your passwords in a way such that only you have access to it.
 
 ![alt text](./images/block_logo-16px.png "B.Lock Password Manager")
 
-### What is B.Lock
-B.Lock is a blockchain-based password manager and currently can be used as a browser extension. It is built on the Nebulas public blockchain and is powered by the NAS token.
+### Features:
+- You can save the login credentials for different websites to b.lock. The saved credentials will be auto-filled when you visit the websites subsequently.
+- You can also save "Secret notes" such as bank PIN numbers, metamask seed words,...
+- b.lock acts as a Nebulas wallet as well. You can use it to keep NAS or send NAS to other accounts.
 
-### What can it do
-B.Lock currently supports storing login credentials and secret notes. It is also a Nebulas wallet, and users can send NAS transactions too. B.Lock will prompt you whenever you login/register using a new set of credentials on a domain.
+### How it works
+* b.lock uses your Nebulas private key (in other words, the master key) to encrypt your passwords and secret notes.
+* b.lock saves the encrypted passwords/secret notes on the Nebulas blockchain.
+* Hence, your passwords will be accessible to you anytime and anywhere, as long as you have your private key
+* No one but you can decrypt the encrypted passwords. Thus, you are truly in control of your passwords.
 
-### Why Blockchain
-As we create credentials with more and more websites, we tend to re-use the passwords. This is a major security threat to a user. Password Managers were made to make this credentials management convenient for users. But these password managers still have a single point of failure. What if their servers are down? What if their databases get hacked? Also, using such software is a major trust issue because the code is private and hence cannot be verified.
+### How to use:
+* Step 1: Download the chrome extension from [here]()
+* Step 2: Following the extension’s intructions, create your “keystore” (which is like your master key) and back it up. You can also import your existing Nebulas keystore.
+* Step 3: Go to [this link](https://blockproject.io/faucet) and get your free Nebulas coins (which is needed to run b.lock. Don’t worry, $0.0001 worth of the coin is enough to use b.lock for your lifetime. Hence, we are giving it free to you)
+* Step 4: Done, you can start using b.lock to save your passwords/secret notes
 
-B.Lock encrypts every entry with the user's Nebulas private key. The encrypted data is then stored on the public blockchain. No outages, no single point of failure. The data is then decrypted in the extension before using it to login. So the passwords never leave your machine, and are always available (thanks to blockchain!). All you need to do is backup your Nebulas keystore.
+### Why blockchain?
+* Password managers are essential these days, when we have to manage lots of different passwords (which shouldn't be reused)
+* There are lots of potential problems with the existing centrailized password managers:
+  * Single point of failure: if the server/database goes down, there goes your passwords
+  * Trust issue: can you really trust that these closed-source softwares will not just read your passwords?
+* b.lock solves all of these problems:
+  * The passwords are stored on the decentralized database that is the Nebulas blockchain, hence it will not go down easily
+  * The passwords are encrypted by your private key which belongs to only you. You are the only one who can see your saved passwords.
 
-### Details
-This repository is the chrome extension for B.Lock. Our deployed contract on the mainnet Nebulas can be found [here](https://explorer.nebulas.io/#/address/n1qmQeLTUU6fPJMs1uwTadQZfgwfUAKEUJw).
+### Contract address
+Our deployed contract on the mainnet Nebulas can be found [here](https://explorer.nebulas.io/#/address/n1qmQeLTUU6fPJMs1uwTadQZfgwfUAKEUJw).
