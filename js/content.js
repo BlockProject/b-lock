@@ -115,7 +115,7 @@ $(document).ready(function () {
     $(loginInput[0]).click(function (e) {
       if (!hoveringOverButton) return;
       e.stopPropagation();
-      console.log('clicked on backhround image');
+      // console.log('clicked on backhround image');
       if (dialogOpen == false) {
         injectSelectionDialog(getPosition(loginInput[0]));
         dialogOpen = true;
@@ -198,7 +198,7 @@ $(document).ready(function () {
   });
 
   const fillAllForms = (credentials) => {
-    console.log("Filling all forms with credentials");
+    // console.log("Filling all forms with credentials");
     const passwordFields = $('input:password');
     for (const passwordField of passwordFields) {
       const form = $(passwordField).closest('form');
@@ -208,9 +208,9 @@ $(document).ready(function () {
 
   chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     if (request.type == "infoForContent") {
-      console.log('got infoForContent:', request);
+      // console.log('got infoForContent:', request);
       if (!request.unlocked) return;
-      console.log('doing initialSearch');
+      // console.log('doing initialSearch');
       initialSearch();
       if (request.showSavePasswordDialog) showSavePasswordDialog();
 
@@ -223,7 +223,7 @@ $(document).ready(function () {
             fillForm($(passwordField).closest('form'), request.credentials[0]);
           }
           if (request.credentials.length > 1) {
-            console.log(request);
+            // console.log(request);
             if (injectedButton === false) {
               injectSelectionButton($(passwordField).closest('form'), request.credentials, request.imgURL);
             }

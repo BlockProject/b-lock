@@ -54,10 +54,10 @@ $(document).ready(() => {
     $(listItem).find('.toggle-visibility').click(handleToggleVisibility);
 
     $(listItem).find('.list-item-content-overview.entries').click ((e) => {
-      console.log("clicked FILL");
+      // console.log("clicked FILL");
       const listItemParent = $(e.target).closest('.list-item');
       if (listItemParent.find('input.in-use').length === 0) return;
-      console.log("FILLING for real");
+      // console.log("FILLING for real");
       const credentials = {
         login: listItemParent.find('.list-item-content-details-key').val(),
         password: listItemParent.find('.list-item-content-details-value').val()
@@ -66,12 +66,12 @@ $(document).ready(() => {
       hideIframe();
     });
     $(listItem).find('.list-item-content-overview.entries').hover ((e) => {
-      console.log('on hover');
-      console.log($(listItem).find('.list-item-content-overview-fill'));
+      // console.log('on hover');
+      // console.log($(listItem).find('.list-item-content-overview-fill'));
       $(listItem).find('.list-item-content-overview-fill').removeClass('hidden');
       $(listItem).find('.list-item-content-overview-description').addClass('hidden');
     }, (e) => {
-      console.log('off hover');
+      // console.log('off hover');
       $(listItem).find('.list-item-content-overview-fill').addClass('hidden');
       $(listItem).find('.list-item-content-overview-description').removeClass('hidden');
     });
@@ -100,7 +100,7 @@ $(document).ready(() => {
 
   chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     if (request.type == "infoForContent") {
-      console.log('got infoForContent:', request);
+      // console.log('got infoForContent:', request);
       if (!request.unlocked) return;
 
       if (request.autofill) {

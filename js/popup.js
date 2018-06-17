@@ -31,7 +31,7 @@ $(document).ready(() => {
       password: $("#new-account-password").val(),
     }, function (response) {
       info = response;
-      console.log(info);
+      // console.log(info);
       $('#newAccountMain').hide();
       $('#newAccountSuccess').show();
     });
@@ -93,8 +93,8 @@ $(document).ready(() => {
     creatingOrRestoring = true;
     if ('files' in input && input.files.length > 0) {
       readFileContent(input.files[0]).then(content => {
-        console.log('read this content');
-        console.log(content);
+        // console.log('read this content');
+        // console.log(content);
         handleUploadedKeystore(content);
       }).catch(error => console.log(error));
     }
@@ -136,7 +136,7 @@ $(document).ready(() => {
   const handleLoginResponse = (info) => {
     if (info == undefined) return;
     if (!info.unlockAccount.unlocked) {
-      console.log('info.account.address = ', info.account.address);
+      // console.log('info.account.address = ', info.account.address);
       if (info.unlockAccount.wrongPass) {
         $("#cryptpass-popup-login-main-wrong-password").show();
       } else {
@@ -226,7 +226,7 @@ $(document).ready(() => {
   };
 
   const enableEdit = (e) => {
-    console.log('enabling edit');
+    // console.log('enabling edit');
     const listItemParent = $(e.target).closest('.list-item');
     const listItemDetails = listItemParent.find('.list-item-content-details');
     if (listItemDetails.attr('edit-mode') == 'false') {
@@ -263,10 +263,10 @@ $(document).ready(() => {
     $(listItem).find('.toggle-visibility').click(handleToggleVisibility);
 
     $(listItem).find('.list-item-content-overview.entries').click ((e) => {
-      console.log("clicked FILL");
+      // console.log("clicked FILL");
       const listItemParent = $(e.target).closest('.list-item');
       if (listItemParent.find('input.in-use').length === 0) return;
-      console.log("FILLING for real");
+      // console.log("FILLING for real");
       chrome.runtime.sendMessage({ type: "chooseCredentials", credentials: {
         login: listItemParent.find('.list-item-content-details-key').val(),
         password: $(this).find('.list-item-content-details-value').val()
@@ -274,12 +274,12 @@ $(document).ready(() => {
     });
     $(listItem).find('.list-item-content-overview.entries').hover ((e) => {
       if ($(e.target).closest('.list-item').find("textarea.in-use").length > 0) return;
-      console.log('on hover');
-      console.log($(listItem).find('.list-item-content-overview-fill'));
+      // console.log('on hover');
+      // console.log($(listItem).find('.list-item-content-overview-fill'));
       $(listItem).find('.list-item-content-overview-fill').removeClass('hidden');
       $(listItem).find('.list-item-content-overview-description').addClass('hidden');
     }, (e) => {
-      console.log('off hover');
+      // console.log('off hover');
       $(listItem).find('.list-item-content-overview-fill').addClass('hidden');
       $(listItem).find('.list-item-content-overview-description').removeClass('hidden');
     });
@@ -404,7 +404,7 @@ $(document).ready(() => {
 
   chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     if (request.type == 'infoForPopUp') {
-      console.log('got infoForPopUp');
+      // console.log('got infoForPopUp');
       info = request.info;
       refresh(info);
     }
@@ -426,6 +426,7 @@ $(document).ready(() => {
     $('#logged-in-view').hide();
     $('#loginKeystore').hide();
 
+
     if (infoObject == undefined) return;
     if (infoObject.account.keystore == undefined) { // user haven't created account
       $('#cryptpass-main').hide();
@@ -434,7 +435,7 @@ $(document).ready(() => {
       $('#newAccountIntro').show();
       $('#restoreAccount').show();
     } else if (!infoObject.unlockAccount.unlocked) { // user created account, haven't logged in
-      console.log('infoObject.account.address = ', infoObject.account.address);
+      // console.log('infoObject.account.address = ', infoObject.account.address);
       $('#cryptpass-main').hide();
       $('#cryptpass-initial').show();
       $("#loginKeystore").show();
@@ -445,12 +446,12 @@ $(document).ready(() => {
       }
     } else { // user already logged in
       console.log('refreshing for network', infoObject.network);
-      console.log('into = ', infoObject);
+      // console.log('info = ', infoObject);
       $('#cryptpass-initial').hide();
       $('#cryptpass-main').show();
+      displayMyAccountInfo(info);
 
       if (firstRefresh && (info.account.address !== undefined)) {
-        displayMyAccountInfo(info);
         initMyAccountEvents();
         firstRefresh = false;
       }
@@ -461,9 +462,9 @@ $(document).ready(() => {
         const elementClass = `recent-${transaction.type}`;
         if ($(`#${elementId}`).length === 0) {
           listItem = createAndAppendTransaction(transaction, elementId, elementClass, $('#recent-entries'));
-          console.log('adding recent transaction : ', listItem);
+          // console.log('adding recent transaction : ', listItem);
           attachResponsiveEvents(listItem);
-          console.log('attachResponsiveEvents for transaction : ', listItem);
+          // console.log('attachResponsiveEvents for transaction : ', listItem);
         }
         // console.log('transaction is', transaction);
       }
@@ -477,8 +478,6 @@ $(document).ready(() => {
         const selectorString = `.${bareDomain}.${bareLogin}`;
         if ($(selectorString) && $(selectorString).length === 0) {
           createAndAppendEntry(entry, elementId, elementClass);
-        } else {
-          console.log();
         }
       }
 
@@ -495,7 +494,7 @@ $(document).ready(() => {
 
   const createAndAppendEntry = (entry, elementId, elementClass) => {
     const secretNote = entry.domain === "Secret note";
-    console.log("adding entry: ", entry);
+    // console.log("adding entry: ", entry);
     const listItem = $('#template-list-item-entry').clone();
     listItem.removeClass('hidden').addClass(elementClass).attr('id', elementId);
     listItem.find('.list-item-content-overview-title').html(entry.domain);
@@ -531,7 +530,7 @@ $(document).ready(() => {
     if (filterByCurrentDomain) {
       chrome.tabs.getSelected(null,function(tab) {
         const currentDomain = (new URL(tab.url)).hostname;
-        console.log('currentDomain = ', currentDomain);
+        // console.log('currentDomain = ', currentDomain);
         const matchingEntries = info.allCredentialsArray[info.network].filter((entry) => entry.domain === currentDomain);
         showEntries(matchingEntries);
         $('#active-entries-title').html("ON THIS SITE");
@@ -685,7 +684,7 @@ $(document).ready(() => {
     };
     $('#new-secretnote-title').val("");
     $('#new-secretnote-content').val("");
-    console.log('saving secret note yo');
+    console.log('saving secret note');
     closePopupView();
     chrome.runtime.sendMessage({type: "saveNewCrendentials", credentials: obj});
     const message = {message: 'Saved new secret note ' + login};
@@ -693,7 +692,7 @@ $(document).ready(() => {
   });
 
   $('#search-field').keyup(() => {
-    console.log('search field is changed');
+    // console.log('search field is changed');
     if (!showingAll) {
       filterByCurrentDomain = $('#search-field').val() === "" ? true : false;
     }
@@ -755,29 +754,27 @@ $(document).ready(() => {
     } else {
       $('.recent-transactions').show();
     }
-    $(".tab-favorite-recent-transactions .transaction-item").hide();
+    $(".tab-favorite-recent-transactions .transaction-item").addClass('hidden');
     const startIndex = Math.max(0, transactionCount - 3);
     // console.log('transactions to be shown: ', info.pastTransactions[info.network].slice(startIndex, transactionCount));
     for (const transaction of info.pastTransactions[info.network].slice(startIndex, transactionCount)) {
       const elementId = `recent-${transaction.type}_${transaction.txhash}`;
-      console.log('showing elementid =', elementId);
-      $(`.tab-favorite-recent-transactions #${elementId}`).show();
+      // console.log('showing elementid =', elementId);
+      $(`.tab-favorite-recent-transactions #${elementId}`).removeClass('hidden');
     }
   }
 
   const showCurrentNetwork = () => {
     $('.active-network').hide();
     $(`.active-network.${info.network}`).show();
-    console.log('Current network: ', info.network);
+    // console.log('Current network: ', info.network);
   }
 
   const changeNetwork = (network) => {
     console.log('changing network to ', network);
     info.network = network;
     const item = $('.blockEntry').remove();
-    console.log(item);
     $('#recent-entries').html('');
-    console.log('refreshing from changeNetwork');
     refresh(info);
     chrome.runtime.sendMessage({ type: "changeNetwork", network });
     showCurrentNetwork();
