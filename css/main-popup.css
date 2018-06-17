@@ -130,7 +130,8 @@ body {
   display: flex;
   align-items: center;
   min-height: 60px;
-  margin-left: 24px;
+  margin-left: 16px;
+  padding-left: 8px;
   margin-right: 24px;
   border-bottom: 1px solid #e8e8e8;
 }

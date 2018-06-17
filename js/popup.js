@@ -286,7 +286,9 @@ $(document).ready(() => {
   };
 
   const displayMyAccountInfo = (info) => {
-    $('#my-account-public-address').val(info.account.address);
+    $('#my-account-public-address').html(info.account.address).attr('href',
+      `https://explorer.nebulas.io/#${info.network == 'testnet' ? info.network : ""}/address/${info.account.address}`
+    );
     const balance = parseInt(info.account.balance) / (10 ** 18);
     $('#my-account-balance').html(balance.toFixed(5) + ' NAS');
     $('#my-account-nonce').html(info.account.nonce);
@@ -335,9 +337,10 @@ $(document).ready(() => {
     listItem.removeClass('hidden').addClass(elementClass).attr('id', elementId);
     listItem.find('.list-item-content-overview-title').html(getTxnTitle(txn));
     listItem.find('.list-item-content-overview-description').html(getTxnDescription(txn));
-    listItem.find('.open-txn-new-tab').attr('href', getTxnUrl(txn));
-    listItem.find('.open-txn-new-tab').attr('target', '_blank');
-    listItem.find('.open-txn-new-tab')
+    listItem.click((e) => {
+      window.open(getTxnUrl(txn), '_blank');
+    });
+    listItem.find('.open-txn-new-tab-i')
       .html(["error", "done", "..."][txn.status])
       .addClass(["error-tx", "done-tx", "pending-tx"][txn.status])
       .css('color', ['red', '#1564c0', 'grey'][txn.status]);
@@ -716,7 +719,7 @@ $(document).ready(() => {
 
   $('#tab-past-activity').click((e) => {
     $('#recent-entries').detach().appendTo("#all-transactions-container");
-    $('.transaction-item').show();
+    $('.transaction-item').removeClass('hidden');
   });
 
   $('#tab-favorite').click((e) => {
