@@ -1,0 +1,33 @@
+body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-div {
+  height: 500px;
+  width: 358px;
+}
+
+.login-div-header {
+  text-align: center;
+}
+
+.login-div-main {
+  margin-top: 32px;
+  padding-left: 48px;
+  padding-right: 48px;
+  text-align: center;
+}
+
+.login-div-main-label1 {
+  margin-bottom: 16px;
+}
+
+#login-div-main-wrong-password {
+  margin-top: 16px;
+}
+
+#unlock-keystore {
+  margin-top: 16px;
+}

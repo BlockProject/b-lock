@@ -1,0 +1,408 @@
+html.mdl-js {
+  width: 358px;
+  height: 600px;
+  overflow: hidden;
+}
+
+#logged-in-view {
+  padding-top: 700px;
+}
+
+body {
+  width: 358px;
+  height: 600px;
+  margin: 0;
+  overflow: hidden
+}
+
+#all-transactions-container {
+  padding-top: 20px;
+}
+
+#such-empty {
+  padding: 5px;
+  text-align: center;
+}
+
+.cryptpass-popup {
+  width: 358px;
+  height: 600px;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.cryptpass-popup-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cryptpass-popup-header > h2 {
+  font-weight: bold;
+}
+
+.cryptpass-popup-new {
+  margin-top: 32px;
+  padding-left: 48px;
+  padding-right: 48px;
+  text-align: center;
+}
+
+.cryptpass-popup-new-label1 {
+  margin-bottom: 16px;
+}
+
+.cryptpass-popup-new-label2 {
+  margin-bottom: 16px;
+}
+
+.cryptpass-popup-restore {
+  margin-top: 32px;
+  padding-left: 48px;
+  padding-right: 48px;
+  text-align: center;
+}
+
+.cryptpass-popup-restore-label1 {
+  margin-bottom: 16px;
+}
+
+.cryptpass-popup-new-main-buttons {
+  margin-top: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#cancelCreateNew {
+  margin-right: 16px;
+}
+
+.cryptpass-popup-login-main {
+  margin-top: 32px;
+  padding-left: 48px;
+  padding-right: 48px;
+  text-align: center;
+}
+
+.cryptpass-popup-login-main-label1 {
+  margin-bottom: 16px;
+}
+
+#cryptpass-popup-login-main-wrong-password {
+  margin-top: 16px;
+}
+
+#unlock-keystore {
+  margin-top: 16px;
+}
+
+.mdl-layout__header.is-casting-shadow {
+  min-height: 48px;
+}
+
+.mdl-layout__tab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tab-favorite-search {
+  padding-left: 16px;
+  padding-right: 16px;
+  display: flex;
+  align-items: center;
+}
+
+.tab-favorite-recent-transactions {
+  margin-top: 8px;
+}
+
+.list-container-title {
+  padding-left: 16px;
+}
+
+.mdl-textfield.mdl-js-textfield.is-upgraded {
+  margin-left: 8px;
+}
+
+.list-item {
+  display: flex;
+  align-items: center;
+  min-height: 60px;
+  margin-left: 24px;
+  margin-right: 24px;
+  border-bottom: 1px solid #e8e8e8;
+}
+
+.list-item:hover {
+  background-color: #e8e8e8;
+  cursor: pointer;
+}
+
+.list-item-icon {
+  height: 40px;
+  width: 40px;
+  background-color: #8c8c8c;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 24%;
+}
+
+.list-item-content {
+  padding-left: 16px;
+  flex-grow: 1;
+  min-height: 60px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  /*border-bottom: 1px solid #e8e8e8;*/
+}
+
+.list-item-action {
+  height: 40px;
+    width: 36px;
+    display: flex;
+    align-self: flex-start;
+    justify-content: right;
+    padding-top: 8px;
+}
+
+.list-item-action:hover {
+  cursor: pointer;
+}
+
+.list-item-content-details {
+  display: flex;
+  width: 214px;
+  align-items: center;
+}
+
+.list-item-content-details-main {
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+
+.list-item-content-details-key {
+  outline: none;
+  border: none;
+  font-size: 14px;
+  margin-top: 8px;
+  background: transparent;
+}
+
+.list-item-content-details-value {
+  outline: none;
+  border: none;
+  font-size: 14px;
+  background: transparent;
+}
+
+.list-item-content-details-action {
+  height: 40px;
+  width: 40px;
+  display: flex;
+  justify-content: center;
+  align-self: flex-end;
+  margin-left: 8px;
+}
+
+.list-item-content-details-value-encrypted {
+  border: none;
+  padding-top: 8px;
+  background: transparent;
+}
+
+.list-item-content-details-value-decrypted {
+  border: none;
+  padding-top: 8px;
+  background: transparent;
+}
+
+.list-item-content-details-value-decrypted:focus {
+  outline: 1px solid blue;
+}
+
+.open-txn-new-tab {
+  color: #1564c0;
+}
+
+.list-item-content-overview-description {
+  white-space: nowrap;
+  overflow: hidden;
+  max-width: 214px;
+  text-overflow: ellipsis;
+}
+
+.fixed-action-btn > ul {
+  left: -56px;
+}
+
+.fixed-action-btn ul a.btn-floating {
+  width: 100%;
+  height: 32px;
+  border-radius: 12px;
+  padding-right: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+#overlay-div {
+    position   : absolute;
+    top        : 0;
+    left       : 0;
+    width      : 100%;
+    height     : 100%;
+    background : #000;
+    opacity    : 0.6;
+    filter     : alpha(opacity=60);
+    z-index    : 5;
+    display    : none;
+}
+
+.sliding-up-div {
+  position: relative;
+  height: 600px;
+  top: 600px;
+  z-index: 4;
+  background-color: white;
+  padding-top: 16px;
+  padding-bottom: 16px;
+}
+
+#close-popup-view {
+  padding-left: 16px;
+}
+
+.popup-view-container {
+  padding-left: 40px;
+  padding-right: 40px;
+}
+
+.popup-view-container > .mdl-textfield.mdl-js-textfield.mdl-textfield--floating-label.is-upgraded {
+  margin-left: 0px;
+}
+
+.new-credential-password-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+.new-credential-password-wrapper > .mdl-textfield.mdl-js-textfield.mdl-textfield--floating-label {
+  flex-grow: 1;
+  margin-left: 0px;
+}
+
+.new-credential-toggle-visibility {
+  height: 40px;
+  width: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+#demo-menu-lower-right {
+  height: 24px;
+}
+
+.header-options {
+  display: flex;
+  padding-right: 4px;
+  padding-top: 4px;
+  justify-content: flex-end;
+  background-color: #b2b9e3;
+  color: #3f50b5;
+}
+
+.my-account-public {
+  margin-top: 24px;
+  text-align: center;
+}
+
+#my-account-public-address-copy {
+  margin-left: 8px;
+  padding-left: 4px;
+  padding-right: 4px;
+  background-color: grey;
+  color: white;
+  border-radius: 8px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.my-account-info {
+  margin-top: 24px;
+  display: flex;
+}
+
+.my-account-info-part {
+  text-align: center;
+  flex-basis: 50%;
+}
+
+.get-free-nas-section {
+  margin-top: 30px;
+  text-align: center;
+}
+.get-free-nas-section a {
+}
+.get-free-nas-section button {
+  margin-top: 10px;
+}
+
+.center-align {
+  text-align: center;
+}
+#see-all-tnxs-btn {
+  margin-top: 10px !important;
+  margin-bottom: 50px !important;
+}
+
+.my-account-privatekey-container {
+  margin-top: 32px;
+  text-align: center;
+}
+
+.my-account-privatekey-wrapper {
+  display: flex;
+  align-items: center;
+  padding-left: 24px;
+  padding-right: 24px;
+}
+
+#view-private-key {
+  margin-left: 16px;
+}
+
+#my-account-private-key {
+  font-size: 12px;
+  word-wrap: break-word;
+  max-width: 222px;
+  color: grey;
+}
+
+#my-account-public-address {
+  flex-grow: 1;
+  outline: none;
+  border: none;
+  color: grey;
+}
+
+.my-account-downloadkeystore {
+  margin-top: 32px;
+  text-align: center;
+}
+
+.my-account-public-address-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-left: 16px;
+  padding-right: 16px;
+  font-size: 12px;
+  color: grey;
+}
