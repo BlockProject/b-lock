@@ -262,7 +262,7 @@ $(document).ready(() => {
     $(listItem).find('.toggle-edit-done').click(enableEdit);
     $(listItem).find('.toggle-visibility').click(handleToggleVisibility);
     $(listItem).find('.button-delete').click((e) => {
-      if (confirm('Are you sure you want to delete this password ?')) {
+      if (confirm(`Are you sure you want to delete this entry ?`)) {
         const valueItem = $(listItem).find('.list-item-content-details-value.in-use.real');
         valueItem.val("");
         handleEditCredentials(e);
@@ -274,10 +274,10 @@ $(document).ready(() => {
       // console.log("clicked FILL");
       const listItemParent = $(e.target).closest('.list-item');
       if (listItemParent.find('input.in-use').length === 0) return;
-      // console.log("FILLING for real");
+      console.log("FILLING for real, pass = ", );
       chrome.runtime.sendMessage({ type: "chooseCredentials", credentials: {
         login: listItemParent.find('.list-item-content-details-key').val(),
-        password: $(this).find('.list-item-content-details-value').val()
+        password: listItemParent.find('.list-item-content-details-value').val()
       }})
     });
     $(listItem).find('.list-item-content-overview.entries').hover ((e) => {
