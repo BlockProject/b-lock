@@ -75,6 +75,7 @@ const listenForMessage = (type, callback) => {
 }
 
 function fetchSavedPasswords(network) {
+  console.log("Fetching saved passwords for network ", network);
   if (!info.unlockAccount.unlocked) return;
   neb.api.getAccountState(account.getAddressString()).then(function (state) {
     neb.api.call({
@@ -379,6 +380,7 @@ listenForMessage('unlockAccount', (request, sender, sendResponse) => {
     info.account.privKey = account.getPrivateKeyString();
     info.account.pubKey = account.getPublicKeyString();
     info.account.privKeyArray = account.getPrivateKey();
+    info.account.address = account.getAddressString();
     console.log('Account as just unlocked: ',account);
     chrome.storage.sync.set({ keystore: info.account.keystore }, function() {
       console.log("\tJust set new keystore");
@@ -397,6 +399,4 @@ listenForMessage('unlockAccount', (request, sender, sendResponse) => {
   }
   refreshInfo(info);
   sendResponse(info);
-  // initAES();
-  fetchSavedPasswords(info.network);
 });

@@ -2,6 +2,7 @@ $(document).ready(function () {
   var injectedButton = false;
   var filledForm = false;
   var dialogOpen = false;
+  var hoveringOverButton = false;
 
   const readCredentials = ($form) => {
     // console.log($form);
@@ -93,34 +94,48 @@ $(document).ready(function () {
   };
 
   const injectSelectionButton = ($form, credentials, imgURL) => {
-    const loginInput = $($form).find('input:text');
+    var loginInput = $($form).find('input:text');
+    if (loginInput.length == 0) {
+      let loginInputs = $($form).find('input');
+      for (z of loginInputs) {
+        if ($(z).attr('type') == 'email') {
+          loginInput = $(z);
+          break;
+        }
+      }
+    }
     console.log(imgURL);
+    // const $(loginInput[0]) = $(loginInput[0]);
+    // const $(loginInput[0]) = $(loginInput[0]).find('span');
     $(loginInput[0]).css("background-image", "url(" + imgURL + ")");
     $(loginInput[0]).css("background-repeat", "no-repeat");
     $(loginInput[0]).css("background-size", "16px 18px");
+    $(loginInput[0]).css("background-attachment", "scroll");
     $(loginInput[0]).css("background-position", "98% 50%");
     $(loginInput[0]).click(function (e) {
-      var mousePosInElement = e.pageX - $(this).position().left;
-      if (mousePosInElement > $(this).width()) {
-        e.stopPropagation();
-        console.log('clicked on backhroundi mage');
-        if (dialogOpen == false) {
-          injectSelectionDialog(getPosition(loginInput[0]));
-          dialogOpen = true;
-        } else {
-          $('#b-lock-show-credentials-options').remove();
-          dialogOpen = false;
-        }
+      if (!hoveringOverButton) return;
+      e.stopPropagation();
+      console.log('clicked on backhround image');
+      if (dialogOpen == false) {
+        injectSelectionDialog(getPosition(loginInput[0]));
+        dialogOpen = true;
+      } else {
+        $('#b-lock-show-credentials-options').remove();
+        dialogOpen = false;
       }
     });
-    $(loginInput[0]).hover(function (e) {
-      var mousePosInElement = e.pageX - $(this).position().left;
-      if (mousePosInElement > $(this).width()) {
+
+    $(loginInput[0]).mousemove(function (e) {
+      var mousePosInElement = e.pageX - $(this).offset().left;
+      if (mousePosInElement > $(this).width() - 20) {
+        hoveringOverButton = true;
         $(this).css("cursor", "pointer");
       } else {
+        hoveringOverButton = false;
         $(this).css("cursor", "auto");
       }
     });
+    $(loginInput[0]).mouseout((e) => { hoveringOverButton = false; });
   };
 
   const getPosition = (element) => {
