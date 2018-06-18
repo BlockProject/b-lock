@@ -19,7 +19,7 @@ const SECRETNOTE_URL = "Secret note";
 
 let keystore;
 const initialInfo = {
-  network: 'testnet',
+  network: 'mainnet',
   account: {
     address: undefined,
     privKey: undefined,
@@ -229,43 +229,43 @@ listenForMessage('changeNetwork', (request, sender, sendResponse) => {
   info.network = request.network;
   console.log("changed network to ", request.network);
   neb.setRequest(new HttpRequest(`https://${info.network}.nebulas.io`));
-  refreshInfo(info);
+  refreshInfo();
   chrome.storage.sync.set({ network: info.network }, function() {
     // console.log("\tJust saved network setting to storage");
   });
 });
 
-const refreshInfo = (infoObject) => {
-  if (!infoObject.unlockAccount.unlocked) return;
-
+const refreshInfo = () => {
+  if (!info.unlockAccount.unlocked) return;
+  console.log('refresing info, current info = ', info);
   neb.api.getAccountState(account.getAddressString()).then(function (state) {
     state = state.result || state;
-    infoObject.account.address = account.getAddressString();
-    infoObject.account.balance = state.balance;
-    infoObject.account.nonce = state.nonce;
+    info.account.address = account.getAddressString();
+    info.account.balance = state.balance;
+    info.account.nonce = state.nonce;
     // console.log('just updated account state, info: ', info);
     chrome.runtime.sendMessage({type: "infoForPopup", info});
   }).catch(function (err) {
     console.log("err:",err);
   });
-  fetchSavedPasswords(infoObject.network);
+  fetchSavedPasswords(info.network);
 
 
-  for (const transaction of infoObject.pastTransactions[infoObject.network]) {
+  for (const transaction of info.pastTransactions[info.network]) {
     if (transaction.status !== 2) continue;
     neb.api.getTransactionReceipt({ hash: transaction.txhash }).then((receipt) => {
       transaction.status = receipt.status;
       savePastTransactionsToStorage();
     }).catch((err) => {
-      transaction.status = 0;
-      savePastTransactionsToStorage();
+      // transaction.status = 0;
+      // savePastTransactionsToStorage();
     });
   }
 }
 
 listenForMessage('requestInfo', (request, sender, sendResponse) => {
   sendResponse(info);
-  refreshInfo(info);
+  refreshInfo();
 });
 
 listenForMessage('clearTempCredentials', (request, sender, sendResponse) => {
@@ -305,6 +305,7 @@ const resetInfoForNewAccount = () => {
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   if (request.type == 'uploadedKeystore') {
     info.account.keystore = request.keystore;
+    refreshInfo();
     sendResponse();
   }
 });
@@ -372,7 +373,7 @@ listenForMessage('createAccount', (request, sender, sendResponse) => {
   chrome.storage.sync.set({ keystore: info.account.keystore }, function() {
     console.log("\tJust set new keystore");
   });
-  refreshInfo(info);
+  refreshInfo();
   sendResponse(info);
 });
 
@@ -401,6 +402,6 @@ listenForMessage('unlockAccount', (request, sender, sendResponse) => {
   } catch (err) {
     info.unlockAccount.wrongPass = true;
   }
-  refreshInfo(info);
+  refreshInfo();
   sendResponse(info);
 });

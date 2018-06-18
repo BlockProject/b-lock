@@ -294,9 +294,10 @@ $(document).ready(() => {
   };
 
   const displayMyAccountInfo = (info) => {
-    $('#my-account-public-address').html(info.account.address).attr('href',
-      `https://explorer.nebulas.io/#${info.network == 'testnet' ? info.network : ""}/address/${info.account.address}`
-    );
+    $('#my-account-public-address').val(info.account.address).click((e) => {
+      window.open(`https://explorer.nebulas.io/#${info.network == 'testnet' ? info.network : ""}/address/${info.account.address}`, "_blank");
+    });
+
     const balance = parseInt(info.account.balance) / (10 ** 18);
     $('#my-account-balance').html(balance.toFixed(5) + ' NAS');
     $('#my-account-nonce').html(info.account.nonce);
@@ -498,12 +499,15 @@ $(document).ready(() => {
           createAndAppendEntry(entry, elementId, elementClass);
         }
       }
-
-      if (infoObject.network === "mainnet" && infoObject.account.balance === 0) {
+      // console.log('network =', infoObject.network, " balance = ", infoObject.account.balance);
+      if (infoObject.network === "mainnet" && infoObject.account.balance == 0) {
+        // console.log("showing free nas section");
         $('.get-free-nas-section').show();
       } else {
+        // console.log("hiding free nas section");
         $('.get-free-nas-section').hide();
       }
+      $('.free-nas-btn').attr('href', `https://blockproject.io/faucet?address=${infoObject.account.address}`);
 
       filterEntries();
       showCurrentNetwork();

@@ -14,15 +14,6 @@
       <script src="thirdparty/nebulas.js"></script>
       <script src="thirdparty/materialize.min.js"></script>
       <script src="js/popup.js"></script>
-      <!-- Global site tag (gtag.js) - Google Analytics -->
-      <script async src="https://www.googletagmanager.com/gtag/js?id=UA-120893011-1"></script>
-      <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-
-        gtag('config', 'UA-120893011-1');
-      </script>
     </head>
     <body>
       <div id="cryptpass-initial" class="cryptpass-popup">
@@ -179,7 +170,7 @@
                       TO START USING B.LOCK
                     </div>
 
-                    <a href="https://blockproject.io" target="_blank">
+                    <a class="free-nas-btn" href="https://blockproject.io/faucet" target="_blank">
                       <button class="mdl-button mdl-js-button mdl-button--accent mdl-color--blue-400 mdl-color-text--white">
                         Get Free NAS
                       </button>
@@ -218,7 +209,7 @@
                   <div class="my-account-public">
                     <div class="mdl-typography--body-2">Your Public Address</div>
                     <div class="mdl-typography--body-1 my-account-public-address-wrapper">
-                      <a id="my-account-public-address" target="_blank"></a>
+                      <input id="my-account-public-address" readonly></input>
                       <span id="my-account-public-address-copy">COPY</span>
                     </div>
                     <div class="my-account-info">
@@ -226,7 +217,7 @@
                         <div class="info-label mdl-typography--body-2">Balance</div>
                         <div id="my-account-balance" class="info-value"></div>
                         <div id="claim-free-nas" class="">
-                          <a href="https://blockproject.io" target="_blank">
+                          <a class="free-nas-btn" href="https://blockproject.io/faucet" target="_blank">
                             <button class="mdl-button mdl-js-button mdl-button--accent mdl-color--blue-400 mdl-color-text--white">
                               Get Free NAS
                             </button>

@@ -397,6 +397,11 @@ body {
   outline: none;
   border: none;
   color: grey;
+  text-align: right;
+}
+
+#my-account-public-address:hover {
+  cursor: pointer;
 }
 
 .my-account-downloadkeystore {
