@@ -1,6 +1,6 @@
 {
-  "name": "b.lock",
-  "version": "1.0.1",
+  "name": "b.lock Password Manager",
+  "version": "1.0.2",
   "description": "Blockchain-powered Password Manager",
   "manifest_version": 2,
   "author": "BlockProject",
