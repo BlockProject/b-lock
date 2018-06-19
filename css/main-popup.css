@@ -107,6 +107,11 @@ body {
   justify-content: center;
 }
 
+.mdl-layout.is-upgraded .mdl-layout__tab.is-active:focus {
+  border: none;
+  outline: none;
+}
+
 .tab-favorite-search {
   padding-left: 16px;
   padding-right: 16px;
@@ -397,7 +402,7 @@ body {
   outline: none;
   border: none;
   color: grey;
-  text-align: right;
+  text-align: left;
 }
 
 #my-account-public-address:hover {
@@ -413,8 +418,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding-left: 16px;
-  padding-right: 16px;
+  padding-left: 24px;
+  padding-right: 24px;
   font-size: 12px;
   color: grey;
 }

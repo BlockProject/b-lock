@@ -33,6 +33,7 @@ $(document).ready(() => {
       info = response;
       // console.log(info);
       $('#newAccountMain').hide();
+      $('#public-address-notice').html('Your Nebulas public address is : ' + response.account.address);
       $('#newAccountSuccess').show();
     });
   });
@@ -46,12 +47,25 @@ $(document).ready(() => {
     element.setAttribute('download', fileName);
     document.body.appendChild(element);
     element.click();
-    refresh(info);
-    creatingOrRestoring = false;
+    // refresh(info);
+    // creatingOrRestoring = false;
+  };
+
+  const handleClaimFreeNas = () => {
+    if (info.account && info.account.address && info.account.address !== undefined && info.account.address !== '') {
+      window.open(`https://blockproject.io/faucet?address=${info.account.address}`, "_blank");
+    } else {
+      window.open("https://blockproject.io/faucet", "_blank");
+    }
   };
 
   $('#saveKeystoreBtn').click(handleSaveKeystore);
+  $('#claimFreeNas').click(handleClaimFreeNas);
   $('#my-account-download-keystore-btn').click(handleSaveKeystore);
+  $('#enter-block').click(function () {
+    refresh(info);
+    creatingOrRestoring = false;
+  });
 
   $('#new-account-password-confirm').keyup(function (e) {
     const passwordField = $('#new-account-password');
@@ -402,11 +416,18 @@ $(document).ready(() => {
   $("#new-transaction-send").click(function() {
     const destination = $("#new-transaction-destination").val();
     const amount = $("#new-transaction-amount").val();
+
     if (destination === "" || amount === 0) {
       const message = {message: 'Invalid destination address or amount'};
       document.querySelector('#new-transaction-snackbar-error').MaterialSnackbar.showSnackbar(message);
       return;
     }
+    if (amount > info.account.balance) {
+      const message = {message: 'You do not have sufficient balance to make this transaction'};
+      document.querySelector('#new-transaction-snackbar-error').MaterialSnackbar.showSnackbar(message);
+      return;
+    }
+
     $('#new-transaction-destination').val("");
     $('#new-transaction-amount').val(0);
 
@@ -671,9 +692,21 @@ $(document).ready(() => {
     const domain = $('#new-credential-domain').val();
     const login = $('#new-credential-login').val();
     const password = $('#new-credential-password').val();
+
     if (domain === "" || login === "" || password === "") {
       const message = {message: 'Invalid inputs, value cannot be empty'};
       document.querySelector('#new-credential-snackbar-error').MaterialSnackbar.showSnackbar(message);
+      return;
+    }
+
+    if (info.account.balance === '0') {
+      const snackbarData = {
+        message: 'You need NAS to publish a transaction on the blockchain',
+        timeout: 5000,
+        actionHandler: handleClaimFreeNas,
+        actionText: 'CLAIM'
+      };
+      document.querySelector('#new-credential-snackbar-error').MaterialSnackbar.showSnackbar(snackbarData);
       return;
     }
 
@@ -697,6 +730,16 @@ $(document).ready(() => {
     if (login === "" || password === "") {
       const message = {message: 'Invalid inputs, input cannot be empty'};
       document.querySelector('#new-secretnote-snackbar-error').MaterialSnackbar.showSnackbar(message);
+      return;
+    }
+    if (info.account.balance === '0') {
+      const snackbarData = {
+        message: 'You need NAS to publish a transaction on the blockchain',
+        timeout: 5000,
+        actionHandler: handleClaimFreeNas,
+        actionText: 'CLAIM'
+      };
+      document.querySelector('#new-secretnote-snackbar-error').MaterialSnackbar.showSnackbar(snackbarData);
       return;
     }
     const obj = {
@@ -733,6 +776,7 @@ $(document).ready(() => {
     chrome.runtime.sendMessage({ type: "logout" });
     info.unlockAccount.unlocked = false;
     refresh(info);
+    creatingOrRestoring = true;
     firstRefresh = true;
   });
 

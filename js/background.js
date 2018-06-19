@@ -368,6 +368,7 @@ listenForMessage('createAccount', (request, sender, sendResponse) => {
   info.account.privKey = account.getPrivateKeyString();
   info.account.pubKey = account.getPublicKeyString();
   info.account.privKeyArray = account.getPrivateKey();
+  info.account.address = account.getAddressString();
   info.account.keystore = account.toKeyString(request.password);
   info.unlockAccount.unlocked = true;
   chrome.storage.sync.set({ keystore: info.account.keystore }, function() {
