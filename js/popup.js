@@ -211,13 +211,10 @@ $(document).ready(() => {
     if (listItemDetails.attr('edit-mode') == 'true') {
       listItemDetails.attr('edit-mode', 'false');
 
-      const keyItem = listItemDetails.find('.list-item-content-details-key');
-      keyItem.prop('readonly', true);
-      keyItem.val(keyItem.attr('pastValue'));
-
       const valueItem = listItemDetails.find('.list-item-content-details-value.in-use.real');
       valueItem.prop('readonly', true);
       valueItem.val(valueItem.attr('pastValue'));
+      valueItem.removeClass('editting');
 
       listItemDetails.find('.toggle-edit-done').html('edit');
       listItemDetails.find('.toggle-edit-done').parent().removeClass('mdl-color-text--green-500');
@@ -246,14 +243,13 @@ $(document).ready(() => {
     if (listItemDetails.attr('edit-mode') == 'false') {
       listItemDetails.attr('edit-mode', 'true');
       enableVisibility(e);
-      const keyItem = listItemDetails.find('.list-item-content-details-key');
-      keyItem.prop('readonly', false);
-      keyItem.attr('pastValue', keyItem.val());
+      // const keyItem = listItemDetails.find('.list-item-content-details-key');
+      // keyItem.attr('pastValue', keyItem.val());
 
       const valueItem = listItemDetails.find('.list-item-content-details-value.in-use.real');
       valueItem.prop('readonly', false);
       valueItem.attr('pastValue', valueItem.val());
-
+      valueItem.addClass('editting');
       listItemDetails.find('.toggle-edit-done').html('done');
       listItemDetails.find('.toggle-edit-done').parent().addClass('mdl-color-text--green-500');
     } else {
