@@ -500,6 +500,11 @@ $(document).ready(() => {
           // console.log('adding recent transaction : ', listItem);
           attachResponsiveEvents(listItem);
           // console.log('attachResponsiveEvents for transaction : ', listItem);
+        } else {
+          $(`#${elementId} .open-txn-new-tab-i`)
+            .html(["error", "done", "..."][transaction.status])
+            .addClass(["error-tx", "done-tx", "pending-tx"][transaction.status])
+            .css('color', ['red', '#1564c0', 'grey'][transaction.status]);
         }
         // console.log('transaction is', transaction);
       }
