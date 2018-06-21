@@ -44,7 +44,8 @@ const initialInfo = {
     'testnet': [],
     'mainnet': []
   },
-  backgroundImgURL: chrome.extension.getURL('images/block_logo-16px.png')
+  agreedToPolicy: undefined,
+  backgroundImgURL: chrome.extension.getURL('images/block_logo-16px.png'),
 };
 let info = JSON.parse(JSON.stringify(initialInfo));
 
@@ -56,9 +57,13 @@ function setUpNeb(openNewTab) {
 
     chrome.storage.sync.get('keystore', function(data) {
       info.account.keystore = data.keystore;
-      if (openNewTab) {
-        openLoginTab();
-      }
+
+      chrome.storage.sync.get('agreedToPolicy', (data) => {
+        if (openNewTab) {
+          openLoginTab();
+        }
+        info.agreedToPolicy = data.agreedToPolicy;
+      })
     });
   });
 }
@@ -122,8 +127,6 @@ function fetchSavedPasswords(network) {
     });
   });
 }
-
-
 
 function savePastTransactionsToStorage() {
   chrome.storage.sync.set({ pastTransactions: info.pastTransactions }, function() {
@@ -217,6 +220,11 @@ listenForMessage('onTryLogin', (request, sender, sendResponse) => {
       // console.log('Just set tabId of temp credentials to be ', tabs[0].id);
     });
   }
+});
+
+listenForMessage('agreePolicy', (request, sender) => {
+  info.agreedToPolicy = true;
+  chrome.storage.sync.set({ agreedToPolicy: true});
 });
 
 listenForMessage('sendNas', (request, sender, sendResponse) => {

@@ -463,7 +463,11 @@ $(document).ready(() => {
 
 
     if (infoObject == undefined) return;
-    if (infoObject.account.keystore == undefined) { // user haven't created account
+    if (!infoObject.agreedToPolicy) {
+      $('#cryptpass-initial').hide();
+      $('#cryptpass-main').hide();
+      $('#privacy-policy').show();
+    } else if (infoObject.account.keystore == undefined) { // user haven't created account
       $('#cryptpass-main').hide();
       $('#cryptpass-initial').show();
       $("#newAccount").show();
@@ -811,6 +815,11 @@ $(document).ready(() => {
     $('.mdl-layout__tab-bar a').removeClass('is-active');
     $('#scroll-tab-2').addClass('is-active');
     $('#tab-past-activity').addClass('is-active');
+  });
+
+  $('#agree-policy').click((e) => {
+    chrome.runtime.sendMessage({ type: "agreePolicy" });
+    info.agreedToPolicy = true;
   });
 
   const refreshRecentTransactions = () => {
