@@ -44,7 +44,7 @@ const initialInfo = {
     'testnet': [],
     'mainnet': []
   },
-  agreedToPolicy: undefined,
+  // agreedToPolicy: undefined,
   backgroundImgURL: chrome.extension.getURL('images/block_logo-16px.png'),
 };
 let info = JSON.parse(JSON.stringify(initialInfo));
@@ -57,13 +57,13 @@ function setUpNeb(openNewTab) {
 
     chrome.storage.sync.get('keystore', function(data) {
       info.account.keystore = data.keystore;
+      if (openNewTab) {
+        openLoginTab();
+      }
 
-      chrome.storage.sync.get('agreedToPolicy', (data) => {
-        if (openNewTab) {
-          openLoginTab();
-        }
-        info.agreedToPolicy = data.agreedToPolicy;
-      })
+      // chrome.storage.sync.get('agreedToPolicy', (data) => {
+      //   info.agreedToPolicy = data.agreedToPolicy;
+      // })
     });
   });
 }
@@ -222,10 +222,10 @@ listenForMessage('onTryLogin', (request, sender, sendResponse) => {
   }
 });
 
-listenForMessage('agreePolicy', (request, sender) => {
-  info.agreedToPolicy = true;
-  chrome.storage.sync.set({ agreedToPolicy: true});
-});
+// listenForMessage('agreePolicy', (request, sender) => {
+//   info.agreedToPolicy = true;
+//   chrome.storage.sync.set({ agreedToPolicy: true});
+// });
 
 listenForMessage('sendNas', (request, sender, sendResponse) => {
   sendNas(request.destination, request.amount);
@@ -303,7 +303,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 });
 
 const resetInfoForNewAccount = () => {
-  info = initialInfo;
+  info = JSON.parse(JSON.stringify(initialInfo));
   chrome.storage.sync.set({ pastTransactions: {
     'testnet': [],
     'mainnet': []
@@ -365,7 +365,7 @@ listenForMessage('saveNewCrendentials', (request, sender, sendResponse) => {
 });
 
 listenForMessage('logout', (request, sender, sendResponse) => {
-  console.log('Loging out ...', request.credentials);
+  console.log('Loging out ...');
   info = JSON.parse(JSON.stringify(initialInfo));
   setUpNeb(false);
 });
