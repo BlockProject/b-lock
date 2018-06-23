@@ -360,8 +360,8 @@ $(document).ready(() => {
       window.open(getTxnUrl(txn), '_blank');
     });
     listItem.find('.open-txn-new-tab-i')
-      .html(["error", "done", "..."][txn.status])
-      .addClass(["error-tx", "done-tx", "pending-tx"][txn.status])
+      .html(["error", "done", "access_time", "..."][txn.status])
+      .addClass(["error-tx", "done-tx", "pending-tx", "queued-tx"][txn.status])
       .css('color', ['red', '#1564c0', 'grey'][txn.status]);
     container.prepend(listItem);
     return listItem;
@@ -498,7 +498,7 @@ $(document).ready(() => {
 
       for (transaction of infoObject.pastTransactions[infoObject.network]) {
         // append new
-        const elementId = `recent-${transaction.type}_${transaction.txhash}`;
+        const elementId = getTransactionId(transaction);
         const elementClass = `recent-${transaction.type}`;
         if ($(`#${elementId}`).length === 0) {
           listItem = createAndAppendTransaction(transaction, elementId, elementClass, $('#recent-entries'));
@@ -507,8 +507,8 @@ $(document).ready(() => {
           // console.log('attachResponsiveEvents for transaction : ', listItem);
         } else {
           $(`#${elementId} .open-txn-new-tab-i`)
-            .html(["error", "done", "..."][transaction.status])
-            .addClass(["error-tx", "done-tx", "pending-tx"][transaction.status])
+            .html(["error", "done", "access_time", "..."][transaction.status])
+            .addClass(["error-tx", "done-tx", "pending-tx", "queued-tx"][transaction.status])
             .css('color', ['red', '#1564c0', 'grey'][transaction.status]);
         }
         // console.log('transaction is', transaction);
@@ -541,6 +541,10 @@ $(document).ready(() => {
     }
   }
 
+  const getTransactionId = (tx) => {
+    if (!tx.txIndex) { tx.txIndex = tx.txhash; }
+    return `tx-${tx.txIndex}`;
+  }
   const createAndAppendEntry = (entry, elementId, elementClass) => {
     const secretNote = entry.domain === "Secret note";
     // console.log("adding entry: ", entry);
@@ -835,7 +839,8 @@ $(document).ready(() => {
     const startIndex = Math.max(0, transactionCount - 3);
     // console.log('transactions to be shown: ', info.pastTransactions[info.network].slice(startIndex, transactionCount));
     for (const transaction of info.pastTransactions[info.network].slice(startIndex, transactionCount)) {
-      const elementId = `recent-${transaction.type}_${transaction.txhash}`;
+
+      const elementId = getTransactionId(transaction);
       // console.log('showing elementid =', elementId);
       $(`.tab-favorite-recent-transactions #${elementId}`).removeClass('hidden');
     }

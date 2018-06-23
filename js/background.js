@@ -19,6 +19,7 @@ const SECRETNOTE_URL = "Secret note";
 
 let keystore;
 const initialInfo = {
+  lastNonce: 0,
   network: 'mainnet',
   account: {
     address: undefined,
@@ -130,65 +131,68 @@ function fetchSavedPasswords(network) {
 
 function savePastTransactionsToStorage() {
   chrome.storage.sync.set({ pastTransactions: info.pastTransactions }, function() {
-    // console.log("\tJust saved pastTransactions to storage: ", info.pastTransactions);
+    console.log("\tJust saved pastTransactions to storage: ", JSON.parse(JSON.stringify(info.pastTransactions)));
   });
 }
 
 function setPassword(url, login, password) {
   const encryptedPass = encrypt(password)
   if (!info.unlockAccount.unlocked) return;
-  neb.api.getAccountState(account.getAddressString()).then(function (state) {
-    const encryptedKey = encrypt(`${url}:${login}`);
-    let tx = new Transaction({
+  const encryptedKey = encrypt(`${url}:${login}`);
+  info.pastTransactions[info.network].push({
+    type: password === "" ? "delete" : "password",
+    status: 3,
+    txIndex: info.pastTransactions[info.network].length,
+    url,
+    login,
+    tx: {
       chainID: networkId[info.network],
-      from: account,
       to: contractAddress[info.network],
       value: 0,
-      nonce: parseInt(state.nonce) + 1,
-      gasPrice: DEFAULT_GAS_PRICE,
-      gasLimit: DEFAULT_GAS_LIMIT,
       contract: {
         function: "setPassword",
         args: `[\"${encryptedKey}\",\"${encryptedPass}\"]`
-      }});
-    tx.signTransaction();
-    neb.api.sendRawTransaction(tx.toProtoString()).then(function (resp) {
-      console.log(`Just set password for ${url} on contract, response is:`, resp);
-      info.pastTransactions[info.network].push({
-        type: password === "" ? "delete" : "password",
-        status: 2,
-        url,
-        login,
-        txhash: resp.txhash,
-      });
-      savePastTransactionsToStorage();
-      setTimeout(fetchSavedPasswords, 1000);
-    });
+      }
+    }
   });
+  savePastTransactionsToStorage();
 }
 
 function sendNas(destination, amount) {
+  console.log("Sending NAS");
   if (!info.unlockAccount.unlocked) return;
-  neb.api.getAccountState(account.getAddressString()).then(function (state) {
-    let tx = new Transaction({
+  info.pastTransactions[info.network].push({
+    type: "send",
+    amount,
+    destination,
+    status: 3, // queued
+    txIndex: info.pastTransactions[info.network].length,
+    tx: {
       chainID: networkId[info.network],
-      from: account,
       to: destination,
       value: parseInt(amount * 1e18),
-      nonce: parseInt(state.nonce) + 1,
-      gasPrice: DEFAULT_GAS_PRICE,
-      gasLimit: DEFAULT_GAS_LIMIT,
-    });
+    }
+  });
+  savePastTransactionsToStorage();
+}
+
+const sendQueuedTx = (queuedTx) => {
+  console.log("Sending queued tx", queuedTx);
+  neb.api.getAccountState(account.getAddressString()).then(function (state) {
+    queuedTx.tx.gasPrice = DEFAULT_GAS_PRICE;
+    queuedTx.tx.gasLimit = DEFAULT_GAS_LIMIT;
+    queuedTx.tx.nonce = parseInt(state.nonce) + 1;
+    if (queuedTx.tx.nonce <= info.lastNonce) return;
+    queuedTx.tx.from = account;
+    let tx = new Transaction(queuedTx.tx);
     tx.signTransaction();
+    queuedTx.tx.from = {};
+
     neb.api.sendRawTransaction(tx.toProtoString()).then(function (resp) {
-      console.log(`Just sent ${amount} NAS to ${destination} response is:`, resp);
-      info.pastTransactions[info.network].push({
-        type: "send",
-        amount,
-        destination,
-        status: 2,
-        txhash: resp.txhash,
-      });
+      console.log(`Just sent raw Tx, response is:`, resp);
+      queuedTx.status = 2;
+      queuedTx.txhash = resp.txhash
+      info.lastNonce = queuedTx.tx.nonce;
       savePastTransactionsToStorage();
     });
   });
@@ -228,6 +232,7 @@ listenForMessage('onTryLogin', (request, sender, sendResponse) => {
 // });
 
 listenForMessage('sendNas', (request, sender, sendResponse) => {
+
   sendNas(request.destination, request.amount);
 });
 
@@ -245,7 +250,7 @@ listenForMessage('changeNetwork', (request, sender, sendResponse) => {
 
 const refreshInfo = () => {
   if (!info.unlockAccount.unlocked) return;
-  console.log('refresing info, current info = ', info);
+  console.log('refresing info, current info = ', JSON.parse(JSON.stringify(info)));
   neb.api.getAccountState(account.getAddressString()).then(function (state) {
     state = state.result || state;
     info.account.address = account.getAddressString();
@@ -259,15 +264,27 @@ const refreshInfo = () => {
   fetchSavedPasswords(info.network);
 
 
-  for (const transaction of info.pastTransactions[info.network]) {
-    if (transaction.status !== 2) continue;
-    neb.api.getTransactionReceipt({ hash: transaction.txhash }).then((receipt) => {
-      transaction.status = receipt.status;
+  // just need to get the last transaction that is pending
+  const pendingTx = info.pastTransactions[info.network].filter((tx) => tx.status == 2)[0];
+
+  if (pendingTx) {
+    console.log('Got pending tx: ', pendingTx);
+    if (pendingTx.tx.nonce <= info.account.nonce) {
+      pendingTx.status = 0;
+      savePastTransactionsToStorage();
+      return;
+    }
+
+    neb.api.getTransactionReceipt({ hash: pendingTx.txhash }).then((receipt) => {
+      pendingTx.status = receipt.status;
       savePastTransactionsToStorage();
     }).catch((err) => {
-      // transaction.status = 0;
-      // savePastTransactionsToStorage();
     });
+  } else {
+    const queuedTx = info.pastTransactions[info.network].filter((tx) => tx.status == 3)[0];
+    if (!queuedTx) return;
+    console.log('Got queued tx: ', queuedTx);
+    sendQueuedTx(queuedTx);
   }
 }
 
