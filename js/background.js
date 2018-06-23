@@ -287,6 +287,7 @@ const refreshInfo = () => {
     sendQueuedTx(queuedTx);
   }
 }
+setInterval(refreshInfo, 10000);
 
 listenForMessage('requestInfo', (request, sender, sendResponse) => {
   sendResponse(info);

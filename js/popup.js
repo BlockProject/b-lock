@@ -360,7 +360,7 @@ $(document).ready(() => {
       window.open(getTxnUrl(txn), '_blank');
     });
     listItem.find('.open-txn-new-tab-i')
-      .html(["error", "done", "timer_10", "hourglass_empty"][txn.status])
+      .html(["error", "done", "hourglass_empty", "hourglass_empty"][txn.status])
       .addClass(["error-tx", "done-tx", "pending-tx", "queued-tx"][txn.status])
       .css('color', ['red', '#1564c0', 'grey'][txn.status]);
     container.prepend(listItem);
@@ -507,7 +507,7 @@ $(document).ready(() => {
           // console.log('attachResponsiveEvents for transaction : ', listItem);
         } else {
           $(`#${elementId} .open-txn-new-tab-i`)
-            .html(["error", "done", "timer_10", "hourglass_empty"][transaction.status])
+            .html(["error", "done", "hourglass_empty", "hourglass_empty"][transaction.status])
             .addClass(["error-tx", "done-tx", "pending-tx", "queued-tx"][transaction.status])
             .css('color', ['red', '#1564c0', 'grey'][transaction.status]);
         }
