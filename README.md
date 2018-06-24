@@ -11,7 +11,8 @@
 - b.lock acts as a Nebulas wallet as well. You can use it to keep NAS or send NAS to other accounts.
 
 ### How it works
-* b.lock uses your Nebulas private key (in other words, the master key) to encrypt your passwords and secret notes.
+* b.lock uses the [Nebulas blockchain](https://nebulas.io) and each user account is linked to a Nebulas account.
+* b.lock uses your Nebulas private key (in other words, the master key) to encrypt your passwords and secret notes, using the AES-256 encryption algorithm.
 * b.lock saves the encrypted passwords/secret notes on the Nebulas blockchain.
 * Hence, your passwords will be accessible to you anytime and anywhere, as long as you have your private key
 * No one but you can decrypt the encrypted passwords. Thus, you are truly in control of your passwords.
