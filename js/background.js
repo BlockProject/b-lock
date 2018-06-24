@@ -213,7 +213,7 @@ function openLoginTab() {
 
 
 listenForMessage('onTryLogin', (request, sender, sendResponse) => {
-  // console.log('User submited credentials: ', request.info);
+  console.log('User submited credentials: ', request.info);
   if ((info.savedCredentials[info.network][request.info.domain] === undefined) ||
       (info.savedCredentials[info.network][request.info.domain][request.info.login] === undefined)) {
     chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
@@ -221,7 +221,7 @@ listenForMessage('onTryLogin', (request, sender, sendResponse) => {
       info.tempCredentials.login = request.info.login;
       info.tempCredentials.password = request.info.password;
       info.tempCredentials.tabId = tabs[0].id;
-      // console.log('Just set tabId of temp credentials to be ', tabs[0].id);
+      console.log('Just set tabId of temp credentials to be ', tabs[0].id);
     });
   }
 });

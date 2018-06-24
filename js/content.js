@@ -1,8 +1,9 @@
 $(document).ready(function () {
-  var injectedButton = false;
-  var filledForm = false;
-  var dialogOpen = false;
-  var hoveringOverButton = false;
+  let injectedButton = false;
+  let filledForm = false;
+  let dialogOpen = false;
+  let hoveringOverButton = false;
+
 
   const readCredentials = ($form) => {
     // console.log($form);
@@ -22,8 +23,14 @@ $(document).ready(function () {
   };
 
   const attachListener = ($form) => {
-    $form.submit(function (e) {
-      const credentials = readCredentials(e.target);
+    if ($form.attr('b-lock-attached-listener') == "true") {
+      // console.log('attachListener is already done for this form');
+      return;
+    }
+    console.log("Attaching listener for form ", $form);
+    const onSubmit = () => {
+      console.log("Login form is submitted");
+      const credentials = readCredentials($form);
       chrome.runtime.sendMessage({
         type: 'onTryLogin',
         info: {
@@ -35,7 +42,16 @@ $(document).ready(function () {
         showSavePasswordDialog();
       });
       return true;
-    });
+    }
+
+    // $form.submit(onSubmit);
+    let submitFormBtn = $form.find("input[type=submit]");
+    if (submitFormBtn.length == 0) submitFormBtn = $("button[type=submit]");
+    if (submitFormBtn.length == 0) submitFormBtn = $("#passwordNext"); // google
+
+    console.log("submitFormBtn is ", submitFormBtn);
+    submitFormBtn.click(onSubmit);
+    $form.attr('b-lock-attached-listener', "true");
   };
 
   const initialSearch = () => {
@@ -47,6 +63,7 @@ $(document).ready(function () {
   };
 
   const showSavePasswordDialog = () => {
+    if ($("#b-lock-save-popup").length > 0) return;
     $('body').append(`<div id='b-lock-save-popup'><iframe src="${chrome.runtime.getURL('html/save-popup.html')}"></iframe></div>`);
     $('#b-lock-save-popup').attr('style',
       'position: fixed !important;\
@@ -74,11 +91,11 @@ $(document).ready(function () {
     const allInputs = $($form).find('input');
     if (allInputs.length > 1) {
       const passwordInput = $($form).find('input:password');
-      let loginInput = $($form).find('input:text');
+      let loginInput = $($form).find('input[type=email]');
       if (loginInput.length == 0) {
         let loginInputs = $($form).find('input');
         for (z in loginInputs) {
-          if ($(loginInputs[z]).attr('type') == 'email') {
+          if ($(loginInputs[z]).attr('type') == 'text') {
             loginInput = $(loginInputs[z]);
             break;
           }
@@ -212,6 +229,8 @@ $(document).ready(function () {
       if (!request.unlocked) return;
       // console.log('doing initialSearch');
       initialSearch();
+      setInterval(initialSearch, 1000);
+
       if (request.showSavePasswordDialog) showSavePasswordDialog();
 
       if (request.autofill) {

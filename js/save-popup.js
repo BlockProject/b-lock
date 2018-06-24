@@ -16,8 +16,8 @@ $(document).ready(() => {
     };
 
     // tell the background to clear the tempCredentials
+    $('#save-credentials').hide();
     chrome.runtime.sendMessage({type: "saveNewCrendentials", credentials: obj}, function (response) {
-      $('#save-credentials').hide();
     });
   });
 

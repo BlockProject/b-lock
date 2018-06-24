@@ -698,8 +698,14 @@ $(document).ready(() => {
     requestRefreshFromBackground();
   })
 
+  const getHostname = (url) => {
+    if (!url.includes("http://") && !url.includes("https://")) url = `https://${url}`;
+
+    return (new URL(url)).hostname;
+  }
+
   $('#new-credential-save').click(function (e) {
-    const domain = $('#new-credential-domain').val();
+    const domain = getHostname($('#new-credential-domain').val());
     const login = $('#new-credential-login').val();
     const password = $('#new-credential-password').val();
 
