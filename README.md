@@ -1,7 +1,9 @@
-# b.lock - The truly secure and trustless password manager
-### Using encryption and blockchain technology, b.lock is a Chrome extension that helps you manage your passwords in a way such that only you have access to it.
+# b.lock - The blockchain-powered password manager
+#### Using encryption and blockchain technology, b.lock is a Chrome extension that helps you manage your passwords in a secure and trustless way such that only you have access to them.
 
 ![alt text](./images/block_logo-16px.png "B.Lock Password Manager")
+
+### [Link to Chrome extension](https://chrome.google.com/webstore/detail/block-password-manager/hjbpkcanpblbdfeoogkbpkbjmacakmjn)
 
 ### Features:
 - You can save the login credentials for different websites to b.lock. The saved credentials will be auto-filled when you visit the websites subsequently.
@@ -15,7 +17,7 @@
 * No one but you can decrypt the encrypted passwords. Thus, you are truly in control of your passwords.
 
 ### How to use:
-* Step 1: Download the chrome extension from [here]()
+* Step 1: Download the chrome extension from [here](https://chrome.google.com/webstore/detail/block-password-manager/hjbpkcanpblbdfeoogkbpkbjmacakmjn)
 * Step 2: Following the extension’s intructions, create your “keystore” (which is like your master key) and back it up. You can also import your existing Nebulas keystore.
 * Step 3: Go to [this link](https://blockproject.io/faucet) and get your free Nebulas coins (which is needed to run b.lock. Don’t worry, $0.0001 worth of the coin is enough to use b.lock for your lifetime. Hence, we are giving it free to you)
 * Step 4: Done, you can start using b.lock to save your passwords/secret notes
