@@ -16,7 +16,7 @@ const networkId = {
   mainnet: 1
 }
 const SECRETNOTE_URL = "Secret note";
-const MAX_NONCE = 1000000000;
+const MAX_NONCE = 1e16;
 
 let keystore;
 const initialInfo = {
@@ -204,7 +204,10 @@ function getAESInstance() {
 }
 
 function getAESInstanceWithNonce(nonce) {
-  return new aesjs.ModeOfOperation.ctr(sha256.array(info.account.privKeyArray), new aesjs.Counter(nonce));
+  const counter = parseInt(sha256(sha224(info.account.privKeyArray).concat(
+    aesjs.utils.hex.fromBytes(aesjs.utils.utf8.toBytes("b.lock is awesome"))
+  )), 16) % nonce;
+  return new aesjs.ModeOfOperation.ctr(sha256.array(info.account.privKeyArray), new aesjs.Counter(counter));
 }
 
 function openLoginTab() {
@@ -360,9 +363,21 @@ listenForMessage('requestInfoForContent', (request, sender, sendResponse) => {
   sendResponse();
 });
 
+// const getRandomNonce = () => {
+//   let nonce = 0;
+//   const randomValues = crypto.getRandomValues(new Int32Array(4));
+//   for (let i = 0; i < 4; i++) {
+//     nonce = nonce * (2 ** 32) + randomValues[i] + (2 ** 31);
+//   }
+//   return nonce;
+// };
+
 const encrypt = (raw) => {
   // console.log('raw : ', raw);
+
   const nonce = Math.floor(Math.random() * MAX_NONCE);
+  // const nonce = getRandomNonce();
+
   var inBytes = aesjs.utils.utf8.toBytes(raw);
   // console.log('bytes : ', inBytes);
   var encryptedBytes = getAESInstanceWithNonce(nonce).encrypt(inBytes);
