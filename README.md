@@ -5,6 +5,8 @@
 
 ### [Link to Chrome extension](https://chrome.google.com/webstore/detail/block-password-manager/hjbpkcanpblbdfeoogkbpkbjmacakmjn)
 
+### Note: we have changed our encryption scheme to a more secure one, which is explained in Encryption and Decryption sections below
+
 ### Features:
 - You can save the login credentials for different websites to b.lock. The saved credentials will be auto-filled when you visit the websites subsequently.
 - You can also save "Secret notes" such as bank PIN numbers, metamask seed words,...
@@ -16,6 +18,25 @@
 * b.lock saves the encrypted passwords/secret notes on the Nebulas blockchain.
 * Hence, your passwords will be accessible to you anytime and anywhere, as long as you have your private key
 * No one but you can decrypt the encrypted passwords. Thus, you are truly in control of your passwords.
+
+##### Encryption
+For each password entry, a `domain`, `login` and `password` are encrypted and saved on the Nebulas blockchain. The encryption is as follow:
+* Two keys are generated from user's Nebulas private key: `encryptionKey` and `counterGeneratingKey`
+```
+encryptionKey = sha256(sha256(nebulas_private_key))
+counterGeneratingKey = sha256(sha256(nebulas_private_key) + 'b.lock is awesome ' + network)
+```
+`network` is either 'mainnet' or 'testnet', depending on which Nebulas network is being used by the user.
+* "`<domain>:<login>`" is encrypted using CTR mode of the AES256 algorithm:
+  * A random and unique `nonce1` in the range from 0 to 1e16 is generated. This means that a random number is generated until it has not been used by the user before.
+  * "`<domain>:<login>`" is encrypted with `encryptionKey` as the key and `counterGeneratingKey % nonce1` as the Counter, to produce `encryptedDomainAndLogin`
+* Similarly, `password` is also encrypted using the CTR mode of the AES256 algorithm, with another random and unique `nonce2`, to produce `encryptedPassword`
+* An entry of `("<encryptedDomainAndLogin>:::<nonce1>", "<encryptedPassword>:::<nonce2>")` is saved on the Nebulas blockchain
+
+##### Decryption
+* `encryptedDomainAndLogin` is simply decrypted using the `encryptionKey` as key and `counterGeneratingKey % nonce1` as the Counter.
+* `encryptedPassword` is decrypted in a similar way.
+
 
 ### How to use:
 * Step 1: Download the chrome extension from [here](https://chrome.google.com/webstore/detail/block-password-manager/hjbpkcanpblbdfeoogkbpkbjmacakmjn)
