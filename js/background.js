@@ -287,14 +287,13 @@ const refreshInfo = () => {
 
   if (pendingTx) {
     console.log('Got pending tx: ', pendingTx);
-    if (pendingTx.tx.nonce <= info.account.nonce) {
-      pendingTx.status = 0;
-      savePastTransactionsToStorage();
-      return;
-    }
+
 
     neb.api.getTransactionReceipt({ hash: pendingTx.txhash }).then((receipt) => {
       pendingTx.status = receipt.status;
+      if (pendingTx.tx.nonce <= info.account.nonce && pendingTx.status == 2) {
+        pendingTx.status = 0;
+      }
       savePastTransactionsToStorage();
     }).catch((err) => {
     });
