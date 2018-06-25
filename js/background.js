@@ -16,7 +16,9 @@ const networkId = {
   mainnet: 1
 }
 const SECRETNOTE_URL = "Secret note";
+
 const MAX_NONCE = 1e16;
+// const MAX_NONCE = 2 ** 128;
 
 let keystore;
 const initialInfo = {
@@ -45,6 +47,10 @@ const initialInfo = {
   pastTransactions: {
     'testnet': [],
     'mainnet': []
+  },
+  usedNonces: {
+    'testnet': {},
+    'mainnet': {}
   },
   // agreedToPolicy: undefined,
   backgroundImgURL: chrome.extension.getURL('images/block_logo-16px.png'),
@@ -112,6 +118,9 @@ function fetchSavedPasswords(network) {
           const [ domain, login ] = key.split(':');
           if (!info.savedCredentials[network][domain]) info.savedCredentials[network][domain] = {};
           info.savedCredentials[network][domain][login] = encryptedPasswords[encryptedKey];
+
+          info.usedNonces[network][getNonceFromEncryptedHex(encryptedKey)] = true;
+          info.usedNonces[network][getNonceFromEncryptedHex(encryptedPasswords[encryptedKey])] = true;
         }
 
         info.allCredentialsArray[network] = [];
@@ -121,7 +130,8 @@ function fetchSavedPasswords(network) {
               domain,
               login,
               password: decrypt(info.savedCredentials[network][domain][login])
-            })
+            });
+
           }
         }
         // console.log('savedCredentials = ', info.savedCredentials);
@@ -132,7 +142,7 @@ function fetchSavedPasswords(network) {
 
 function savePastTransactionsToStorage() {
   chrome.storage.sync.set({ pastTransactions: info.pastTransactions }, function() {
-    console.log("\tJust saved pastTransactions to storage: ", JSON.parse(JSON.stringify(info.pastTransactions)));
+    // console.log("\tJust saved pastTransactions to storage: ", JSON.parse(JSON.stringify(info.pastTransactions)));
   });
 }
 
@@ -204,8 +214,8 @@ function getAESInstance() {
 }
 
 function getAESInstanceWithNonce(nonce) {
-  const counter = parseInt(sha256(sha224(info.account.privKeyArray).concat(
-    aesjs.utils.hex.fromBytes(aesjs.utils.utf8.toBytes("b.lock is awesome"))
+  const counter = parseInt(sha256(sha256(info.account.privKeyArray).concat(
+    aesjs.utils.hex.fromBytes(aesjs.utils.utf8.toBytes(`b.lock is awesome ${info.network}`))
   )), 16) % nonce;
   return new aesjs.ModeOfOperation.ctr(sha256.array(info.account.privKeyArray), new aesjs.Counter(counter));
 }
@@ -221,7 +231,7 @@ function openLoginTab() {
 
 
 listenForMessage('onTryLogin', (request, sender, sendResponse) => {
-  console.log('User submited credentials: ', request.info);
+  // console.log('User submited credentials: ', request.info);
   if ((info.savedCredentials[info.network][request.info.domain] === undefined) ||
       (info.savedCredentials[info.network][request.info.domain][request.info.login] === undefined)) {
     chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
@@ -229,7 +239,7 @@ listenForMessage('onTryLogin', (request, sender, sendResponse) => {
       info.tempCredentials.login = request.info.login;
       info.tempCredentials.password = request.info.password;
       info.tempCredentials.tabId = tabs[0].id;
-      console.log('Just set tabId of temp credentials to be ', tabs[0].id);
+      // console.log('Just set tabId of temp credentials to be ', tabs[0].id);
     });
   }
 });
@@ -258,7 +268,7 @@ listenForMessage('changeNetwork', (request, sender, sendResponse) => {
 
 const refreshInfo = () => {
   if (!info.unlockAccount.unlocked) return;
-  console.log('refresing info, current info = ', JSON.parse(JSON.stringify(info)));
+  // console.log('refresing info, current info = ', JSON.parse(JSON.stringify(info)));
   neb.api.getAccountState(account.getAddressString()).then(function (state) {
     state = state.result || state;
     info.account.address = account.getAddressString();
@@ -318,7 +328,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   if (request.type == 'chooseCredentials') {
-    console.log("Filling credentials: ", request.credentials);
+    // console.log("Filling credentials: ", request.credentials);
     chrome.tabs.query({active: true, currentWindow: true}, function (tabs) {
       chrome.tabs.sendMessage(tabs[0].id, {
         type: 'chooseCredentials',
@@ -374,10 +384,14 @@ listenForMessage('requestInfoForContent', (request, sender, sendResponse) => {
 
 const encrypt = (raw) => {
   // console.log('raw : ', raw);
+  const getRandomNonce = () => Math.floor(Math.random() * MAX_NONCE);
+  let nonce = getRandomNonce();
+  while (info.usedNonces[info.network][nonce]) {
+    nonce = getRandomNonce();
+  }
+  info.usedNonces[info.network][nonce] = true;
 
-  const nonce = Math.floor(Math.random() * MAX_NONCE);
   // const nonce = getRandomNonce();
-
   var inBytes = aesjs.utils.utf8.toBytes(raw);
   // console.log('bytes : ', inBytes);
   var encryptedBytes = getAESInstanceWithNonce(nonce).encrypt(inBytes);
@@ -387,13 +401,16 @@ const encrypt = (raw) => {
   return encryptedHex;
 };
 
+const getNonceFromEncryptedHex = (encryptedHex) => {
+  const nonceHex = encryptedHex.split(":::")[1];
+  return parseInt(nonceHex, 16);
+}
+
 const decrypt = (encryptedHex) => {
   const splitArr = encryptedHex.split(":::");
   let aesInstance;
   if (splitArr.length == 2) {
-    const nonceHex = encryptedHex.split(":::")[1];
-    const nonce = parseInt(nonceHex, 16);
-    aesInstance = getAESInstanceWithNonce(nonce);
+    aesInstance = getAESInstanceWithNonce(getNonceFromEncryptedHex(encryptedHex));
   } else {
     aesInstance = getAESInstance();
   }
