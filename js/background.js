@@ -16,6 +16,7 @@ const networkId = {
   mainnet: 1
 }
 const SECRETNOTE_URL = "Secret note";
+const MAX_NONCE = 1000000000;
 
 let keystore;
 const initialInfo = {
@@ -136,7 +137,7 @@ function savePastTransactionsToStorage() {
 }
 
 function setPassword(url, login, password) {
-  const encryptedPass = encrypt(password)
+  const encryptedPass = encrypt(password);
   if (!info.unlockAccount.unlocked) return;
   const encryptedKey = encrypt(`${url}:${login}`);
   info.pastTransactions[info.network].push({
@@ -200,6 +201,10 @@ const sendQueuedTx = (queuedTx) => {
 
 function getAESInstance() {
   return new aesjs.ModeOfOperation.ctr(info.account.privKeyArray);
+}
+
+function getAESInstanceWithNonce(nonce) {
+  return new aesjs.ModeOfOperation.ctr(sha256.array(info.account.privKeyArray), new aesjs.Counter(nonce));
 }
 
 function openLoginTab() {
@@ -357,19 +362,31 @@ listenForMessage('requestInfoForContent', (request, sender, sendResponse) => {
 
 const encrypt = (raw) => {
   // console.log('raw : ', raw);
+  const nonce = Math.floor(Math.random() * MAX_NONCE);
   var inBytes = aesjs.utils.utf8.toBytes(raw);
   // console.log('bytes : ', inBytes);
-  var encryptedBytes = getAESInstance().encrypt(inBytes);
+  var encryptedBytes = getAESInstanceWithNonce(nonce).encrypt(inBytes);
   // console.log('encrypted bytes : ', encryptedBytes);
   var encryptedHex = aesjs.utils.hex.fromBytes(encryptedBytes);
+  encryptedHex = encryptedHex.concat(":::").concat(nonce.toString(16));
   return encryptedHex;
 };
 
 const decrypt = (encryptedHex) => {
+  const splitArr = encryptedHex.split(":::");
+  let aesInstance;
+  if (splitArr.length == 2) {
+    const nonceHex = encryptedHex.split(":::")[1];
+    const nonce = parseInt(nonceHex, 16);
+    aesInstance = getAESInstanceWithNonce(nonce);
+  } else {
+    aesInstance = getAESInstance();
+  }
+  encryptedHex = splitArr[0];
   var encryptedBytes = aesjs.utils.hex.toBytes(encryptedHex);
   encryptedBytes = new Uint8Array(encryptedBytes);
   // console.log('encrypted bytes : ', encryptedBytes);
-  var decryptedBytes = getAESInstance().decrypt(encryptedBytes);
+  var decryptedBytes = aesInstance.decrypt(encryptedBytes);
   // console.log('decrypted bytes : ', decryptedBytes);
   var decryptedRaw = aesjs.utils.utf8.fromBytes(decryptedBytes);
   // console.log('decrypted raw : ', decryptedRaw);
