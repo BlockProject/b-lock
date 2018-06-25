@@ -40,13 +40,13 @@ counterGeneratingKey = sha256(sha256(nebulas_private_key) + 'b.lock is awesome '
 
 ### How to use:
 * Step 1: Download the chrome extension from [here](https://chrome.google.com/webstore/detail/block-password-manager/hjbpkcanpblbdfeoogkbpkbjmacakmjn)
-* Step 2: Following the extension’s intructions, create your “keystore” (which is like your master key) and back it up. You can also import your existing Nebulas keystore.
+* Step 2: Following the extension’s instructions, create your “keystore” (which is like your master key) and back it up. You can also import your existing Nebulas keystore.
 * Step 3: Go to [this link](https://blockproject.io/faucet) and get your free Nebulas coins (which is needed to run b.lock. Don’t worry, $0.0001 worth of the coin is enough to use b.lock for your lifetime. Hence, we are giving it free to you)
 * Step 4: Done, you can start using b.lock to save your passwords/secret notes
 
 ### Why blockchain?
 * Password managers are essential these days, when we have to manage lots of different passwords (which shouldn't be reused)
-* There are lots of potential problems with the existing centrailized password managers:
+* There are lots of potential problems with the existing centralized password managers:
   * Single point of failure: if the server/database goes down, there goes your passwords
   * Trust issue: can you really trust that these closed-source softwares will not just read your passwords?
 * b.lock solves all of these problems:
