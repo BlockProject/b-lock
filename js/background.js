@@ -6,7 +6,7 @@ const Account = require('nebulas').Account;
 let neb = new Neb();
 let account = undefined;
 const DEFAULT_GAS_LIMIT = 2000000;
-const DEFAULT_GAS_PRICE = 1000000;
+const DEFAULT_GAS_PRICE = 2000000;
 const contractAddress = {
   testnet: 'n1segn8d15u5DPgVjCmyuTPdf94Uh3F7eUX',
   mainnet: 'n1qmQeLTUU6fPJMs1uwTadQZfgwfUAKEUJw'
@@ -48,7 +48,7 @@ const initialInfo = {
     'testnet': [],
     'mainnet': []
   },
-  usedNonces: {
+  usedCounters: {
     'testnet': {},
     'mainnet': {}
   },
@@ -119,8 +119,8 @@ function fetchSavedPasswords(network) {
           if (!info.savedCredentials[network][domain]) info.savedCredentials[network][domain] = {};
           info.savedCredentials[network][domain][login] = encryptedPasswords[encryptedKey];
 
-          info.usedNonces[network][getNonceFromEncryptedHex(encryptedKey)] = true;
-          info.usedNonces[network][getNonceFromEncryptedHex(encryptedPasswords[encryptedKey])] = true;
+          info.usedCounters[network][counterFromNonce(getNonceFromEncryptedHex(encryptedKey))] = true;
+          info.usedCounters[network][counterFromNonce(getNonceFromEncryptedHex(encryptedPasswords[encryptedKey]))] = true;
         }
 
         info.allCredentialsArray[network] = [];
@@ -213,11 +213,16 @@ function getAESInstance() {
   return new aesjs.ModeOfOperation.ctr(info.account.privKeyArray);
 }
 
+const counterFromNonce = (nonce) => parseInt(sha256(sha256(info.account.privKeyArray).concat(
+  aesjs.utils.hex.fromBytes(aesjs.utils.utf8.toBytes(`b.lock is awesome ${info.network}`))
+)), 16) % nonce;
+
 function getAESInstanceWithNonce(nonce) {
-  const counter = parseInt(sha256(sha256(info.account.privKeyArray).concat(
-    aesjs.utils.hex.fromBytes(aesjs.utils.utf8.toBytes(`b.lock is awesome ${info.network}`))
-  )), 16) % nonce;
-  return new aesjs.ModeOfOperation.ctr(sha256.array(info.account.privKeyArray), new aesjs.Counter(counter));
+  const counter = counterFromNonce(nonce);
+  // return new aesjs.ModeOfOperation.ctr(sha256.array(info.account.privKeyArray), new aesjs.Counter(counter));
+  return info.network == "mainnet" ?
+    new aesjs.ModeOfOperation.ctr(sha256.array(info.account.privKeyArray), new aesjs.Counter(counter))
+    : new aesjs.ModeOfOperation.ctr(sha256(sha256.array(info.account.privKeyArray)), new aesjs.Counter(counter))
 }
 
 function openLoginTab() {
@@ -268,7 +273,7 @@ listenForMessage('changeNetwork', (request, sender, sendResponse) => {
 
 const refreshInfo = () => {
   if (!info.unlockAccount.unlocked) return;
-  // console.log('refresing info, current info = ', JSON.parse(JSON.stringify(info)));
+  console.log('refresing info, current info = ', JSON.parse(JSON.stringify(info)));
   neb.api.getAccountState(account.getAddressString()).then(function (state) {
     state = state.result || state;
     info.account.address = account.getAddressString();
@@ -385,10 +390,10 @@ const encrypt = (raw) => {
   // console.log('raw : ', raw);
   const getRandomNonce = () => Math.floor(Math.random() * MAX_NONCE);
   let nonce = getRandomNonce();
-  while (info.usedNonces[info.network][nonce]) {
+  while (info.usedCounters[info.network][counterFromNonce(nonce)]) {
     nonce = getRandomNonce();
   }
-  info.usedNonces[info.network][nonce] = true;
+  info.usedCounters[info.network][counterFromNonce(nonce)] = true;
 
   // const nonce = getRandomNonce();
   var inBytes = aesjs.utils.utf8.toBytes(raw);
