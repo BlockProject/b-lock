@@ -239,6 +239,7 @@ listenForMessage('onTryLogin', (request, sender, sendResponse) => {
   // console.log('User submited credentials: ', request.info);
   if ((info.savedCredentials[info.network][request.info.domain] === undefined) ||
       (info.savedCredentials[info.network][request.info.domain][request.info.login] === undefined)) {
+    if (info.account.balance == 0) return;
     chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
       info.tempCredentials.domain = request.info.domain;
       info.tempCredentials.login = request.info.login;
@@ -367,7 +368,7 @@ listenForMessage('requestInfoForContent', (request, sender, sendResponse) => {
     // console.log('Broadcasting infoForContent');
     chrome.tabs.sendMessage(tabs[0].id, {
       type: 'infoForContent',
-      unlocked: info.unlockAccount.unlocked,
+      unlocked: info.unlockAccount.unlocked && info.account.balance > 0,
       showSavePasswordDialog: tabs[0].id === info.tempCredentials.tabId,
       autofill: credentials.length > 0,
       credentials,
