@@ -12,6 +12,13 @@
 - You can also save "Secret notes" such as bank PIN numbers, metamask seed words,...
 - b.lock acts as a Nebulas wallet as well. You can use it to keep NAS or send NAS to other accounts.
 
+### How to use:
+* Step 1: Download the chrome extension from [here](https://chrome.google.com/webstore/detail/block-password-manager/hjbpkcanpblbdfeoogkbpkbjmacakmjn)
+* Step 2: Following the extension’s instructions, create your “keystore” (which is like your master key) and back it up. You can also import your existing Nebulas keystore.
+* Step 3: Go to [this link](https://blockproject.io/faucet) and get your free Nebulas coins (which is needed to run b.lock. Don’t worry, $0.0001 worth of the coin is enough to use b.lock for your lifetime. Hence, we are giving it free to you)
+* Step 4: Done, you can start using b.lock to save your passwords/secret notes
+
+
 ### How it works
 * b.lock uses the [Nebulas blockchain](https://nebulas.io) and each user account is linked to a Nebulas account.
 * b.lock uses your Nebulas private key (in other words, the master key) to encrypt your passwords and secret notes, using the AES-256 encryption algorithm.
@@ -37,12 +44,6 @@ counterGeneratingKey = sha256(sha256(nebulas_private_key) + 'b.lock is awesome '
 * `encryptedDomainAndLogin` is simply decrypted using the `encryptionKey` as key and `counterGeneratingKey % nonce1` as the Counter.
 * `encryptedPassword` is decrypted in a similar way.
 
-
-### How to use:
-* Step 1: Download the chrome extension from [here](https://chrome.google.com/webstore/detail/block-password-manager/hjbpkcanpblbdfeoogkbpkbjmacakmjn)
-* Step 2: Following the extension’s instructions, create your “keystore” (which is like your master key) and back it up. You can also import your existing Nebulas keystore.
-* Step 3: Go to [this link](https://blockproject.io/faucet) and get your free Nebulas coins (which is needed to run b.lock. Don’t worry, $0.0001 worth of the coin is enough to use b.lock for your lifetime. Hence, we are giving it free to you)
-* Step 4: Done, you can start using b.lock to save your passwords/secret notes
 
 ### Why blockchain?
 * Password managers are essential these days, when we have to manage lots of different passwords (which shouldn't be reused)
