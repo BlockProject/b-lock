@@ -56,3 +56,8 @@ counterGeneratingKey = sha256(sha256(nebulas_private_key) + 'b.lock is awesome '
 
 ### Contract address
 Our deployed contract on the mainnet Nebulas can be found [here](https://explorer.nebulas.io/#/address/n1qmQeLTUU6fPJMs1uwTadQZfgwfUAKEUJw).
+
+### Donations
+* <strong>BTC: </strong>38emsJ9aCHmxqbFSN9rrpeeDpgEBxjD5kx
+* <strong>ETH: </strong>0x033684fE1BcC2a6A86a4a1E44766CBF511FB8001
+* <strong>NAS: </strong>n1FymtHsTxTLrg1FpUTLEVrJFYKCjTkXoRa
