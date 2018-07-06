@@ -6,7 +6,7 @@ const Account = require('nebulas').Account;
 let neb = new Neb();
 let account = undefined;
 const DEFAULT_GAS_LIMIT = 2000000;
-const DEFAULT_GAS_PRICE = 1000000;
+const DEFAULT_GAS_PRICE = 2000000;
 const contractAddress = {
   testnet: 'n1segn8d15u5DPgVjCmyuTPdf94Uh3F7eUX',
   mainnet: 'n1qmQeLTUU6fPJMs1uwTadQZfgwfUAKEUJw'
@@ -17,9 +17,13 @@ const networkId = {
 }
 const SECRETNOTE_URL = "Secret note";
 
+const MAX_NONCE = 1e16;
+// const MAX_NONCE = 2 ** 128;
+
 let keystore;
 const initialInfo = {
-  network: 'testnet',
+  lastNonce: 0,
+  network: 'mainnet',
   account: {
     address: undefined,
     privKey: undefined,
@@ -44,7 +48,12 @@ const initialInfo = {
     'testnet': [],
     'mainnet': []
   },
-  backgroundImgURL: chrome.extension.getURL('images/block_logo-16px.png')
+  usedCounters: {
+    'testnet': {},
+    'mainnet': {}
+  },
+  // agreedToPolicy: undefined,
+  backgroundImgURL: chrome.extension.getURL('images/block_logo-16px.png'),
 };
 let info = JSON.parse(JSON.stringify(initialInfo));
 
@@ -59,6 +68,10 @@ function setUpNeb(openNewTab) {
       if (openNewTab) {
         openLoginTab();
       }
+
+      // chrome.storage.sync.get('agreedToPolicy', (data) => {
+      //   info.agreedToPolicy = data.agreedToPolicy;
+      // })
     });
   });
 }
@@ -75,7 +88,7 @@ const listenForMessage = (type, callback) => {
 }
 
 function fetchSavedPasswords(network) {
-  console.log("Fetching saved passwords for network ", network);
+  // console.log("Fetching saved passwords for network ", network);
   if (!info.unlockAccount.unlocked) return;
   neb.api.getAccountState(account.getAddressString()).then(function (state) {
     neb.api.call({
@@ -91,7 +104,7 @@ function fetchSavedPasswords(network) {
          args: ""
       }
     }).then(function(tx) {
-        console.log('Result from fetching passwords: ', tx);
+        // console.log('Result from fetching passwords: ', tx);
         // if (tx.error)
         const encryptedPasswords = JSON.parse(tx.result);
 
@@ -105,6 +118,9 @@ function fetchSavedPasswords(network) {
           const [ domain, login ] = key.split(':');
           if (!info.savedCredentials[network][domain]) info.savedCredentials[network][domain] = {};
           info.savedCredentials[network][domain][login] = encryptedPasswords[encryptedKey];
+
+          info.usedCounters[network][counterFromNonce(getNonceFromEncryptedHex(encryptedKey))] = true;
+          info.usedCounters[network][counterFromNonce(getNonceFromEncryptedHex(encryptedPasswords[encryptedKey]))] = true;
         }
 
         info.allCredentialsArray[network] = [];
@@ -114,7 +130,8 @@ function fetchSavedPasswords(network) {
               domain,
               login,
               password: decrypt(info.savedCredentials[network][domain][login])
-            })
+            });
+
           }
         }
         // console.log('savedCredentials = ', info.savedCredentials);
@@ -123,68 +140,70 @@ function fetchSavedPasswords(network) {
   });
 }
 
-
-
 function savePastTransactionsToStorage() {
   chrome.storage.sync.set({ pastTransactions: info.pastTransactions }, function() {
-    console.log("\tJust saved pastTransactions to storage: ", info.pastTransactions);
+    // console.log("\tJust saved pastTransactions to storage: ", JSON.parse(JSON.stringify(info.pastTransactions)));
   });
 }
 
-function setPassword(url, login, encryptedPass) {
+function setPassword(url, login, password) {
+  const encryptedPass = encrypt(password);
   if (!info.unlockAccount.unlocked) return;
-  neb.api.getAccountState(account.getAddressString()).then(function (state) {
-    const encryptedKey = encrypt(`${url}:${login}`);
-    let tx = new Transaction({
+  const encryptedKey = encrypt(`${url}:${login}`);
+  info.pastTransactions[info.network].push({
+    type: password === "" ? "delete" : "password",
+    status: 3,
+    txIndex: info.pastTransactions[info.network].length,
+    url,
+    login,
+    tx: {
       chainID: networkId[info.network],
-      from: account,
       to: contractAddress[info.network],
       value: 0,
-      nonce: parseInt(state.nonce) + 1,
-      gasPrice: DEFAULT_GAS_PRICE,
-      gasLimit: DEFAULT_GAS_LIMIT,
       contract: {
         function: "setPassword",
         args: `[\"${encryptedKey}\",\"${encryptedPass}\"]`
-      }});
-    tx.signTransaction();
-    neb.api.sendRawTransaction(tx.toProtoString()).then(function (resp) {
-      console.log(`Just set password for ${url} on contract, response is:`, resp);
-      info.pastTransactions[info.network].push({
-        type: "password",
-        status: 2,
-        url,
-        login,
-        txhash: resp.txhash,
-      });
-      savePastTransactionsToStorage();
-      setTimeout(fetchSavedPasswords, 1000);
-    });
+      }
+    }
   });
+  savePastTransactionsToStorage();
 }
 
 function sendNas(destination, amount) {
+  console.log("Sending NAS");
   if (!info.unlockAccount.unlocked) return;
-  neb.api.getAccountState(account.getAddressString()).then(function (state) {
-    let tx = new Transaction({
+  info.pastTransactions[info.network].push({
+    type: "send",
+    amount,
+    destination,
+    status: 3, // queued
+    txIndex: info.pastTransactions[info.network].length,
+    tx: {
       chainID: networkId[info.network],
-      from: account,
       to: destination,
       value: parseInt(amount * 1e18),
-      nonce: parseInt(state.nonce) + 1,
-      gasPrice: DEFAULT_GAS_PRICE,
-      gasLimit: DEFAULT_GAS_LIMIT,
-    });
+    }
+  });
+  savePastTransactionsToStorage();
+}
+
+const sendQueuedTx = (queuedTx) => {
+  console.log("Sending queued tx", queuedTx);
+  neb.api.getAccountState(account.getAddressString()).then(function (state) {
+    queuedTx.tx.gasPrice = DEFAULT_GAS_PRICE;
+    queuedTx.tx.gasLimit = DEFAULT_GAS_LIMIT;
+    queuedTx.tx.nonce = parseInt(state.nonce) + 1;
+    if (queuedTx.tx.nonce <= info.lastNonce) return;
+    queuedTx.tx.from = account;
+    let tx = new Transaction(queuedTx.tx);
     tx.signTransaction();
+    queuedTx.tx.from = {};
+
     neb.api.sendRawTransaction(tx.toProtoString()).then(function (resp) {
-      console.log(`Just sent ${amount} NAS to ${destination} response is:`, resp);
-      info.pastTransactions[info.network].push({
-        type: "send",
-        amount,
-        destination,
-        status: 2,
-        txhash: resp.txhash,
-      });
+      console.log(`Just sent raw Tx, response is:`, resp);
+      queuedTx.status = 2;
+      queuedTx.txhash = resp.txhash
+      info.lastNonce = queuedTx.tx.nonce;
       savePastTransactionsToStorage();
     });
   });
@@ -194,74 +213,108 @@ function getAESInstance() {
   return new aesjs.ModeOfOperation.ctr(info.account.privKeyArray);
 }
 
+const counterFromNonce = (nonce) => parseInt(sha256(sha256(info.account.privKeyArray).concat(
+  aesjs.utils.hex.fromBytes(aesjs.utils.utf8.toBytes(`b.lock is awesome ${info.network}`))
+)), 16) % nonce;
+
+function getAESInstanceWithNonce(nonce) {
+  const counter = counterFromNonce(nonce);
+  // return new aesjs.ModeOfOperation.ctr(sha256.array(info.account.privKeyArray), new aesjs.Counter(counter));
+  return info.network == "mainnet" ?
+    new aesjs.ModeOfOperation.ctr(sha256.array(info.account.privKeyArray), new aesjs.Counter(counter))
+    : new aesjs.ModeOfOperation.ctr(sha256(sha256.array(info.account.privKeyArray)), new aesjs.Counter(counter))
+}
+
 function openLoginTab() {
   if (info.account.keystore) {
     chrome.tabs.create({url : "html/login.html"});
   }
 }
 
-console.log("Yo");
+// console.log("Yo");
 
 
 
 listenForMessage('onTryLogin', (request, sender, sendResponse) => {
-  console.log('User submited credentials: ', request.info);
+  // console.log('User submited credentials: ', request.info);
   if ((info.savedCredentials[info.network][request.info.domain] === undefined) ||
       (info.savedCredentials[info.network][request.info.domain][request.info.login] === undefined)) {
+    if (info.account.balance == 0) return;
     chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
       info.tempCredentials.domain = request.info.domain;
       info.tempCredentials.login = request.info.login;
       info.tempCredentials.password = request.info.password;
       info.tempCredentials.tabId = tabs[0].id;
-      console.log('Just set tabId of temp credentials to be ', tabs[0].id);
+      // console.log('Just set tabId of temp credentials to be ', tabs[0].id);
     });
   }
 });
 
+// listenForMessage('agreePolicy', (request, sender) => {
+//   info.agreedToPolicy = true;
+//   chrome.storage.sync.set({ agreedToPolicy: true});
+// });
+
 listenForMessage('sendNas', (request, sender, sendResponse) => {
+
   sendNas(request.destination, request.amount);
 });
 
 listenForMessage('changeNetwork', (request, sender, sendResponse) => {
-  console.log("changing network to ", request.network);
+  // console.log("changing network to ", request.network);
   if (!(request.network in networkId)) return;
   info.network = request.network;
   console.log("changed network to ", request.network);
   neb.setRequest(new HttpRequest(`https://${info.network}.nebulas.io`));
-  refreshInfo(info);
+  refreshInfo();
   chrome.storage.sync.set({ network: info.network }, function() {
-    console.log("\tJust saved network setting to storage");
+    // console.log("\tJust saved network setting to storage");
   });
 });
 
-const refreshInfo = (infoObject) => {
-  if (!infoObject.unlockAccount.unlocked) return;
-
+const refreshInfo = () => {
+  if (!info.unlockAccount.unlocked) return;
+  console.log('refresing info, current info = ', JSON.parse(JSON.stringify(info)));
   neb.api.getAccountState(account.getAddressString()).then(function (state) {
     state = state.result || state;
-    infoObject.account.address = account.getAddressString();
-    infoObject.account.balance = state.balance;
-    infoObject.account.nonce = state.nonce;
-    console.log('just updated account state, info: ', info);
+    info.account.address = account.getAddressString();
+    info.account.balance = state.balance;
+    info.account.nonce = state.nonce;
+    // console.log('just updated account state, info: ', info);
     chrome.runtime.sendMessage({type: "infoForPopup", info});
   }).catch(function (err) {
     console.log("err:",err);
   });
-  fetchSavedPasswords(infoObject.network);
+  fetchSavedPasswords(info.network);
 
 
-  for (const transaction of infoObject.pastTransactions[infoObject.network]) {
-    if (transaction.status !== 2) continue;
-    neb.api.getTransactionReceipt({ hash: transaction.txhash }).then((receipt) => {
-      transaction.status = receipt.status;
+  // just need to get the last transaction that is pending
+  const pendingTx = info.pastTransactions[info.network].filter((tx) => tx.status == 2)[0];
+
+  if (pendingTx) {
+    console.log('Got pending tx: ', pendingTx);
+
+
+    neb.api.getTransactionReceipt({ hash: pendingTx.txhash }).then((receipt) => {
+      pendingTx.status = receipt.status;
+      if (pendingTx.tx.nonce <= info.account.nonce && pendingTx.status == 2) {
+        pendingTx.status = 0;
+      }
       savePastTransactionsToStorage();
+    }).catch((err) => {
     });
+  } else {
+    const queuedTx = info.pastTransactions[info.network].filter((tx) => tx.status == 3)[0];
+    if (!queuedTx) return;
+    console.log('Got queued tx: ', queuedTx);
+    sendQueuedTx(queuedTx);
   }
 }
+setInterval(refreshInfo, 10000);
 
 listenForMessage('requestInfo', (request, sender, sendResponse) => {
   sendResponse(info);
-  refreshInfo(info);
+  refreshInfo();
 });
 
 listenForMessage('clearTempCredentials', (request, sender, sendResponse) => {
@@ -280,7 +333,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   if (request.type == 'chooseCredentials') {
-    console.log("Filling credentials");
+    // console.log("Filling credentials: ", request.credentials);
     chrome.tabs.query({active: true, currentWindow: true}, function (tabs) {
       chrome.tabs.sendMessage(tabs[0].id, {
         type: 'chooseCredentials',
@@ -291,7 +344,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 });
 
 const resetInfoForNewAccount = () => {
-  info = initialInfo;
+  info = JSON.parse(JSON.stringify(initialInfo));
   chrome.storage.sync.set({ pastTransactions: {
     'testnet': [],
     'mainnet': []
@@ -301,6 +354,7 @@ const resetInfoForNewAccount = () => {
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   if (request.type == 'uploadedKeystore') {
     info.account.keystore = request.keystore;
+    refreshInfo();
     sendResponse();
   }
 });
@@ -308,13 +362,13 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 listenForMessage('requestInfoForContent', (request, sender, sendResponse) => {
   let response = { unlocked: info.unlockAccount.unlocked };
   chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
-    console.log('current tab = ', tabs[0].id, ' while tab id of credentials = ', info.tempCredentials.tabId);
+    // console.log('current tab = ', tabs[0].id, ' while tab id of credentials = ', info.tempCredentials.tabId);
 
     const credentials = info.allCredentialsArray[info.network].filter(credential => credential.domain === request.domain);
-    console.log('Broadcasting infoForContent');
+    // console.log('Broadcasting infoForContent');
     chrome.tabs.sendMessage(tabs[0].id, {
       type: 'infoForContent',
-      unlocked: info.unlockAccount.unlocked,
+      unlocked: info.unlockAccount.unlocked && info.account.balance > 0,
       showSavePasswordDialog: tabs[0].id === info.tempCredentials.tabId,
       autofill: credentials.length > 0,
       credentials,
@@ -324,21 +378,52 @@ listenForMessage('requestInfoForContent', (request, sender, sendResponse) => {
   sendResponse();
 });
 
+// const getRandomNonce = () => {
+//   let nonce = 0;
+//   const randomValues = crypto.getRandomValues(new Int32Array(4));
+//   for (let i = 0; i < 4; i++) {
+//     nonce = nonce * (2 ** 32) + randomValues[i] + (2 ** 31);
+//   }
+//   return nonce;
+// };
+
 const encrypt = (raw) => {
-  console.log('raw : ', raw);
+  // console.log('raw : ', raw);
+  const getRandomNonce = () => Math.floor(Math.random() * MAX_NONCE);
+  let nonce = getRandomNonce();
+  while (info.usedCounters[info.network][counterFromNonce(nonce)]) {
+    nonce = getRandomNonce();
+  }
+  info.usedCounters[info.network][counterFromNonce(nonce)] = true;
+
+  // const nonce = getRandomNonce();
   var inBytes = aesjs.utils.utf8.toBytes(raw);
-  console.log('bytes : ', inBytes);
-  var encryptedBytes = getAESInstance().encrypt(inBytes);
-  console.log('encrypted bytes : ', encryptedBytes);
+  // console.log('bytes : ', inBytes);
+  var encryptedBytes = getAESInstanceWithNonce(nonce).encrypt(inBytes);
+  // console.log('encrypted bytes : ', encryptedBytes);
   var encryptedHex = aesjs.utils.hex.fromBytes(encryptedBytes);
+  encryptedHex = encryptedHex.concat(":::").concat(nonce.toString(16));
   return encryptedHex;
 };
 
+const getNonceFromEncryptedHex = (encryptedHex) => {
+  const nonceHex = encryptedHex.split(":::")[1];
+  return parseInt(nonceHex, 16);
+}
+
 const decrypt = (encryptedHex) => {
+  const splitArr = encryptedHex.split(":::");
+  let aesInstance;
+  if (splitArr.length == 2) {
+    aesInstance = getAESInstanceWithNonce(getNonceFromEncryptedHex(encryptedHex));
+  } else {
+    aesInstance = getAESInstance();
+  }
+  encryptedHex = splitArr[0];
   var encryptedBytes = aesjs.utils.hex.toBytes(encryptedHex);
   encryptedBytes = new Uint8Array(encryptedBytes);
   // console.log('encrypted bytes : ', encryptedBytes);
-  var decryptedBytes = getAESInstance().decrypt(encryptedBytes);
+  var decryptedBytes = aesInstance.decrypt(encryptedBytes);
   // console.log('decrypted bytes : ', decryptedBytes);
   var decryptedRaw = aesjs.utils.utf8.fromBytes(decryptedBytes);
   // console.log('decrypted raw : ', decryptedRaw);
@@ -347,12 +432,12 @@ const decrypt = (encryptedHex) => {
 
 listenForMessage('saveNewCrendentials', (request, sender, sendResponse) => {
   info.tempCredentials = {};
-  console.log('Saving new credentials here: ', request.credentials);
-  setPassword(request.credentials.domain, request.credentials.login, encrypt(request.credentials.password));
+  // console.log('Saving new credentials here: ', request.credentials);
+  setPassword(request.credentials.domain, request.credentials.login, request.credentials.password);
 });
 
 listenForMessage('logout', (request, sender, sendResponse) => {
-  console.log('Loging out ...', request.credentials);
+  console.log('Loging out ...');
   info = JSON.parse(JSON.stringify(initialInfo));
   setUpNeb(false);
 });
@@ -363,12 +448,13 @@ listenForMessage('createAccount', (request, sender, sendResponse) => {
   info.account.privKey = account.getPrivateKeyString();
   info.account.pubKey = account.getPublicKeyString();
   info.account.privKeyArray = account.getPrivateKey();
+  info.account.address = account.getAddressString();
   info.account.keystore = account.toKeyString(request.password);
   info.unlockAccount.unlocked = true;
   chrome.storage.sync.set({ keystore: info.account.keystore }, function() {
     console.log("\tJust set new keystore");
   });
-  refreshInfo(info);
+  refreshInfo();
   sendResponse(info);
 });
 
@@ -381,9 +467,9 @@ listenForMessage('unlockAccount', (request, sender, sendResponse) => {
     info.account.pubKey = account.getPublicKeyString();
     info.account.privKeyArray = account.getPrivateKey();
     info.account.address = account.getAddressString();
-    console.log('Account as just unlocked: ',account);
+    // console.log('Account as just unlocked: ',account);
     chrome.storage.sync.set({ keystore: info.account.keystore }, function() {
-      console.log("\tJust set new keystore");
+      console.log("\tJust set keystore");
     });
     chrome.storage.sync.get('pastTransactions', function(data) {
       if (data.pastTransactions) {
@@ -397,6 +483,6 @@ listenForMessage('unlockAccount', (request, sender, sendResponse) => {
   } catch (err) {
     info.unlockAccount.wrongPass = true;
   }
-  refreshInfo(info);
+  refreshInfo();
   sendResponse(info);
 });

@@ -12,11 +12,11 @@ $(document).ready(() => {
   });
 
   const refresh = () => {
-    console.log('got this info : ', info);
+    // console.log('got this info : ', info);
 
     if (info == undefined) return;
     if (!info.unlockAccount.unlocked) { // user created account, haven't logged in
-      console.log('info.account.address = ', info.account.address);
+      // console.log('info.account.address = ', info.account.address);
       if (info.unlockAccount.wrongPass) {
         $("#login-div-main-wrong-password").show();
       } else {

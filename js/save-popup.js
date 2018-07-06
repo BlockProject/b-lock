@@ -1,6 +1,6 @@
 $(document).ready(() => {
   const showSavePasswordDom = (obj) => {
-    console.log('showing this div, ', obj);
+    // console.log('showing this div, ', obj);
     $('#save-credentials-domain').val(obj.domain);
     $('#save-credentials-login').val(obj.login);
     $('#save-credentials-password').val(obj.password);
@@ -16,8 +16,8 @@ $(document).ready(() => {
     };
 
     // tell the background to clear the tempCredentials
+    $('#save-credentials').hide();
     chrome.runtime.sendMessage({type: "saveNewCrendentials", credentials: obj}, function (response) {
-      $('#save-credentials').hide();
     });
   });
 

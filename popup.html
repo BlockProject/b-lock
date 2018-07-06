@@ -14,11 +14,12 @@
       <script src="thirdparty/nebulas.js"></script>
       <script src="thirdparty/materialize.min.js"></script>
       <script src="js/popup.js"></script>
+      <!-- <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"> -->
     </head>
     <body>
       <div id="cryptpass-initial" class="cryptpass-popup">
         <div class="cryptpass-popup-header mdl-color-text--blue-800">
-          <h2>b.lock</h2>
+          <img src="images/block_artboard.png" style="width:64px;margin-top:48px;">
         </div>
 
 
@@ -54,9 +55,17 @@
           <div id="newAccountSuccess" style="display:none;">
             <div class="cryptpass-popup-new-label1"><label class="mdl-typography--body-2">You have successfully
             created your Nebulas account!</label></div>
+            <div id="public-address-notice" class="cryptpass-popup-new-label1 mdl-typography--body-2"></div>
             <div class="cryptpass-popup-new-label2"><label class="mdl-typography--body-2">Please back it up in a secure location</label></div>
             <button id="saveKeystoreBtn" class="mdl-button mdl-js-button mdl-button--raised mdl-color--blue-800 mdl-color-text--white">
               SAVE MY KEYSTORE FILE
+            </button>
+            <div class="cryptpass-popup-new-label2" style="margin-top:24px;"><label class="mdl-typography--body-2">Claim your free Nebulas (NAS) token before you start using <strong>b.lock</strong></label></div>
+            <button id="claimFreeNas" class="mdl-button mdl-js-button mdl-button--raised mdl-color--blue-800 mdl-color-text--white">
+              CLAIM NOW
+            </button>
+            <button id="enter-block" class="mdl-button mdl-js-button mdl-button--raised mdl-color--blue-800 mdl-color-text--white">
+              ENTER b.lock
             </button>
           </div>
         </div>
@@ -85,6 +94,27 @@
           </div>
         </div>
       </div>
+
+      <!-- <div id="privacy-policy" class="cryptpass-popup cryptpass-popup-login" style="display:none;">
+        <div class="cryptpass-popup-login-main">
+          </br>
+          </br>
+          </br>
+          </br>
+          </br>
+          </br>
+          </br>
+          <div class=""><label class="mdl-typography--display-1">Privacy Policy</label></div>
+          </br>
+          </br>
+          <div class=""><label class="mdl-typography--title mdl-color-text--blue-800">By continuing, you are agreeing to our privacy policy as stated <a href="https://blockproject.io/PrivacyPolicy.pdf" target="_blank">here</a></label></div>
+          </br>
+          <button id="agree-policy" class="mdl-button mdl-js-button mdl-button--raised mdl-color--blue-800 mdl-color-text--white">
+            CONTINUE
+          </button>
+        </div>
+      </div> -->
+
       <div id="cryptpass-main" class="main" style="display:none;">
           <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header mdl-layout--fixed-tabs">
             <header class="mdl-layout__header">
@@ -163,14 +193,14 @@
                   </div>
 
                   <div class="get-free-nas-section list-container hidden2">
-                    <div class="mdl-typography--title mdl-color-text--red-800">
+                    <div class="mdl-typography--title mdl-color-text--blue-800">
                       GET FREE NEBULAS COINS
                     </br>
                     </br>
                       TO START USING B.LOCK
                     </div>
 
-                    <a href="https://blockproject.io" target="_blank">
+                    <a class="free-nas-btn" href="https://blockproject.io/faucet" target="_blank">
                       <button class="mdl-button mdl-js-button mdl-button--accent mdl-color--blue-400 mdl-color-text--white">
                         Get Free NAS
                       </button>
@@ -217,7 +247,7 @@
                         <div class="info-label mdl-typography--body-2">Balance</div>
                         <div id="my-account-balance" class="info-value"></div>
                         <div id="claim-free-nas" class="">
-                          <a href="https://blockproject.io" target="_blank">
+                          <a class="free-nas-btn" href="https://blockproject.io/faucet" target="_blank">
                             <button class="mdl-button mdl-js-button mdl-button--accent mdl-color--blue-400 mdl-color-text--white">
                               Get Free NAS
                             </button>
@@ -288,16 +318,21 @@
           <div class="list-item-content-details" is-visible="false" edit-mode="false" style="display:none;">
             <div class="list-item-content-details-main">
               <div class="list-item-content-details-topic mdl-typography--body-2"></div>
-              <input class="list-item-content-details-key" type="text" readonly>
+              <input class="list-item-content-details-key" type="text" disabled>
               <input class="list-item-content-details-value hidden real" type="password" readonly>
               <textarea class="list-item-content-details-value hidden real" rows="3" readonly></textarea>
               <textarea class="list-item-content-details-value hidden dummy" rows="3" readonly>********</textarea>
             </div>
-            <div class="list-item-content-details-action toggle-visibility-div">
-              <i class="material-icons toggle-visibility">visibility_off</i>
-            </div>
-            <div class="list-item-content-details-action">
-              <i class="material-icons toggle-edit-done">edit</i>
+            <div class='action-buttons'>
+              <div class="list-item-content-details-action toggle-visibility-div">
+                <i class="material-icons toggle-visibility">visibility_off</i>
+              </div>
+              <div class="list-item-content-details-action">
+                <i class="material-icons toggle-edit-done">edit</i>
+              </div>
+              <div class="list-item-content-details-action">
+                <i class="material-icons button-delete">delete_forever</i>
+              </div>
             </div>
           </div>
         </div>
@@ -306,7 +341,7 @@
         </div>
       </div>
 
-      <div id="template-list-item-transaction" class="list-item hidden transaction-item" item-type="transaction">
+      <div id="template-list-item-transaction" class="list-item hidden open-txn-new-tab transaction-item" item-type="transaction">
         <div class="list-item-icon">
           <i class="material-icons">receipt</i>
         </div>
@@ -317,7 +352,7 @@
           </div>
         </div>
         <div class="list-item-action mdl-color-text--blue-800">
-          <a class="material-icons open-txn-new-tab">open_in_new</a>
+          <i class="material-icons open-txn-new-tab-i">open_in_new</i>
         </div>
       </div>
 

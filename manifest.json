@@ -1,7 +1,7 @@
 {
-  "name": "B.Lock",
-  "version": "1.0",
-  "description": "Blockchain-based Password Manager",
+  "name": "b.lock Password Manager",
+  "version": "1.0.9",
+  "description": "Blockchain-powered Password Manager",
   "manifest_version": 2,
   "author": "BlockProject",
   "background": {
@@ -17,7 +17,7 @@
   "options_page": "options.html",
   "browser_action": {
     "default_popup": "popup.html",
-    "default_title": "B.Lock",
+    "default_title": "b.lock",
     "default_icon": {
       "16": "images/block_logo-16px.png",
       "32": "images/block_logo-32px.png",

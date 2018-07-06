@@ -31,8 +31,9 @@ $(document).ready(() => {
       password: $("#new-account-password").val(),
     }, function (response) {
       info = response;
-      console.log(info);
+      // console.log(info);
       $('#newAccountMain').hide();
+      $('#public-address-notice').html('Your Nebulas public address is : ' + response.account.address);
       $('#newAccountSuccess').show();
     });
   });
@@ -46,12 +47,25 @@ $(document).ready(() => {
     element.setAttribute('download', fileName);
     document.body.appendChild(element);
     element.click();
-    refresh(info);
-    creatingOrRestoring = false;
+    // refresh(info);
+    // creatingOrRestoring = false;
+  };
+
+  const handleClaimFreeNas = () => {
+    if (info.account && info.account.address && info.account.address !== undefined && info.account.address !== '') {
+      window.open(`https://blockproject.io/faucet?address=${info.account.address}`, "_blank");
+    } else {
+      window.open("https://blockproject.io/faucet", "_blank");
+    }
   };
 
   $('#saveKeystoreBtn').click(handleSaveKeystore);
+  $('#claimFreeNas').click(handleClaimFreeNas);
   $('#my-account-download-keystore-btn').click(handleSaveKeystore);
+  $('#enter-block').click(function () {
+    refresh(info);
+    creatingOrRestoring = false;
+  });
 
   $('#new-account-password-confirm').keyup(function (e) {
     const passwordField = $('#new-account-password');
@@ -93,8 +107,8 @@ $(document).ready(() => {
     creatingOrRestoring = true;
     if ('files' in input && input.files.length > 0) {
       readFileContent(input.files[0]).then(content => {
-        console.log('read this content');
-        console.log(content);
+        // console.log('read this content');
+        // console.log(content);
         handleUploadedKeystore(content);
       }).catch(error => console.log(error));
     }
@@ -136,7 +150,7 @@ $(document).ready(() => {
   const handleLoginResponse = (info) => {
     if (info == undefined) return;
     if (!info.unlockAccount.unlocked) {
-      console.log('info.account.address = ', info.account.address);
+      // console.log('info.account.address = ', info.account.address);
       if (info.unlockAccount.wrongPass) {
         $("#cryptpass-popup-login-main-wrong-password").show();
       } else {
@@ -197,13 +211,10 @@ $(document).ready(() => {
     if (listItemDetails.attr('edit-mode') == 'true') {
       listItemDetails.attr('edit-mode', 'false');
 
-      const keyItem = listItemDetails.find('.list-item-content-details-key');
-      keyItem.prop('readonly', true);
-      keyItem.val(keyItem.attr('pastValue'));
-
       const valueItem = listItemDetails.find('.list-item-content-details-value.in-use.real');
       valueItem.prop('readonly', true);
       valueItem.val(valueItem.attr('pastValue'));
+      valueItem.removeClass('editting');
 
       listItemDetails.find('.toggle-edit-done').html('edit');
       listItemDetails.find('.toggle-edit-done').parent().removeClass('mdl-color-text--green-500');
@@ -226,20 +237,19 @@ $(document).ready(() => {
   };
 
   const enableEdit = (e) => {
-    console.log('enabling edit');
+    // console.log('enabling edit');
     const listItemParent = $(e.target).closest('.list-item');
     const listItemDetails = listItemParent.find('.list-item-content-details');
     if (listItemDetails.attr('edit-mode') == 'false') {
       listItemDetails.attr('edit-mode', 'true');
       enableVisibility(e);
-      const keyItem = listItemDetails.find('.list-item-content-details-key');
-      keyItem.prop('readonly', false);
-      keyItem.attr('pastValue', keyItem.val());
+      // const keyItem = listItemDetails.find('.list-item-content-details-key');
+      // keyItem.attr('pastValue', keyItem.val());
 
       const valueItem = listItemDetails.find('.list-item-content-details-value.in-use.real');
       valueItem.prop('readonly', false);
       valueItem.attr('pastValue', valueItem.val());
-
+      valueItem.addClass('editting');
       listItemDetails.find('.toggle-edit-done').html('done');
       listItemDetails.find('.toggle-edit-done').parent().addClass('mdl-color-text--green-500');
     } else {
@@ -261,32 +271,43 @@ $(document).ready(() => {
     $(listItem).find('.toggle-dropdown-cancel').click(handleToggleDropdownCancel);
     $(listItem).find('.toggle-edit-done').click(enableEdit);
     $(listItem).find('.toggle-visibility').click(handleToggleVisibility);
+    $(listItem).find('.button-delete').click((e) => {
+      if (confirm(`Are you sure you want to delete this entry ?`)) {
+        const valueItem = $(listItem).find('.list-item-content-details-value.in-use.real');
+        valueItem.val("");
+        handleEditCredentials(e);
+        $(listItem).addClass('hidden');
+      }
+    });
 
     $(listItem).find('.list-item-content-overview.entries').click ((e) => {
-      console.log("clicked FILL");
+      // console.log("clicked FILL");
       const listItemParent = $(e.target).closest('.list-item');
       if (listItemParent.find('input.in-use').length === 0) return;
-      console.log("FILLING for real");
+      console.log("FILLING for real, pass = ", );
       chrome.runtime.sendMessage({ type: "chooseCredentials", credentials: {
         login: listItemParent.find('.list-item-content-details-key').val(),
-        password: $(this).find('.list-item-content-details-value').val()
+        password: listItemParent.find('.list-item-content-details-value').val()
       }})
     });
     $(listItem).find('.list-item-content-overview.entries').hover ((e) => {
       if ($(e.target).closest('.list-item').find("textarea.in-use").length > 0) return;
-      console.log('on hover');
-      console.log($(listItem).find('.list-item-content-overview-fill'));
+      // console.log('on hover');
+      // console.log($(listItem).find('.list-item-content-overview-fill'));
       $(listItem).find('.list-item-content-overview-fill').removeClass('hidden');
       $(listItem).find('.list-item-content-overview-description').addClass('hidden');
     }, (e) => {
-      console.log('off hover');
+      // console.log('off hover');
       $(listItem).find('.list-item-content-overview-fill').addClass('hidden');
       $(listItem).find('.list-item-content-overview-description').removeClass('hidden');
     });
   };
 
   const displayMyAccountInfo = (info) => {
-    $('#my-account-public-address').val(info.account.address);
+    $('#my-account-public-address').val(info.account.address).click((e) => {
+      window.open(`https://explorer.nebulas.io/#${info.network == 'testnet' ? info.network : ""}/address/${info.account.address}`, "_blank");
+    });
+
     const balance = parseInt(info.account.balance) / (10 ** 18);
     $('#my-account-balance').html(balance.toFixed(5) + ' NAS');
     $('#my-account-nonce').html(info.account.nonce);
@@ -335,11 +356,12 @@ $(document).ready(() => {
     listItem.removeClass('hidden').addClass(elementClass).attr('id', elementId);
     listItem.find('.list-item-content-overview-title').html(getTxnTitle(txn));
     listItem.find('.list-item-content-overview-description').html(getTxnDescription(txn));
-    listItem.find('.open-txn-new-tab').attr('href', getTxnUrl(txn));
-    listItem.find('.open-txn-new-tab').attr('target', '_blank');
-    listItem.find('.open-txn-new-tab')
-      .html(["error", "done", "..."][txn.status])
-      .addClass(["error-tx", "done-tx", "pending-tx"][txn.status])
+    listItem.click((e) => {
+      window.open(getTxnUrl(txn), '_blank');
+    });
+    listItem.find('.open-txn-new-tab-i')
+      .html(["error", "done", "hourglass_empty", "hourglass_empty"][txn.status])
+      .addClass(["error-tx", "done-tx", "pending-tx", "queued-tx"][txn.status])
       .css('color', ['red', '#1564c0', 'grey'][txn.status]);
     container.prepend(listItem);
     return listItem;
@@ -351,9 +373,15 @@ $(document).ready(() => {
       result = 'Send NAS';
     } else if (txn.type === 'password') {
       if (txn.url === 'Secret note') {
-        result = 'Secret Note'
+        result = 'Secret note'
       } else {
         result = 'Password';
+      }
+    } else {
+      if (txn.url === 'Secret note') {
+        result = 'Delete secret note'
+      } else {
+        result = 'Delete password';
       }
     }
     return result;
@@ -364,7 +392,7 @@ $(document).ready(() => {
     if (txn.type === 'send') {
       result = txn.amount + ' NAS to ' + txn.destination.slice(0,16) + '...';
       // result = 'Sent ' + txn.amount + ' NAS';
-    } else if (txn.type === 'password') {
+    } else {
       if (txn.url === 'Secret note') {
         result = txn.login;
       } else {
@@ -384,11 +412,18 @@ $(document).ready(() => {
   $("#new-transaction-send").click(function() {
     const destination = $("#new-transaction-destination").val();
     const amount = $("#new-transaction-amount").val();
+
     if (destination === "" || amount === 0) {
       const message = {message: 'Invalid destination address or amount'};
       document.querySelector('#new-transaction-snackbar-error').MaterialSnackbar.showSnackbar(message);
       return;
     }
+    if (amount > info.account.balance) {
+      const message = {message: 'You do not have sufficient balance to make this transaction'};
+      document.querySelector('#new-transaction-snackbar-error').MaterialSnackbar.showSnackbar(message);
+      return;
+    }
+
     $('#new-transaction-destination').val("");
     $('#new-transaction-amount').val(0);
 
@@ -404,7 +439,7 @@ $(document).ready(() => {
 
   chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     if (request.type == 'infoForPopUp') {
-      console.log('got infoForPopUp');
+      // console.log('got infoForPopUp');
       info = request.info;
       refresh(info);
     }
@@ -426,7 +461,13 @@ $(document).ready(() => {
     $('#logged-in-view').hide();
     $('#loginKeystore').hide();
 
+
     if (infoObject == undefined) return;
+    // if (!infoObject.agreedToPolicy) {
+    //   $('#cryptpass-initial').hide();
+    //   $('#cryptpass-main').hide();
+    //   $('#privacy-policy').show();
+    // } else
     if (infoObject.account.keystore == undefined) { // user haven't created account
       $('#cryptpass-main').hide();
       $('#cryptpass-initial').show();
@@ -434,7 +475,7 @@ $(document).ready(() => {
       $('#newAccountIntro').show();
       $('#restoreAccount').show();
     } else if (!infoObject.unlockAccount.unlocked) { // user created account, haven't logged in
-      console.log('infoObject.account.address = ', infoObject.account.address);
+      // console.log('infoObject.account.address = ', infoObject.account.address);
       $('#cryptpass-main').hide();
       $('#cryptpass-initial').show();
       $("#loginKeystore").show();
@@ -445,31 +486,37 @@ $(document).ready(() => {
       }
     } else { // user already logged in
       console.log('refreshing for network', infoObject.network);
-      console.log('into = ', infoObject);
+      // console.log('info = ', infoObject);
       $('#cryptpass-initial').hide();
       $('#cryptpass-main').show();
+      displayMyAccountInfo(info);
 
       if (firstRefresh && (info.account.address !== undefined)) {
-        displayMyAccountInfo(info);
         initMyAccountEvents();
         firstRefresh = false;
       }
 
       for (transaction of infoObject.pastTransactions[infoObject.network]) {
         // append new
-        const elementId = `recent-${transaction.type}_${transaction.txhash}`;
+        const elementId = getTransactionId(transaction);
         const elementClass = `recent-${transaction.type}`;
         if ($(`#${elementId}`).length === 0) {
           listItem = createAndAppendTransaction(transaction, elementId, elementClass, $('#recent-entries'));
-          console.log('adding recent transaction : ', listItem);
+          // console.log('adding recent transaction : ', listItem);
           attachResponsiveEvents(listItem);
-          console.log('attachResponsiveEvents for transaction : ', listItem);
+          // console.log('attachResponsiveEvents for transaction : ', listItem);
+        } else {
+          $(`#${elementId} .open-txn-new-tab-i`)
+            .html(["error", "done", "hourglass_empty", "hourglass_empty"][transaction.status])
+            .addClass(["error-tx", "done-tx", "pending-tx", "queued-tx"][transaction.status])
+            .css('color', ['red', '#1564c0', 'grey'][transaction.status]);
         }
         // console.log('transaction is', transaction);
       }
       refreshRecentTransactions();
 
       for (entry of infoObject.allCredentialsArray[infoObject.network]) {
+        if (entry.password === "") continue;
         const bareDomain = entry.domain.replace(/[^a-zA-Z0-9]/g, '_');
         const bareLogin = entry.login.replace(/[^a-zA-Z0-9]/g, '_');
         const elementId = `active-${bareDomain}_${bareLogin}`;
@@ -477,25 +524,30 @@ $(document).ready(() => {
         const selectorString = `.${bareDomain}.${bareLogin}`;
         if ($(selectorString) && $(selectorString).length === 0) {
           createAndAppendEntry(entry, elementId, elementClass);
-        } else {
-          console.log();
         }
       }
-
-      if (infoObject.network === "mainnet" && infoObject.account.balance === 0) {
+      // console.log('network =', infoObject.network, " balance = ", infoObject.account.balance);
+      if (infoObject.network === "mainnet" && infoObject.account.balance == 0) {
+        // console.log("showing free nas section");
         $('.get-free-nas-section').show();
       } else {
+        // console.log("hiding free nas section");
         $('.get-free-nas-section').hide();
       }
+      $('.free-nas-btn').attr('href', `https://blockproject.io/faucet?address=${infoObject.account.address}`);
 
       filterEntries();
       showCurrentNetwork();
     }
   }
 
+  const getTransactionId = (tx) => {
+    if (!tx.txIndex) { tx.txIndex = tx.txhash; }
+    return `tx-${tx.txIndex}`;
+  }
   const createAndAppendEntry = (entry, elementId, elementClass) => {
     const secretNote = entry.domain === "Secret note";
-    console.log("adding entry: ", entry);
+    // console.log("adding entry: ", entry);
     const listItem = $('#template-list-item-entry').clone();
     listItem.removeClass('hidden').addClass(elementClass).attr('id', elementId);
     listItem.find('.list-item-content-overview-title').html(entry.domain);
@@ -531,7 +583,7 @@ $(document).ready(() => {
     if (filterByCurrentDomain) {
       chrome.tabs.getSelected(null,function(tab) {
         const currentDomain = (new URL(tab.url)).hostname;
-        console.log('currentDomain = ', currentDomain);
+        // console.log('currentDomain = ', currentDomain);
         const matchingEntries = info.allCredentialsArray[info.network].filter((entry) => entry.domain === currentDomain);
         showEntries(matchingEntries);
         $('#active-entries-title').html("ON THIS SITE");
@@ -646,13 +698,31 @@ $(document).ready(() => {
     requestRefreshFromBackground();
   })
 
+  const getHostname = (url) => {
+    if (!url.includes("http://") && !url.includes("https://")) url = `https://${url}`;
+
+    return (new URL(url)).hostname;
+  }
+
   $('#new-credential-save').click(function (e) {
-    const domain = $('#new-credential-domain').val();
+    const domain = getHostname($('#new-credential-domain').val());
     const login = $('#new-credential-login').val();
     const password = $('#new-credential-password').val();
+
     if (domain === "" || login === "" || password === "") {
       const message = {message: 'Invalid inputs, value cannot be empty'};
       document.querySelector('#new-credential-snackbar-error').MaterialSnackbar.showSnackbar(message);
+      return;
+    }
+
+    if (info.account.balance === '0') {
+      const snackbarData = {
+        message: 'You need NAS to publish a transaction on the blockchain',
+        timeout: 5000,
+        actionHandler: handleClaimFreeNas,
+        actionText: 'CLAIM'
+      };
+      document.querySelector('#new-credential-snackbar-error').MaterialSnackbar.showSnackbar(snackbarData);
       return;
     }
 
@@ -678,6 +748,16 @@ $(document).ready(() => {
       document.querySelector('#new-secretnote-snackbar-error').MaterialSnackbar.showSnackbar(message);
       return;
     }
+    if (info.account.balance === '0') {
+      const snackbarData = {
+        message: 'You need NAS to publish a transaction on the blockchain',
+        timeout: 5000,
+        actionHandler: handleClaimFreeNas,
+        actionText: 'CLAIM'
+      };
+      document.querySelector('#new-secretnote-snackbar-error').MaterialSnackbar.showSnackbar(snackbarData);
+      return;
+    }
     const obj = {
       domain: "Secret note",
       login,
@@ -685,7 +765,7 @@ $(document).ready(() => {
     };
     $('#new-secretnote-title').val("");
     $('#new-secretnote-content').val("");
-    console.log('saving secret note yo');
+    console.log('saving secret note');
     closePopupView();
     chrome.runtime.sendMessage({type: "saveNewCrendentials", credentials: obj});
     const message = {message: 'Saved new secret note ' + login};
@@ -693,7 +773,7 @@ $(document).ready(() => {
   });
 
   $('#search-field').keyup(() => {
-    console.log('search field is changed');
+    // console.log('search field is changed');
     if (!showingAll) {
       filterByCurrentDomain = $('#search-field').val() === "" ? true : false;
     }
@@ -712,12 +792,13 @@ $(document).ready(() => {
     chrome.runtime.sendMessage({ type: "logout" });
     info.unlockAccount.unlocked = false;
     refresh(info);
+    creatingOrRestoring = true;
     firstRefresh = true;
   });
 
   $('#tab-past-activity').click((e) => {
     $('#recent-entries').detach().appendTo("#all-transactions-container");
-    $('.transaction-item').show();
+    $('.transaction-item').removeClass('hidden');
   });
 
   $('#tab-favorite').click((e) => {
@@ -747,6 +828,11 @@ $(document).ready(() => {
     $('#tab-past-activity').addClass('is-active');
   });
 
+  // $('#agree-policy').click((e) => {
+  //   chrome.runtime.sendMessage({ type: "agreePolicy" });
+  //   info.agreedToPolicy = true;
+  // });
+
   const refreshRecentTransactions = () => {
     const transactionCount = info.pastTransactions[info.network].length;
     if (transactionCount === 0) {
@@ -755,29 +841,28 @@ $(document).ready(() => {
     } else {
       $('.recent-transactions').show();
     }
-    $(".tab-favorite-recent-transactions .transaction-item").hide();
+    $(".tab-favorite-recent-transactions .transaction-item").addClass('hidden');
     const startIndex = Math.max(0, transactionCount - 3);
     // console.log('transactions to be shown: ', info.pastTransactions[info.network].slice(startIndex, transactionCount));
     for (const transaction of info.pastTransactions[info.network].slice(startIndex, transactionCount)) {
-      const elementId = `recent-${transaction.type}_${transaction.txhash}`;
-      console.log('showing elementid =', elementId);
-      $(`.tab-favorite-recent-transactions #${elementId}`).show();
+
+      const elementId = getTransactionId(transaction);
+      // console.log('showing elementid =', elementId);
+      $(`.tab-favorite-recent-transactions #${elementId}`).removeClass('hidden');
     }
   }
 
   const showCurrentNetwork = () => {
     $('.active-network').hide();
     $(`.active-network.${info.network}`).show();
-    console.log('Current network: ', info.network);
+    // console.log('Current network: ', info.network);
   }
 
   const changeNetwork = (network) => {
     console.log('changing network to ', network);
     info.network = network;
     const item = $('.blockEntry').remove();
-    console.log(item);
     $('#recent-entries').html('');
-    console.log('refreshing from changeNetwork');
     refresh(info);
     chrome.runtime.sendMessage({ type: "changeNetwork", network });
     showCurrentNetwork();

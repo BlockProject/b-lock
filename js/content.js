@@ -1,8 +1,9 @@
 $(document).ready(function () {
-  var injectedButton = false;
-  var filledForm = false;
-  var dialogOpen = false;
-  var hoveringOverButton = false;
+  let injectedButton = false;
+  let filledForm = false;
+  let dialogOpen = false;
+  let hoveringOverButton = false;
+
 
   const readCredentials = ($form) => {
     // console.log($form);
@@ -22,8 +23,14 @@ $(document).ready(function () {
   };
 
   const attachListener = ($form) => {
-    $form.submit(function (e) {
-      const credentials = readCredentials(e.target);
+    if ($form.attr('b-lock-attached-listener') == "true") {
+      // console.log('attachListener is already done for this form');
+      return;
+    }
+    console.log("Attaching listener for form ", $form);
+    const onSubmit = () => {
+      console.log("Login form is submitted");
+      const credentials = readCredentials($form);
       chrome.runtime.sendMessage({
         type: 'onTryLogin',
         info: {
@@ -35,7 +42,16 @@ $(document).ready(function () {
         showSavePasswordDialog();
       });
       return true;
-    });
+    }
+
+    // $form.submit(onSubmit);
+    let submitFormBtn = $form.find("input[type=submit]");
+    if (submitFormBtn.length == 0) submitFormBtn = $("button[type=submit]");
+    if (submitFormBtn.length == 0) submitFormBtn = $("#passwordNext"); // google
+
+    console.log("submitFormBtn is ", submitFormBtn);
+    submitFormBtn.click(onSubmit);
+    $form.attr('b-lock-attached-listener', "true");
   };
 
   const initialSearch = () => {
@@ -47,6 +63,7 @@ $(document).ready(function () {
   };
 
   const showSavePasswordDialog = () => {
+    if ($("#b-lock-save-popup").length > 0) return;
     $('body').append(`<div id='b-lock-save-popup'><iframe src="${chrome.runtime.getURL('html/save-popup.html')}"></iframe></div>`);
     $('#b-lock-save-popup').attr('style',
       'position: fixed !important;\
@@ -74,11 +91,11 @@ $(document).ready(function () {
     const allInputs = $($form).find('input');
     if (allInputs.length > 1) {
       const passwordInput = $($form).find('input:password');
-      let loginInput = $($form).find('input:text');
+      let loginInput = $($form).find('input[type=email]');
       if (loginInput.length == 0) {
         let loginInputs = $($form).find('input');
         for (z in loginInputs) {
-          if ($(loginInputs[z]).attr('type') == 'email') {
+          if ($(loginInputs[z]).attr('type') == 'text') {
             loginInput = $(loginInputs[z]);
             break;
           }
@@ -115,7 +132,7 @@ $(document).ready(function () {
     $(loginInput[0]).click(function (e) {
       if (!hoveringOverButton) return;
       e.stopPropagation();
-      console.log('clicked on backhround image');
+      // console.log('clicked on backhround image');
       if (dialogOpen == false) {
         injectSelectionDialog(getPosition(loginInput[0]));
         dialogOpen = true;
@@ -198,7 +215,7 @@ $(document).ready(function () {
   });
 
   const fillAllForms = (credentials) => {
-    console.log("Filling all forms with credentials");
+    // console.log("Filling all forms with credentials");
     const passwordFields = $('input:password');
     for (const passwordField of passwordFields) {
       const form = $(passwordField).closest('form');
@@ -208,10 +225,12 @@ $(document).ready(function () {
 
   chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     if (request.type == "infoForContent") {
-      console.log('got infoForContent:', request);
+      // console.log('got infoForContent:', request);
       if (!request.unlocked) return;
-      console.log('doing initialSearch');
+      // console.log('doing initialSearch');
       initialSearch();
+      setInterval(initialSearch, 1000);
+
       if (request.showSavePasswordDialog) showSavePasswordDialog();
 
       if (request.autofill) {
@@ -223,7 +242,7 @@ $(document).ready(function () {
             fillForm($(passwordField).closest('form'), request.credentials[0]);
           }
           if (request.credentials.length > 1) {
-            console.log(request);
+            // console.log(request);
             if (injectedButton === false) {
               injectSelectionButton($(passwordField).closest('form'), request.credentials, request.imgURL);
             }
