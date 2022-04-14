@@ -1,7 +1,7 @@
 $(document).ready(() => {
   let info;
 
-  $("#unlock-keystore").click(function() {
+  const handleUnlock = () => {
     chrome.runtime.sendMessage({
       type: "unlockAccount",
       password: $("#unlock-keystore-password").val()
@@ -9,7 +9,15 @@ $(document).ready(() => {
       info = response;
       refresh();
     });
-  });
+  };
+
+  const keyPressed = (e) => {
+    if (e.keyCode === 13) {
+      handleUnlock();
+    }
+  };
+
+  $("#unlock-keystore").click(() => handleUnlock);
 
   const refresh = () => {
     // console.log('got this info : ', info);
@@ -33,4 +41,6 @@ $(document).ready(() => {
     info = response;
     refresh();
   });
+
+  $(document).bind('keypress', keyPressed);
 })
